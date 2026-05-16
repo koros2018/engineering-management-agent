@@ -90,17 +90,22 @@ class TestTypeClassifierTool:
         from sub_agents.tech_rd_agent import TypeClassifierTool
         tool = TypeClassifierTool()
 
+        # 注意：FILENAME_TYPE_MAP 现在是 list of tuples（按优先级排序）
         filename_cases = [
             ("建筑平面图.dxf", "建筑"),
             ("结构平面图.dxf", "结构"),
             ("给排水系统图.dxf", "给排水"),
             ("电气配电系统.dxf", "电气"),
             ("暖通空调平面.dxf", "暖通"),
+            ("总平面布置图.dxf", "总图"),
+            ("梁配筋图.dxf", "结构"),
+            ("板配筋图.dxf", "结构"),
         ]
 
         for filename, expected_type in filename_cases:
             detected = None
-            for kw, dtype in tool.FILENAME_TYPE_MAP.items():
+            # 按优先级遍历（更具体的关键词在前）
+            for kw, dtype in tool.FILENAME_TYPE_MAP:
                 if kw in filename:
                     detected = dtype
                     break
