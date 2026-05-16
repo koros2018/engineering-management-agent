@@ -41,6 +41,24 @@ def _get_llm_service():
     return LLMService()
 
 
+def _call_blueprint_api(file_path: str) -> dict:
+    """通过HTTP调用blueprint-ai API做完整分析（避免版本不兼容问题）"""
+    import requests, tempfile, os
+
+    # 调用已有的 /upload/analyze 接口
+    url = "http://127.0.0.1:5188/api/v1/upload/analyze"
+    with open(file_path, 'rb') as f:
+        files = {'file': (os.path.basename(file_path), f.read())}
+        data = {'user_id': 'ema_tech_rd_agent'}
+        try:
+            resp = requests.post(url, files=files, data=data, timeout=60)
+            if resp.status_code == 200:
+                return resp.json()
+        except Exception:
+            pass
+    return None
+
+
 # ─────────────────────────────────────────────────────────────────
 # Blueprint Parser Tool
 # ─────────────────────────────────────────────────────────────────
@@ -244,7 +262,7 @@ class BlueprintAnalyzerTool:
         try:
             llm = _get_llm_service()
             response = await asyncio.wait_for(
-                asyncio.to_thread(llm.generate, prompt, system=self.SYSTEM_PROMPT),
+                asyncio.to_thread(llm.call, prompt, system=self.SYSTEM_PROMPT),
                 timeout=context.get("llm_timeout", 60)
             )
             return {
