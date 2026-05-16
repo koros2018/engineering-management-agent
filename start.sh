@@ -1,7 +1,8 @@
 #!/bin/bash
-# EMA 一键启动脚本 (Linux/macOS)
+# EMA 一键启动脚本 (Linux/macOS/WSL)
 
-cd "$(dirname "$0")"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
 
 echo ""
 echo "╔══════════════════════════════════════════╗"
@@ -35,37 +36,53 @@ else
     fi
 fi
 
+# 启动UI静态文件服务（端口5189，从项目根目录serve）
+if curl -s http://127.0.0.1:5189/health > /dev/null 2>&1; then
+    echo "✅ UI 服务已在运行 (端口 5189)"
+else
+    echo "🚀 启动 UI 文件服务 (端口 5189)..."
+    python3 -m http.server 5189 --directory . > /dev/null 2>&1 &
+    UI_PID=$!
+    echo "   进程 PID: $UI_PID"
+    sleep 2
+    if curl -s http://127.0.0.1:5189/ > /dev/null 2>&1; then
+        echo "✅ UI 文件服务已就绪"
+    fi
+    echo "   访问地址: http://127.0.0.1:5189/ui/index.html"
+fi
+
 # 检测系统并打开浏览器
 echo ""
 echo "🌐 打开前端UI..."
+UI_URL="http://127.0.0.1:5189/ui/index.html"
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS
-    open ui/index.html
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    # Linux - 尝试多种浏览器
+    open "$UI_URL"
+elif [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
     if command -v xdg-open &> /dev/null; then
-        xdg-open ui/index.html
+        xdg-open "$UI_URL"
     elif command -v gnome-open &> /dev/null; then
-        gnome-open ui/index.html
+        gnome-open "$UI_URL"
+    elif command -v wsl-open &> /dev/null; then
+        wsl-open "$UI_URL"
     elif command -v firefox &> /dev/null; then
-        firefox ui/index.html
+        firefox "$UI_URL"
     else
-        echo "⚠️  无法自动打开浏览器，请手动访问: file://$(pwd)/ui/index.html"
+        echo "⚠️  无法自动打开浏览器，请手动访问: $UI_URL"
     fi
 else
-    echo "⚠️  无法自动打开浏览器，请手动访问: file://$(pwd)/ui/index.html"
+    echo "⚠️  无法自动打开浏览器，请手动访问: $UI_URL"
 fi
 
 echo ""
 echo "═══════════════════════════════════════════"
 echo "✅ 启动完成！"
 echo ""
-echo "📍 前端: file://$(pwd)/ui/index.html"
-echo "📊 API:  http://127.0.0.1:5188"
-echo "📚 文档: http://127.0.0.1:5188/docs"
+echo "📍 前端UI: http://127.0.0.1:5189/ui/index.html"
+echo "📊 API:    http://127.0.0.1:5188"
+echo "📚 文档:   http://127.0.0.1:5188/docs"
 echo ""
-echo "按 Ctrl+C 停止服务"
+echo "按 Ctrl+C 停止所有服务"
 echo "═══════════════════════════════════════════"
 
-# 等待信号，保持前台运行
-wait $!
+# 保持前台运行
+wait
