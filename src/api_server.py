@@ -30,6 +30,7 @@ import uvicorn
 
 # Agent框架
 from agent.base_agent import Task, AgentResult
+from agent.main_agent import EngineeringManagementAgent
 from sub_agents import TechRdAgent
 
 
@@ -37,7 +38,15 @@ from sub_agents import TechRdAgent
 # 全局Agent实例（懒加载）
 # ─────────────────────────────────────────────────────────────────
 
+_main_agent = None
 _agents = {}
+
+
+def get_main_agent() -> EngineeringManagementAgent:
+    global _main_agent
+    if _main_agent is None:
+        _main_agent = EngineeringManagementAgent()
+    return _main_agent
 
 
 def get_tech_rd_agent() -> TechRdAgent:
@@ -114,16 +123,27 @@ async def health():
 @app.get("/api/v1/agents")
 async def list_agents():
     """列出所有Agent及其能力"""
-    tech_rd = get_tech_rd_agent()
+    main_agent = get_main_agent()
+    caps = main_agent.get_capabilities()
     return {
         "agents": [
             {
-                "agent_id": "tech_rd",
-                "name": tech_rd.NAME,
-                "description": tech_rd.DESCRIPTION,
-                "supported_tasks": tech_rd.get_supported_tasks(),
+                "agent_id": "main",
+                "name": caps['name'],
+                "description": caps['description'],
+                "supported_tasks": caps['supported_tasks'],
                 "status": "ready",
-            }
+            },
+            *[
+                {
+                    "agent_id": sa['agent_id'],
+                    "name": sa['name'],
+                    "description": sa['description'],
+                    "supported_tasks": sa.get('supported_tasks', []),
+                    "status": "ready",
+                }
+                for sa in caps.get('sub_agents', [])
+            ],
         ]
     }
 
@@ -131,55 +151,99 @@ async def list_agents():
 @app.get("/api/v1/agents/{agent_id}")
 async def get_agent_info(agent_id: str):
     """获取单个Agent信息"""
-    if agent_id == "tech_rd":
-        agent = get_tech_rd_agent()
-        return agent.get_capabilities()
+    main_agent = get_main_agent()
+    caps = main_agent.get_capabilities()
+
+    if agent_id == "main":
+        return caps
+
+    for sa in caps.get('sub_agents', []):
+        if sa['agent_id'] == agent_id:
+            return sa
+
     raise HTTPException(status_code=404, detail=f"Agent '{agent_id}' not found")
 
 
-# ── Agent任务执行 ──────────────────────────────────────────────
+# ── Main-Agent 对话入口（主要接口）─────────────────────────────
+
+@app.post("/api/v1/main/chat")
+async def main_agent_chat(
+    req: AgentChatRequest,
+):
+    """
+    Main-Agent 主对话接口
+    接收自然语言 → 意图分类 → 任务规划 → Sub-Agent调度 → 结果整合
+
+    这是 EMA 的核心入口，支持所有 Agent 的自然语言调度。
+    """
+    main_agent = get_main_agent()
+
+    result = await main_agent._chat(
+        params={
+            'message': req.message,
+            'file_path': req.file_path,
+        },
+        context={
+            'user_id': req.user_id,
+            'project_id': req.project_id,
+            'task_id': str(uuid.uuid4()),
+        }
+    )
+
+    return {
+        "success": result.get('success', False),
+        "task_id": req.project_id or str(uuid.uuid4()),
+        "intent": result.get('intent'),
+        "plan": result.get('plan'),
+        "confidence": result.get('confidence', 0.0),
+        "output": result.get('output'),
+        "response_text": result.get('response_text'),
+        "execution_time": result.get('execution_time', 0.0),
+    }
+
+
+# ── Sub-Agent 路由（原有接口，兼容）────────────────────────────
 
 @app.post("/api/v1/agent/chat")
 async def agent_chat(req: AgentChatRequest):
     """
-    对话式Agent接口
-    接收自然语言请求 → 路由到对应Agent → 返回结果
-
-    目前支持：
-    - tech_rd: 图纸解析/分析/优化
+    Sub-Agent 对话接口（兼容模式）
+    直接路由到指定 Agent
     """
     task_id = str(uuid.uuid4())
+    agent_id = req.task_type if req.task_type in [
+        'tech_rd', 'safety_compliance', 'market_sales',
+        'engineering_delivery', 'cost_benefit', 'customer_service'
+    ] else 'tech_rd'
 
-    if req.task_type == "full_analysis" or req.task_type == "analyze":
-        if not req.file_path:
-            raise HTTPException(status_code=400, detail="file_path is required for analyze tasks")
+    main_agent = get_main_agent()
+    agent = main_agent.sub_agents.get(agent_id)
+    if not agent:
+        raise HTTPException(status_code=404, detail=f"Agent '{agent_id}' not found")
 
-        agent = get_tech_rd_agent()
-        task = Task(
-            task_id=task_id,
-            agent_id="tech_rd",
-            task_type=req.task_type,
-            params={"file_path": req.file_path},
-            context={
-                "user_id": req.user_id,
-                "project_id": req.project_id,
-                "task_id": task_id,
-            }
-        )
-
-        result = await agent.run_with_retry(task)
-
-        return {
+    task = Task(
+        task_id=task_id,
+        agent_id=agent_id,
+        task_type=req.task_type,
+        params={"file_path": req.file_path, "message": req.message},
+        context={
+            "user_id": req.user_id,
+            "project_id": req.project_id,
             "task_id": task_id,
-            "agent_id": result.agent_id,
-            "status": result.status,
-            "confidence": result.confidence,
-            "output": result.output,
-            "execution_time": result.execution_time,
-            "errors": result.errors,
         }
-    else:
-        raise HTTPException(status_code=400, detail=f"Unsupported task_type: {req.task_type}")
+    )
+
+    result = await agent.run_with_retry(task)
+
+    return {
+        "task_id": task_id,
+        "agent_id": result.agent_id,
+        "status": result.status,
+        "confidence": result.confidence,
+        "output": result.output,
+        "execution_time": result.execution_time,
+        "errors": result.errors,
+    }
 
 
 @app.post("/api/v1/agent/task")
