@@ -35,9 +35,15 @@ def _get_bp_parser():
     return BlueprintParser()
 
 
-def _get_llm_service():
-    """延迟导入"""
+def _get_llm_service(model: str = None):
+    """延迟导入，可指定模型"""
     from blueprint_parser.llm_service import LLMService
+    if model:
+        # 支持 ollama:xxx 或 cloud:xxx
+        if model.startswith("cloud:"):
+            return LLMService(model=model[6:], timeout=60)
+        else:
+            return LLMService(model=model.replace("ollama:", ""), timeout=60)
     return LLMService()
 
 
@@ -260,7 +266,7 @@ class BlueprintAnalyzerTool:
 
         # 调用 LLM（带超时保护）
         try:
-            llm = _get_llm_service()
+            llm = _get_llm_service(context.get('model'))
             response = await asyncio.wait_for(
                 asyncio.to_thread(llm.call, prompt, system=self.SYSTEM_PROMPT),
                 timeout=context.get("llm_timeout", 60)

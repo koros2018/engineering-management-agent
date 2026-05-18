@@ -20,9 +20,9 @@ if _ENV_FILE.exists():
 import asyncio
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Form, Depends
+from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Form, Depends, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -65,6 +65,8 @@ class AgentChatRequest(BaseModel):
     file_path: Optional[str] = None
     project_id: Optional[str] = None
     user_id: str = "guest"
+    model: Optional[str] = None  # 可选：指定模型（如 "ollama:qwen3.5:9b" 或 "cloud:gpt-4o-mini"）
+    model_chain: Optional[List[str]] = None  # 可选：模型链
 
 
 class AgentTaskRequest(BaseModel):
@@ -72,6 +74,15 @@ class AgentTaskRequest(BaseModel):
     task_type: str
     params: dict = {}
     context: dict = {}
+    model: Optional[str] = None
+
+
+class LLMModelInfo(BaseModel):
+    model_id: str
+    name: str
+    provider: str  # "ollama" | "cloud"
+    status: str  # "available" | "unavailable"
+    description: str = ""
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -148,6 +159,57 @@ async def list_agents():
     }
 
 
+@app.get("/api/v1/llm/models")
+async def list_llm_models():
+    """
+    列出所有可用的 LLM 模型（本地 Ollama + 云端）
+    """
+    try:
+        from blueprint_parser.llm_service import llm
+        available = llm.get_available_models()
+        return {
+            "success": True,
+            "default_chain": llm.default_chain,
+            "models": available,
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "models": [
+                {"model_id": "ollama:qwen3.5:9b", "name": "Qwen 3.5 9B", "provider": "ollama", "status": "unknown", "description": "默认本地模型"},
+                {"model_id": "cloud:gpt-4o-mini", "name": "GPT-4o Mini", "provider": "cloud", "status": "unknown", "description": "云端模型（需配置API Key）"},
+            ],
+            "default_chain": ["ollama:qwen3.5:9b", "cloud:gpt-4o-mini"],
+        }
+
+
+@app.post("/api/v1/llm/test")
+async def test_llm_model(model_id: str = Body(...)):
+    """
+    测试指定模型是否可用
+    """
+    try:
+        from blueprint_parser.llm_service import LLMService, OllamaService
+        
+        if model_id.startswith("cloud:"):
+            model = model_id[6:]
+            svc = LLMService(model=model, timeout=30)
+        else:
+            model = model_id.replace("ollama:", "")
+            svc = OllamaService(model=model, timeout=30)
+        
+        available = svc.is_available()
+        return {
+            "success": True,
+            "model_id": model_id,
+            "available": available,
+            "error": getattr(svc, 'last_error', None),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e), "model_id": model_id, "available": False}
+
+
 @app.get("/api/v1/agents/{agent_id}")
 async def get_agent_info(agent_id: str):
     """获取单个Agent信息"""
@@ -187,6 +249,8 @@ async def main_agent_chat(
             'user_id': req.user_id,
             'project_id': req.project_id,
             'task_id': str(uuid.uuid4()),
+            'model': req.model,
+            'model_chain': req.model_chain,
         }
     )
 

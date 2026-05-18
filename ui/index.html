@@ -75,6 +75,12 @@
     .topbar-title { font-size: 14px; font-weight: 600; }
     .topbar-desc { font-size: 11px; color: var(--text-dim); margin-left: auto; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .topbar-badge { font-size: 11px; background: var(--accent); color: #fff; padding: 2px 7px; border-radius: 10px; }
+    .model-select {
+      background: var(--agent-bubble); border: 1px solid var(--border);
+      color: var(--text); font-size: 12px; border-radius: 6px; padding: 3px 8px;
+      cursor: pointer; outline: none; margin-left: 8px;
+    }
+    .model-select:focus { border-color: var(--accent); }
 
     /* ── 聊天区 ── */
     .chat-area { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; }
@@ -180,6 +186,11 @@
       <span class="topbar-title">{{ currentAgent.name }}</span>
       <span class="topbar-desc">{{ currentAgent.description }}</span>
       <span class="topbar-badge">v1.0.0</span>
+      <select class="model-select" v-model="selectedModel" @change="onModelChange">
+        <option v-for="m in availableModels" :key="m.name" :value="m.name">
+          {{ m.type === 'cloud' ? '☁️' : '💻' }} {{ m.display || m.name }}
+        </option>
+      </select>
     </div>
 
     <div class="chat-area" ref="chatArea">
@@ -334,6 +345,24 @@ createApp({
     ];
 
     const currentAgent = ref(agents[0]);
+    const availableModels = ref([]);
+    const selectedModel = ref('');
+
+    function loadModels() {
+      fetch(`${API_BASE}/api/v1/llm/models`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.models && d.models.length > 0) {
+            availableModels.value = d.models;
+            selectedModel.value = d.default_chain?.[0] || d.models[0]?.name || '';
+          }
+        })
+        .catch(() => {});
+    }
+
+    function onModelChange() {
+      // 模型切换，后续请求会带上这个 model 参数
+    }
 
     function formatSize(bytes) {
       if (!bytes) return '';
@@ -413,7 +442,8 @@ createApp({
             body: JSON.stringify({
               message: text,
               user_id: 'web_user',
-              task_type: currentAgent.value.id
+              task_type: currentAgent.value.id,
+              model: selectedModel.value || undefined,
             })
           });
 
@@ -445,11 +475,12 @@ createApp({
       scrollBottom();
     }
 
-    onMounted(() => scrollBottom());
+    onMounted(() => { scrollBottom(); loadModels(); });
 
     return {
       messages, input, loading, selectedFile, chatArea, inputBox,
-      agents, currentAgent, formatSize, switchAgent, onFileSelect, autoGrow, send
+      agents, currentAgent, availableModels, selectedModel,
+      formatSize, switchAgent, onFileSelect, autoGrow, send, onModelChange
     };
   }
 }).mount('#app');
