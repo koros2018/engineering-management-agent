@@ -20,7 +20,7 @@ if _ENV_FILE.exists():
 import asyncio
 import uuid
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Form, Depends, Body
 from fastapi.middleware.cors import CORSMiddleware
@@ -32,6 +32,14 @@ import uvicorn
 from agent.base_agent import Task, AgentResult
 from agent.main_agent import EngineeringManagementAgent
 from sub_agents import TechRdAgent
+
+# 认证模块
+from auth import (
+    register_user, login_user, get_user, get_user_tenant,
+    refresh_access_token, get_tenant_data_dir, get_user_project_dir,
+    get_current_user, get_optional_user, require_role,
+    Role,
+)
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -127,6 +135,89 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "ok", "timestamp": datetime.now().isoformat()}
+
+
+# ── 用户认证 ──────────────────────────────────────────────────
+
+@app.post("/api/v1/auth/register")
+async def auth_register(username: str = Form(...), password: str = Form(...), email: str = Form(""), tenant_name: str = Form(None)):
+    """用户注册 - 自动创建个人租户（企业空间）"""
+    try:
+        user = register_user(username, password, email, tenant_name)
+        return {"success": True, "user": user}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/v1/auth/login")
+async def auth_login(username: str = Form(...), password: str = Form(...)):
+    """用户登录 - 返回 JWT access_token + refresh_token"""
+    try:
+        user = login_user(username, password)
+        return {"success": True, "user": user}
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
+@app.get("/api/v1/auth/me")
+async def auth_me(user: dict = Depends(get_current_user)):
+    """获取当前登录用户信息"""
+    tenant = get_user_tenant(user["user_id"])
+    return {"success": True, "user": {**user, **tenant}}
+
+
+@app.post("/api/v1/auth/refresh")
+async def auth_refresh(refresh_token: str = Form(...)):
+    """用 refresh_token 换取新的 access_token"""
+    result = refresh_access_token(refresh_token)
+    if not result:
+        raise HTTPException(status_code=401, detail="无效的刷新令牌")
+    return {"success": True, "access_token": result["access_token"]}
+
+
+# ── 项目管理 ──────────────────────────────────────────────────
+
+_projects_store: Dict[str, Dict] = {}
+
+@app.get("/api/v1/projects")
+async def list_projects(user: dict = Depends(get_current_user)):
+    """列出当前用户的所有项目"""
+    tenant_id = user["tenant_id"]
+    user_projects = [p for p in _projects_store.values() if p.get("tenant_id") == tenant_id]
+    return {"success": True, "projects": user_projects}
+
+@app.post("/api/v1/projects")
+async def create_project(name: str = Form(...), description: str = Form(""), user: dict = Depends(get_current_user)):
+    """创建新项目"""
+    import os
+    project_id = f"proj_{os.urandom(4).hex()}"
+    project = {
+        "project_id": project_id, "name": name, "description": description,
+        "tenant_id": user["tenant_id"], "owner_id": user["user_id"],
+        "created_at": datetime.now().isoformat(), "status": "active",
+    }
+    _projects_store[project_id] = project
+    get_user_project_dir(user["tenant_id"], project_id)
+    return {"success": True, "project": project}
+
+@app.get("/api/v1/projects/{project_id}")
+async def get_project(project_id: str, user: dict = Depends(get_current_user)):
+    """获取项目详情"""
+    project = _projects_store.get(project_id)
+    if not project or project.get("tenant_id") != user["tenant_id"]:
+        raise HTTPException(status_code=404, detail="项目不存在")
+    return {"success": True, "project": project}
+
+@app.delete("/api/v1/projects/{project_id}")
+async def delete_project(project_id: str, user: dict = Depends(get_current_user)):
+    """删除项目（仅 owner 或 tenant_admin）"""
+    project = _projects_store.get(project_id)
+    if not project or project.get("tenant_id") != user["tenant_id"]:
+        raise HTTPException(status_code=404, detail="项目不存在")
+    if project["owner_id"] != user["user_id"] and user["role"] not in [Role.TENANT_ADMIN, Role.SUPER_ADMIN]:
+        raise HTTPException(status_code=403, detail="权限不足")
+    _projects_store[project_id]["status"] = "archived"
+    return {"success": True, "message": "项目已归档"}
 
 
 # ── Agent能力查询 ──────────────────────────────────────────────

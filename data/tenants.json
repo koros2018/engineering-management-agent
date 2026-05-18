@@ -1,0 +1,10 @@
+{
+  "tenant_876bd457cf4a": {
+    "tenant_id": "tenant_876bd457cf4a",
+    "name": "测试设计院",
+    "plan": "free",
+    "admin_user_id": "user_e9926c3eac6dad3f",
+    "created_at": "2026-05-18T18:12:20.893075",
+    "status": "active"
+  }
+}

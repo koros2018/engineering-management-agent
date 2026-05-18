@@ -28,3 +28,7 @@ certs/
 *.env.local
 dump.rdbdata/chromadb/
 data/chromadb/
+data/users.json
+data/tenants.json
+data/tenant_users.json
+data/tenants/
