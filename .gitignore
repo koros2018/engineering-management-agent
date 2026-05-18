@@ -26,4 +26,5 @@ node_modules/
 ui-dist/
 certs/
 *.env.local
-dump.rdb
+dump.rdbdata/chromadb/
+data/chromadb/
