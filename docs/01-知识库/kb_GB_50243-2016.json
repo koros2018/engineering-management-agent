@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 50243-2016",
+  "spec_name": "通风与空调工程施工质量验收规范",
+  "category": "暖通",
+  "version": "2016版",
+  "summary": "通风与空调工程的施工质量验收标准，包括风管、部件、设备、系统调试等",
+  "sections": [
+    {"section_num": "4.1", "title": "风管制作", "summary": "风管材质、厚度、加固、连接方式"},
+    {"section_num": "5.1", "title": "风管部件", "summary": "风口、阀门、消声器、过滤器的制作与安装"},
+    {"section_num": "6.1", "title": "风管系统安装", "summary": "支吊架、风管连接、密封、穿越防火分区"},
+    {"section_num": "7.1", "title": "通风与空调设备安装", "summary": "风机、空气处理机组、冷却塔安装要求"},
+    {"section_num": "11.1", "title": "系统调试", "summary": "风量测定与调整、水系统调试、综合效能测定"}
+  ],
+  "key_requirements": [
+    {"section": "4.2.1", "title": "风管板材厚度", "requirement": "矩形风管边长≤320mm时，镀锌钢板厚度≥0.5mm；320-630mm时≥0.6mm；630-1000mm时≥0.75mm", "mandatory": true},
+    {"section": "4.2.5", "title": "风管加固", "requirement": "矩形风管边长>630mm或管段长度>1250mm时，应采取加固措施", "mandatory": true},
+    {"section": "6.2.3", "title": "风管支吊架间距", "requirement": "水平安装风管：直径或边长≤400mm时，支吊架间距≤4m；>400mm时间距≤3m", "mandatory": true},
+    {"section": "11.2.1", "title": "系统风量平衡", "requirement": "系统总风量调试结果与设计风量的偏差不应大于10%，各风口风量偏差不应大于15%", "mandatory": true}
+  ]
+}

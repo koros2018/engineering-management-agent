@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 50052-2009",
+  "spec_name": "供配电系统设计规范",
+  "category": "电气",
+  "version": "2009版",
+  "summary": "供配电系统的设计原则、电压选择、负荷分级、供电要求、无功补偿等",
+  "sections": [
+    {"section_num": "3.0", "title": "负荷分级及供电要求", "summary": "电力负荷分为一级、二级、三级，不同负荷等级对应不同的供电要求"},
+    {"section_num": "4.0", "title": "电源及供电系统", "summary": "供电电压选择、电源配置、供电系统接线方式"},
+    {"section_num": "5.0", "title": "电压选择和电能质量", "summary": "各级电压的适用范围、电压偏差允许值、无功补偿要求"},
+    {"section_num": "6.0", "title": "无功补偿", "summary": "无功补偿容量计算、补偿方式、功率因数要求"},
+    {"section_num": "7.0", "title": "低压配电", "summary": "低压配电系统接线、保护电器选择、配电线路设计"}
+  ],
+  "key_requirements": [
+    {"section": "3.0.1", "title": "一级负荷供电要求", "requirement": "一级负荷应由双重电源供电，当一个电源发生故障时，另一个电源不应同时受到损坏", "mandatory": true},
+    {"section": "3.0.2", "title": "二级负荷供电要求", "requirement": "二级负荷宜由两回线路供电，当负荷较小或地区供电条件困难时，可由一回6kV及以上专用架空线路供电", "mandatory": true},
+    {"section": "5.0.4", "title": "电压偏差", "requirement": "正常运行情况下，用电设备端子处电压偏差允许值：电动机±5%，照明+5%~-10%，其他设备±5%", "mandatory": true},
+    {"section": "6.0.4", "title": "功率因数", "requirement": "高压供电的工业用户功率因数不应低于0.90；其他用户不应低于0.85", "mandatory": true}
+  ]
+}

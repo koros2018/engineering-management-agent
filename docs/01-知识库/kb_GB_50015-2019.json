@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 50015-2019",
+  "spec_name": "建筑给水排水设计标准",
+  "category": "给排水",
+  "version": "2019版",
+  "summary": "建筑给水、排水、热水、消防给水系统的设计原则、计算方法和构造要求",
+  "sections": [
+    {"section_num": "3.1", "title": "给水", "summary": "给水系统选择、用水量计算、给水管道设计"},
+    {"section_num": "4.1", "title": "排水", "summary": "排水系统选择、排水量计算、排水管道设计"},
+    {"section_num": "5.1", "title": "热水", "summary": "热水供应系统、热水量计算、加热设备选型"},
+    {"section_num": "7.1", "title": "消防给水", "summary": "消防水源、消防水量、消防管网设计"}
+  ],
+  "key_requirements": [
+    {"section": "3.2.1", "title": "生活给水水质", "requirement": "生活饮用水水质应符合《生活饮用水卫生标准》GB 5749的规定", "mandatory": true},
+    {"section": "3.6.1", "title": "给水管道流速", "requirement": "生活给水管道流速：公称直径≤25mm时，流速宜为0.6-1.0m/s；>25mm时，流速宜为0.8-1.5m/s", "mandatory": true},
+    {"section": "4.4.1", "title": "排水管道坡度", "requirement": "排水铸铁管：DN50最小坡度0.025，DN75最小0.015，DN100最小0.012，DN150最小0.007", "mandatory": true},
+    {"section": "4.10.1", "title": "通气管设置", "requirement": "排水立管应设伸顶通气管，通气立管管径不宜小于排水立管管径的1/2", "mandatory": true},
+    {"section": "7.4.1", "title": "室内消火栓布置", "requirement": "室内消火栓间距：高层厂房和仓库不应大于30m，其他单层和多层建筑不应大于50m", "mandatory": true}
+  ]
+}

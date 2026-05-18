@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 50019-2015",
+  "spec_name": "工业建筑供暖通风与空气调节设计规范",
+  "category": "暖通",
+  "version": "2015版",
+  "summary": "工业建筑的供暖、通风、空调设计原则、负荷计算、系统设计、设备选型等",
+  "sections": [
+    {"section_num": "4.1", "title": "供暖", "summary": "供暖方式选择、热负荷计算、供暖系统形式"},
+    {"section_num": "5.1", "title": "通风", "summary": "自然通风与机械通风的设计要求、通风量计算"},
+    {"section_num": "6.1", "title": "空气调节", "summary": "空调负荷计算、空调系统分类与选择"},
+    {"section_num": "7.1", "title": "冷热源", "summary": "冷热源设备选型、制冷机房设计"},
+    {"section_num": "8.1", "title": "风管设计", "summary": "风管材质、风速、阻力计算、保温要求"}
+  ],
+  "key_requirements": [
+    {"section": "5.3.1", "title": "机械通风风量", "requirement": "机械通风系统的通风量应按排除余热、余湿、有害气体和粉尘的要求计算确定", "mandatory": true},
+    {"section": "6.3.1", "title": "空调室内设计参数", "requirement": "工业建筑空调室内设计温度：夏季24-28°C，冬季18-22°C；相对湿度：夏季40-70%，冬季30-60%", "mandatory": true},
+    {"section": "8.2.1", "title": "风管风速", "requirement": "主风管风速：6-12m/s；支风管风速：4-8m/s；送风口风速：2-5m/s", "mandatory": true},
+    {"section": "8.5.1", "title": "风管保温", "requirement": "空调风管应保温，保温层厚度按防止结露和减少热损失计算，最小厚度不小于25mm", "mandatory": true}
+  ]
+}

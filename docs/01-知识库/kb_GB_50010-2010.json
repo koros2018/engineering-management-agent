@@ -1,0 +1,25 @@
+{
+  "spec_code": "GB 50010-2010",
+  "spec_name": "混凝土结构设计规范",
+  "category": "结构",
+  "version": "2010版",
+  "summary": "混凝土结构的设计原则、材料、构件计算、构造要求等",
+  "sections": [
+    {"section_num": "3.1", "title": "设计原则", "summary": "结构应满足承载能力极限状态和正常使用极限状态"},
+    {"section_num": "3.5", "title": "耐久性设计", "summary": "根据环境类别和设计使用年限确定混凝土材料和保护层厚度"},
+    {"section_num": "4.1", "title": "混凝土材料", "summary": "混凝土强度等级按立方体抗压强度标准值确定，C15-C80共14个等级"},
+    {"section_num": "4.2", "title": "钢筋材料", "summary": "钢筋强度标准值、设计值、弹性模量等参数"},
+    {"section_num": "6.3", "title": "柱", "summary": "轴心受压和偏心受压柱的承载力计算，长细比限制"},
+    {"section_num": "6.4", "title": "梁柱节点", "summary": "框架节点核心区受剪承载力计算和构造要求"},
+    {"section_num": "8.2", "title": "钢筋保护层", "summary": "保护层最小厚度根据环境类别和构件类型确定"},
+    {"section_num": "8.4", "title": "钢筋连接", "summary": "绑扎搭接、机械连接、焊接连接的构造要求"},
+    {"section_num": "9.1", "title": "现浇楼盖", "summary": "单向板、双向板的受力特点和配筋要求"}
+  ],
+  "key_requirements": [
+    {"section": "4.1.2", "title": "混凝土最低强度等级", "requirement": "素混凝土结构不应低于C15，钢筋混凝土结构不应低于C20，采用HRB400级钢筋时不应低于C25，预应力混凝土结构不应低于C40", "mandatory": true},
+    {"section": "8.2.1", "title": "钢筋保护层最小厚度", "requirement": "一类环境：板墙壳15mm，梁柱20mm，基础40mm；二a类环境：板墙壳20mm，梁柱25mm", "mandatory": true},
+    {"section": "8.5.1", "title": "纵向受力钢筋最小配筋率", "requirement": "受拉钢筋最小配筋率：0.2%和45ft/fy中的较大值；受压构件全部纵筋最小配筋率0.6%", "mandatory": true},
+    {"section": "9.1.1", "title": "楼板厚度", "requirement": "现浇单向板跨厚比不宜大于30，双向板不宜大于40；悬臂板跨厚比不宜大于12", "mandatory": false},
+    {"section": "6.3.7", "title": "柱箍筋加密区", "requirement": "柱端箍筋加密区长度不应小于柱截面长边尺寸、柱净高1/6和500mm中的最大值", "mandatory": true}
+  ]
+}

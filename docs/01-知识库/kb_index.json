@@ -1,0 +1,86 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-05-05",
+  "specs": [
+    {
+      "code": "DL/T 794-2012",
+      "name": "火力发电厂锅炉化学清洗导则",
+      "category": "锅炉",
+      "pages": 59,
+      "sections_count": 40,
+      "requirements_count": 20
+    },
+    {
+      "code": "GB 50204-2015",
+      "name": "混凝土结构工程施工质量验收规范",
+      "category": "混凝土",
+      "pages": 141,
+      "sections_count": 40,
+      "requirements_count": 0
+    },
+    {
+      "code": "GB 50661-2011",
+      "name": "钢结构焊接规范",
+      "category": "焊接",
+      "pages": 163,
+      "sections_count": 40,
+      "requirements_count": 0
+    },
+    {
+      "code": "GB/T 20801.1-2006",
+      "name": "压力管道规范 工业管道 第1部分：总则",
+      "category": "管道",
+      "pages": 3,
+      "sections_count": 25,
+      "requirements_count": 8
+    },
+    {
+      "code": "GB/T 20801.2-2006",
+      "name": "压力管道规范 工业管道 第2部分：材料",
+      "category": "管道",
+      "pages": 46,
+      "sections_count": 40,
+      "requirements_count": 20
+    },
+    {
+      "code": "GB/T 20801.3-2006",
+      "name": "压力管道规范 工业管道 第3部分：设计和计算",
+      "category": "管道",
+      "pages": 69,
+      "sections_count": 40,
+      "requirements_count": 3
+    },
+    {
+      "code": "GB/T 20801.4-2006",
+      "name": "压力管道规范 工业管道 第4部分：制作与安装",
+      "category": "管道",
+      "pages": 24,
+      "sections_count": 40,
+      "requirements_count": 20
+    },
+    {
+      "code": "GB/T 20801.5-2006",
+      "name": "压力管道规范 工业管道 第5部分：检验与试验",
+      "category": "管道",
+      "pages": 10,
+      "sections_count": 13,
+      "requirements_count": 8
+    },
+    {
+      "code": "JB/T 4730.2-2005",
+      "name": "承压设备无损检测 第2部分：射线检测",
+      "category": "无损检测",
+      "pages": 17,
+      "sections_count": 13,
+      "requirements_count": 5
+    },
+    {
+      "code": "TSG D7006-2020",
+      "name": "压力管道监督检验规则",
+      "category": "管道",
+      "pages": 42,
+      "sections_count": 14,
+      "requirements_count": 0
+    }
+  ]
+}

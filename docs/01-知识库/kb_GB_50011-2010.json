@@ -1,0 +1,22 @@
+{
+  "spec_code": "GB 50011-2010",
+  "spec_name": "建筑抗震设计规范",
+  "category": "结构",
+  "version": "2010版",
+  "summary": "建筑抗震设防分类、设防标准、场地选择、地基基础抗震、结构抗震计算等",
+  "sections": [
+    {"section_num": "3.1", "title": "抗震设防分类和设防标准", "summary": "建筑分为特殊设防、重点设防、标准设防、适度设防四类"},
+    {"section_num": "3.2", "title": "地震影响", "summary": "设计地震分组、设计基本地震加速度取值"},
+    {"section_num": "4.1", "title": "场地、地基和基础", "summary": "建筑场地类别划分、液化判别、地基抗震措施"},
+    {"section_num": "6.1", "title": "多层和高层钢筋混凝土房屋", "summary": "结构选型、抗震等级、框架结构、剪力墙结构、框架-剪力墙结构"},
+    {"section_num": "6.3", "title": "框架的基本抗震构造措施", "summary": "梁端箍筋加密、柱端箍筋加密、节点核心区配筋"},
+    {"section_num": "6.4", "title": "抗震墙的基本抗震构造措施", "summary": "抗震墙厚度、边缘构件、分布钢筋配筋率"}
+  ],
+  "key_requirements": [
+    {"section": "3.1.1", "title": "抗震设防类别", "requirement": "建筑工程分为特殊设防类（甲类）、重点设防类（乙类）、标准设防类（丙类）、适度设防类（丁类）", "mandatory": true},
+    {"section": "6.1.2", "title": "抗震等级", "requirement": "钢筋混凝土房屋应根据设防烈度、结构类型、房屋高度采用不同的抗震等级，分为一级、二级、三级、四级", "mandatory": true},
+    {"section": "6.3.3", "title": "梁端箍筋加密", "requirement": "梁端箍筋加密区长度不应小于2倍梁高和500mm中的较大值，加密区箍筋最大间距取h/4、6d、150mm中的最小值", "mandatory": true},
+    {"section": "6.3.7", "title": "柱端箍筋加密", "requirement": "柱端箍筋加密区长度不应小于柱截面长边尺寸、柱净高1/6和500mm中的最大值", "mandatory": true},
+    {"section": "6.4.3", "title": "抗震墙最小厚度", "requirement": "一、二级抗震墙底部加强部位墙厚不应小于200mm且不应小于层高或无支长度的1/16", "mandatory": true}
+  ]
+}

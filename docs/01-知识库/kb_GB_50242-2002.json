@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 50242-2002",
+  "spec_name": "建筑给水排水及采暖工程施工质量验收规范",
+  "category": "给排水",
+  "version": "2002版",
+  "summary": "建筑给水、排水、采暖工程的施工质量验收标准",
+  "sections": [
+    {"section_num": "4.1", "title": "室内给水系统", "summary": "管道安装、阀门、水表、卫生器具安装验收"},
+    {"section_num": "5.1", "title": "室内排水系统", "summary": "排水管道、通气管、检查口、清扫口安装验收"},
+    {"section_num": "8.1", "title": "室内采暖系统", "summary": "采暖管道、散热器、阀门安装验收"},
+    {"section_num": "9.1", "title": "室外给水管网", "summary": "室外给水管道、阀门井、消火栓安装验收"},
+    {"section_num": "10.1", "title": "室外排水管网", "summary": "室外排水管道、检查井、雨水口安装验收"}
+  ],
+  "key_requirements": [
+    {"section": "4.2.1", "title": "给水管道试压", "requirement": "室内给水管道水压试验：试验压力为工作压力的1.5倍，但不得小于0.6MPa；稳压10分钟，压力降不应大于0.02MPa", "mandatory": true},
+    {"section": "5.2.1", "title": "排水管道灌水试验", "requirement": "隐蔽或埋地的排水管道在隐蔽前必须做灌水试验，灌水高度不低于底层卫生器具的上边缘或底层地面高度，满水15分钟水面下降后，再灌满观察5分钟", "mandatory": true},
+    {"section": "4.4.1", "title": "卫生器具安装", "requirement": "卫生器具交工前应做满水和通水试验，满水后各连接件不渗不漏；通水试验给排水畅通", "mandatory": true},
+    {"section": "8.2.1", "title": "采暖管道试压", "requirement": "蒸汽、热水采暖系统：试验压力为顶点工作压力加0.1MPa，且顶点压力不应小于0.3MPa", "mandatory": true}
+  ]
+}
