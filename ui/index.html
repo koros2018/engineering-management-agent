@@ -19,13 +19,19 @@
       --warning: #d29922;
       --user-bubble: #1f6feb;
       --agent-bubble: #21262d;
+      --tech: #a371f7;
+      --safety: #f85149;
+      --market: #d29922;
+      --delivery: #3fb950;
+      --cost: #58a6ff;
+      --service: #8b949e;
     }
     body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
     #app { display: flex; height: 100vh; }
 
     /* ── 侧边栏 ── */
     .sidebar {
-      width: 220px;
+      width: 230px;
       background: var(--sidebar);
       border-right: 1px solid var(--border);
       display: flex;
@@ -33,9 +39,10 @@
       flex-shrink: 0;
     }
     .sidebar-header { padding: 16px; border-bottom: 1px solid var(--border); }
-    .sidebar-logo { font-size: 14px; font-weight: 700; color: var(--accent); }
+    .sidebar-logo { font-size: 15px; font-weight: 700; color: var(--accent); }
     .sidebar-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
     .sidebar-nav { flex: 1; padding: 8px; overflow-y: auto; }
+    .nav-section { font-size: 10px; color: var(--text-dim); padding: 8px 10px 4px; text-transform: uppercase; letter-spacing: 0.5px; }
     .nav-item {
       display: flex; align-items: center; gap: 8px;
       padding: 8px 10px; border-radius: 6px; cursor: pointer;
@@ -43,27 +50,37 @@
       transition: background 0.15s;
     }
     .nav-item:hover { background: var(--border); color: var(--text); }
-    .nav-item.active { background: var(--accent); color: #fff; }
-    .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); }
+    .nav-item.active { color: #fff; }
+    .nav-item.active.tech { background: var(--tech); }
+    .nav-item.active.safety { background: var(--safety); }
+    .nav-item.active.market { background: var(--market); }
+    .nav-item.active.delivery { background: var(--delivery); }
+    .nav-item.active.cost { background: var(--cost); }
+    .nav-item.active.service { background: var(--service); }
+    .nav-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .nav-dot.online { background: var(--accent2); }
     .nav-dot.offline { background: var(--text-dim); }
+    .nav-agent-icon { font-size: 14px; width: 20px; text-align: center; }
 
     /* ── 主区 ── */
     .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
     /* ── 顶部 ── */
     .topbar {
-      height: 48px; border-bottom: 1px solid var(--border);
+      height: 52px; border-bottom: 1px solid var(--border);
       display: flex; align-items: center; padding: 0 16px;
       gap: 12px; flex-shrink: 0;
     }
+    .topbar-icon { font-size: 18px; }
     .topbar-title { font-size: 14px; font-weight: 600; }
+    .topbar-desc { font-size: 11px; color: var(--text-dim); margin-left: auto; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .topbar-badge { font-size: 11px; background: var(--accent); color: #fff; padding: 2px 7px; border-radius: 10px; }
 
     /* ── 聊天区 ── */
-    .chat-area { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 16px; }
+    .chat-area { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; }
     .msg { display: flex; gap: 10px; max-width: 80%; }
     .msg.user { align-self: flex-end; flex-direction: row-reverse; }
-    .msg-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+    .msg-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
     .msg.agent .msg-avatar { background: var(--accent); color: #fff; }
     .msg.user .msg-avatar { background: var(--user-bubble); color: #fff; }
     .msg-bubble {
@@ -76,14 +93,48 @@
     .msg.user .msg-time { text-align: right; }
     .msg-loading { color: var(--text-dim); font-size: 13px; padding: 10px 14px; }
 
+    /* ── 欢迎卡片 ── */
+    .welcome-card {
+      background: var(--agent-bubble); border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; margin-bottom: 8px;
+    }
+    .welcome-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .welcome-desc { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; }
+    .welcome-tasks { display: flex; flex-wrap: wrap; gap: 6px; }
+    .task-chip {
+      background: var(--border); border-radius: 12px; padding: 4px 10px;
+      font-size: 11px; color: var(--text-dim); cursor: pointer;
+      transition: all 0.15s;
+    }
+    .task-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── 结果卡片 ── */
+    .result-card {
+      background: var(--agent-bubble); border: 1px solid var(--border); border-radius: 10px;
+      padding: 12px 14px; margin-top: 6px;
+    }
+    .result-card-header { font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .result-section { margin-bottom: 10px; }
+    .result-section:last-child { margin-bottom: 0; }
+    .result-label { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+    .result-tag { display: inline-block; font-size: 10px; background: var(--border); border-radius: 4px; padding: 2px 6px; margin: 2px; }
+    .result-tag.highlight { background: var(--accent); color: #fff; }
+    .result-tag.danger { background: var(--danger); color: #fff; }
+    .result-tag.warning { background: var(--warning); color: #000; }
+    .result-text { font-size: 13px; line-height: 1.7; }
+    .result-list { font-size: 12px; padding-left: 14px; }
+    .result-list li { margin-bottom: 3px; }
+    .result-json-toggle { font-size: 11px; color: var(--text-dim); cursor: pointer; margin-top: 8px; }
+    .result-json { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px; font-size: 10px; font-family: 'Courier New', monospace; max-height: 160px; overflow-y: auto; white-space: pre-wrap; color: var(--text-dim); margin-top: 6px; }
+
     /* ── 输入区 ── */
     .input-area { border-top: 1px solid var(--border); padding: 12px 16px; flex-shrink: 0; }
-    .file-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+    .file-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; flex-wrap: wrap; }
     .file-chip {
       display: flex; align-items: center; gap: 4px;
       background: var(--border); border-radius: 6px; padding: 4px 8px; font-size: 12px;
     }
-    .file-chip span { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-chip span { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .file-chip-del { cursor: pointer; color: var(--danger); font-size: 16px; line-height: 1; }
     .input-row { display: flex; gap: 8px; align-items: flex-end; }
     .input-box {
@@ -98,24 +149,6 @@
     }
     .send-btn:hover { opacity: 0.85; }
     .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .hint-row { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-    .hint-chip {
-      background: transparent; border: 1px solid var(--border); border-radius: 14px;
-      padding: 3px 10px; font-size: 12px; color: var(--text-dim); cursor: pointer;
-    }
-    .hint-chip:hover { border-color: var(--accent); color: var(--accent); }
-
-    /* ── Agent卡片 ── */
-    .agent-card { background: var(--agent-bubble); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
-    .agent-card-name { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 2px; }
-    .agent-card-desc { font-size: 11px; color: var(--text-dim); }
-    .agent-card-tasks { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
-
-    /* ── 结果面板 ── */
-    .result-section { margin-top: 8px; }
-    .result-tag { display: inline-block; font-size: 10px; background: var(--border); border-radius: 4px; padding: 2px 6px; margin-right: 4px; margin-bottom: 4px; }
-    .result-tag.highlight { background: var(--accent); color: #fff; }
-    .result-json { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px; font-size: 11px; font-family: 'Courier New', monospace; max-height: 200px; overflow-y: auto; white-space: pre-wrap; color: var(--text-dim); }
   </style>
 </head>
 <body>
@@ -126,68 +159,109 @@
       <div class="sidebar-sub">工程管理智能体 v1.0</div>
     </div>
     <div class="sidebar-nav">
-      <div class="nav-item active">
-        <div class="nav-dot"></div>
-        技术研发中心
-      </div>
-      <div class="nav-item" v-for="a in otherAgents" :key="a.id">
-        <div class="nav-dot offline"></div>
-        {{ a.name }}
+      <!-- Agent 列表 -->
+      <div class="nav-section">🤖 Agent 中心</div>
+      <div
+        v-for="agent in agents"
+        :key="agent.id"
+        :class="['nav-item', { active: currentAgent.id === agent.id }, agent.id]"
+        @click="switchAgent(agent)"
+      >
+        <div class="nav-dot" :class="agent.status"></div>
+        <span class="nav-agent-icon">{{ agent.icon }}</span>
+        <span>{{ agent.name }}</span>
       </div>
     </div>
   </div>
 
   <div class="main">
     <div class="topbar">
-      <span class="topbar-title">技术研发中心 (TechRdAgent)</span>
-      <span class="topbar-badge">v1.0.0-alpha.2</span>
+      <span class="topbar-icon">{{ currentAgent.icon }}</span>
+      <span class="topbar-title">{{ currentAgent.name }}</span>
+      <span class="topbar-desc">{{ currentAgent.description }}</span>
+      <span class="topbar-badge">v1.0.0</span>
     </div>
 
     <div class="chat-area" ref="chatArea">
       <!-- 欢迎消息 -->
-      <div class="msg agent" v-if="messages.length === 0">
-        <div class="msg-avatar">🤖</div>
-        <div>
-          <div class="msg-bubble">
-            <strong>工程管理智能体 · 技术研发中心</strong><br><br>
-            我负责图纸解析、类型识别、AI分析、工程量提取和设计优化。<br><br>
-            请上传图纸文件（DWG/DXF/PDF），或直接描述您的需求，我来帮您处理。
-          </div>
+      <div v-if="messages.length === 0" class="welcome-card">
+        <div class="welcome-title">{{ currentAgent.icon }} {{ currentAgent.name }}</div>
+        <div class="welcome-desc">{{ currentAgent.description }}</div>
+        <div class="welcome-tasks">
+          <div
+            v-for="task in currentAgent.tasks"
+            :key="task"
+            class="task-chip"
+            @click="input = task"
+          >{{ task }}</div>
         </div>
       </div>
 
       <!-- 消息列表 -->
       <div v-for="(msg, i) in messages" :key="i" :class="['msg', msg.role]">
-        <div class="msg-avatar">{{ msg.role === 'user' ? '👤' : '🤖' }}</div>
+        <div class="msg-avatar">{{ msg.role === 'user' ? '👤' : currentAgent.icon }}</div>
         <div>
           <div class="msg-bubble">
             <template v-if="msg.type === 'result'">
-              <div><strong>📊 分析结果</strong></div>
-              <div v-if="msg.data.drawing_type" style="margin-top:6px">
-                <span class="result-tag highlight">图纸类型：{{ msg.data.drawing_type }}</span>
-                <span class="result-tag">置信度：{{ (msg.data.type_confidence * 100).toFixed(0) }}%</span>
-              </div>
-              <div v-if="msg.data.quantities" style="margin-top:6px">
-                <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">📐 工程量</div>
-                <div v-for="q in (msg.data.quantities.quantities || [])" :key="q.name" style="font-size:12px">
-                  • {{ q.name }}：约 {{ q.estimated }} {{ q.unit }}（{{ q.note }}）
+              <!-- 分析结果（TechRdAgent） -->
+              <div v-if="msg.data.drawing_type">
+                <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px">📊 图纸分析结果</div>
+                <div class="result-section">
+                  <div class="result-label">图纸类型</div>
+                  <span class="result-tag highlight">{{ msg.data.drawing_type }}</span>
+                  <span class="result-tag">置信度：{{ ((msg.data.type_confidence || 0.8) * 100).toFixed(0) }}%</span>
                 </div>
-              </div>
-              <div v-if="msg.data.optimizations" style="margin-top:6px">
-                <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">💡 优化建议</div>
-                <div v-for="(s, si) in (msg.data.optimizations.suggestions || [])" :key="si" style="font-size:12px;margin-bottom:4px">
-                  <span :style="'color:' + (s.priority==='high'?'var(--danger)':'var(--text)')">• [{{ s.type }}]</span> {{ s.recommendation }}
+                <div v-if="msg.data.quantities && msg.data.quantities.quantities" class="result-section">
+                  <div class="result-label">📐 工程量清单</div>
+                  <div v-for="q in msg.data.quantities.quantities.slice(0,5)" :key="q.name" style="font-size:12px">
+                    • {{ q.name }}：约 {{ q.estimated }} {{ q.unit }}
+                  </div>
                 </div>
+                <div v-if="msg.data.optimizations && msg.data.optimizations.suggestions" class="result-section">
+                  <div class="result-label">💡 优化建议</div>
+                  <div v-for="(s, si) in msg.data.optimizations.suggestions.slice(0,3)" :key="si" style="font-size:12px;margin-bottom:3px">
+                    <span :style="'color:' + (s.priority==='high'?'var(--danger)':'var(--text)')">• [{{ s.type }}]</span> {{ s.recommendation }}
+                  </div>
+                </div>
+                <div v-if="msg.data.analysis && msg.data.analysis.analysis" class="result-section">
+                  <div class="result-label">📝 AI分析</div>
+                  <div class="result-text">{{ msg.data.analysis.analysis }}</div>
+                </div>
+                <div class="result-json-toggle" @click="msg.showRaw = !msg.showRaw">
+                  {{ msg.showRaw ? '▲ 收起原始数据' : '▼ 查看原始数据' }}
+                </div>
+                <div v-if="msg.showRaw" class="result-json">{{ JSON.stringify(msg.data, null, 2) }}</div>
               </div>
-              <div v-if="msg.data.analysis && msg.data.analysis.analysis" style="margin-top:6px;font-size:13px">
-                <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">📝 AI分析</div>
-                {{ msg.data.analysis.analysis }}
+              <!-- 通用结果 -->
+              <div v-else-if="msg.data.response">
+                <div class="result-text">{{ msg.data.response }}</div>
               </div>
-              <div style="margin-top:8px">
-                <details>
-                  <summary style="cursor:pointer;font-size:11px;color:var(--text-dim)">查看原始数据</summary>
-                  <div class="result-json" style="margin-top:6px">{{ JSON.stringify(msg.data, null, 2) }}</div>
-                </details>
+              <div v-else-if="msg.data.document_type">
+                <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:6px">📄 {{ msg.data.document_type }}文档</div>
+                <div v-if="msg.data.content" class="result-text" style="font-size:12px;white-space:pre-wrap;max-height:300px;overflow-y:auto">{{ msg.data.content }}</div>
+                <div v-if="msg.data.summary" style="font-size:11px;color:var(--text-dim);margin-top:6px">{{ msg.data.summary }}</div>
+              </div>
+              <div v-else-if="msg.data.review_type">
+                <div style="font-size:12px;font-weight:600;color:var(--danger);margin-bottom:6px">🔍 {{ msg.data.review_type === 'fire_code' ? '消防合规' : msg.data.review_type === 'structural' ? '结构安全' : '国标审查' }}报告</div>
+                <div v-if="msg.data.issues_count" class="result-section">
+                  <span class="result-tag danger">严重 {{ msg.data.issues_by_severity?.严重 || 0 }}</span>
+                  <span class="result-tag warning">警告 {{ msg.data.issues_by_severity?.警告 || 0 }}</span>
+                  <span class="result-tag">建议 {{ msg.data.issues_by_severity?.建议 || 0 }}</span>
+                </div>
+                <div v-if="msg.data.issues && msg.data.issues.length" class="result-section">
+                  <div class="result-list">
+                    <li v-for="issue in msg.data.issues.slice(0,5)" :key="issue.rule_id || $index">
+                      <span style="color:var(--danger)">{{ issue.severity || '警告' }}</span> {{ issue.description || issue.rule_id }}
+                    </li>
+                  </div>
+                </div>
+                <div v-if="msg.data.summary" style="font-size:12px;color:var(--text-dim)">{{ msg.data.summary }}</div>
+              </div>
+              <div v-else-if="msg.data.success === false" style="color:var(--danger)">
+                ❌ {{ msg.data.error || msg.data.summary || '处理失败' }}
+              </div>
+              <div v-else>
+                <div class="result-text">{{ JSON.stringify(msg.data, null, 2).slice(0,500) }}</div>
               </div>
             </template>
             <template v-else>{{ msg.content }}</template>
@@ -198,18 +272,14 @@
 
       <!-- 加载中 -->
       <div class="msg agent" v-if="loading">
-        <div class="msg-avatar">🤖</div>
+        <div class="msg-avatar">{{ currentAgent.icon }}</div>
         <div>
-          <div class="msg-bubble msg-loading">⏳ 正在分析图纸，请稍候...</div>
+          <div class="msg-bubble msg-loading">⏳ {{ currentAgent.name }}处理中，请稍候...</div>
         </div>
       </div>
     </div>
 
     <div class="input-area">
-      <!-- 快捷提示 -->
-      <div class="hint-row" v-if="messages.length === 0">
-        <div class="hint-chip" v-for="h in hints" :key="h" @click="input = h">{{ h }}</div>
-      </div>
       <!-- 文件 -->
       <div class="file-row" v-if="selectedFile">
         <div class="file-chip">
@@ -227,14 +297,14 @@
         <textarea
           class="input-box"
           v-model="input"
-          :placeholder="selectedFile ? '已选择文件，可以输入说明...' : '输入您的需求，或上传图纸文件...'"
+          :placeholder="`向 ${currentAgent.name} 描述您的需求...`"
           rows="1"
           @keydown.enter.exact.prevent="send"
           @input="autoGrow"
           ref="inputBox"
         ></textarea>
         <button class="send-btn" :disabled="loading || (!input.trim() && !selectedFile)" @click="send">
-          {{ loading ? '分析中' : '发送' }}
+          {{ loading ? '处理中' : '发送' }}
         </button>
       </div>
     </div>
@@ -254,22 +324,19 @@ createApp({
     const chatArea = ref(null);
     const inputBox = ref(null);
 
-    const otherAgents = [
-      { id: 'safety_compliance', name: '安全与合规中心' },
-      { id: 'market_sales', name: '市场与销售中心' },
-      { id: 'engineering_delivery', name: '工程交付中心' },
-      { id: 'cost_benefit', name: '成本效益中心' },
-      { id: 'customer_service', name: '客户服务中心' },
+    const agents = [
+      { id: 'tech_rd', icon: '🔧', name: '技术研发中心', description: '图纸解析/类型识别/AI分析/工程量/设计优化', status: 'online', tasks: ['上传图纸，帮我分析这张图纸', '上传图纸，识别图纸类型', '上传图纸，提取工程量', '上传图纸，生成优化建议', '上传图纸，进行合规审图'] },
+      { id: 'safety_compliance', icon: '🔒', name: '安全与合规中心', description: '消防合规/结构安全/施工安全/法规审核', status: 'online', tasks: ['帮我审查消防合规性', '进行结构安全审查', '检查图纸是否符合国标规范', '上传图纸，执行完整审图'] },
+      { id: 'engineering_delivery', icon: '🏗️', name: '工程交付中心', description: '项目计划/施工方案/进度追踪/竣工资料', status: 'online', tasks: ['生成SOP标准操作程序', '生成MOP维护操作程序', '生成EOP紧急操作程序', '生成LCC生命周期成本', '生成竣工文档'] },
+      { id: 'cost_benefit', icon: '💰', name: '成本效益中心', description: '工程量计算/预算生成/变更签证/经济效益评估', status: 'online', tasks: ['从图纸生成工程预算', '提取工程量清单', '进行成本对比分析', '评估投资回报'] },
+      { id: 'market_sales', icon: '📡', name: '市场与销售中心', description: '市场分析/商务方案/投标文件/客户需求挖掘', status: 'online', tasks: ['介绍EMA定价方案', '如何进行投标文件辅助', '市场分析与需求挖掘'] },
+      { id: 'customer_service', icon: '🤝', name: '客户服务中心', description: 'FAQ/工单管理/回访计划/培训材料', status: 'online', tasks: ['常见问题FAQ', '生成培训材料', '客户反馈分析'] },
     ];
 
-    const hints = [
-      '上传图纸，帮我分析这张图纸',
-      '上传图纸，识别图纸类型',
-      '上传图纸，提取工程量',
-      '上传图纸，生成优化建议',
-    ];
+    const currentAgent = ref(agents[0]);
 
     function formatSize(bytes) {
+      if (!bytes) return '';
       if (bytes < 1024) return bytes + 'B';
       if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + 'KB';
       return (bytes / 1024 / 1024).toFixed(1) + 'MB';
@@ -286,6 +353,13 @@ createApp({
       });
     }
 
+    function switchAgent(agent) {
+      currentAgent.value = agent;
+      messages.value = [];
+      input.value = '';
+      selectedFile.value = null;
+    }
+
     function onFileSelect(e) {
       selectedFile.value = e.target.files[0] || null;
     }
@@ -300,7 +374,7 @@ createApp({
       const text = input.value.trim();
       if (loading.value) return;
 
-      // 用户消息
+      const agentId = currentAgent.value.id;
       messages.value.push({ role: 'user', content: text || (selectedFile.value ? `上传了文件: ${selectedFile.value.name}` : ''), time: now() });
       input.value = '';
       if (inputBox.value) { inputBox.value.style.height = 'auto'; }
@@ -312,7 +386,7 @@ createApp({
 
       try {
         if (selectedFile.value) {
-          // 文件上传模式
+          // 文件上传
           const formData = new FormData();
           formData.append('file', selectedFile.value);
           formData.append('user_id', 'web_user');
@@ -326,32 +400,37 @@ createApp({
           const data = await resp.json();
 
           messages.value.push({
-            role: 'agent',
-            type: 'result',
+            role: 'agent', type: 'result',
             data: data.output || data,
-            time: now()
+            time: now(), showRaw: false
           });
           selectedFile.value = null;
         } else {
-          // 文字模式 - 调用chat接口
-          const resp = await fetch(`${API_BASE}/api/v1/agent/chat`, {
+          // 文字消息 - 发给 main chat 接口
+          const resp = await fetch(`${API_BASE}/api/v1/main/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               message: text,
-              task_type: 'full_analysis',
-              user_id: 'web_user'
+              user_id: 'web_user',
+              task_type: currentAgent.value.id
             })
           });
 
           if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           const data = await resp.json();
 
+          // 优先用 response_text，否则用 output
+          let content = data.response_text;
+          if (!content && data.output) {
+            if (typeof data.output === 'string') content = data.output;
+            else content = data.output;
+          }
+
           messages.value.push({
-            role: 'agent',
-            type: 'result',
-            data: data.output || data,
-            time: now()
+            role: 'agent', type: 'result',
+            data: data.output || { response: content || JSON.stringify(data).slice(0,200) },
+            time: now(), showRaw: false
           });
         }
       } catch (err) {
@@ -368,7 +447,10 @@ createApp({
 
     onMounted(() => scrollBottom());
 
-    return { messages, input, loading, selectedFile, chatArea, inputBox, otherAgents, hints, formatSize, onFileSelect, autoGrow, send };
+    return {
+      messages, input, loading, selectedFile, chatArea, inputBox,
+      agents, currentAgent, formatSize, switchAgent, onFileSelect, autoGrow, send
+    };
   }
 }).mount('#app');
 </script>
