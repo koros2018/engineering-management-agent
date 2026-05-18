@@ -37,11 +37,27 @@ else
 fi
 
 # 启动UI静态文件服务（端口5189，从项目根目录serve）
-if curl -s http://127.0.0.1:5189/health > /dev/null 2>&1; then
+if curl -s http://127.0.0.1:5189/ui/index.html > /dev/null 2>&1; then
     echo "✅ UI 服务已在运行 (端口 5189)"
 else
     echo "🚀 启动 UI 文件服务 (端口 5189)..."
-    python3 -m http.server 5189 --directory . > /dev/null 2>&1 &
+    cat > /tmp/ema_ui_serve.py << 'PYEOF'
+import http.server, socketserver, shutil, os, sys
+ROOT = '/mnt/d/OpenClawDataworkspace/Projects/engineering-management-agent'
+os.chdir(ROOT)
+socketserver.TCPServer.allow_reuse_address = True
+class H(http.server.SimpleHTTPRequestHandler):
+    def log_message(self,*a): pass
+    def copyfile(self,s,o):
+        try: shutil.copyfileobj(s,o)
+        except: pass
+    def translate_path(self,path):
+        if path.startswith('/ui'): rel=path[4:]
+        else: rel=path
+        if not rel or rel=='/': rel='/index.html'
+        return os.path.join(ROOT,'ui',rel.lstrip('/'))
+PYEOF
+    nohup python3 /tmp/ema_ui_serve.py > /dev/null 2>&1 &
     UI_PID=$!
     echo "   进程 PID: $UI_PID"
     sleep 2
