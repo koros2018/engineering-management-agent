@@ -494,7 +494,20 @@ class TechRdAgent(BaseAgent):
         context = task.context
 
         try:
-            if task_type == 'full_analysis':
+            if task_type == 'chat':
+                # 无图纸时的通用对话
+                return AgentResult(
+                    task_id=task.task_id,
+                    agent_id=self.AGENT_ID,
+                    status='success',
+                    confidence=0.95,
+                    output={
+                        'response_text': '🔧 技术研发中心负责图纸解析和 AI 分析。\n\n我可以帮您：\n• 上传 DWG/DXF/PDF 图纸进行解析\n• 识别图纸类型（建筑/结构/机电等）\n• 提取工程量清单\n• 生成优化建议\n• 执行合规审图\n\n请上传图纸文件，或告诉我您需要的具体操作。',
+                        'agent_id': self.AGENT_ID,
+                    },
+                    execution_time=(datetime.now() - start_time).total_seconds(),
+                )
+            elif task_type == 'full_analysis':
                 return await self._full_analysis(params, context, start_time)
             elif task_type in self.TASK_TO_TOOLS:
                 tool_name = self.TASK_TO_TOOLS[task_type]

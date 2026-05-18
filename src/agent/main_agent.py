@@ -54,8 +54,22 @@ class EngineeringManagementAgent(BaseAgent):
         self.orchestrator = AgentOrchestrator()
         self.result_compiler = ResultCompiler()
 
+        # Memory 层（懒加载，避免 ChromaDB 下载阻塞启动）
+        self._chroma = None
+
         # 初始化所有 Sub-Agent
         self._init_sub_agents()
+
+    @property
+    def _chroma_store(self):
+        """懒加载 ChromaDBStore，避免启动时下载 ONNX 模型阻塞"""
+        if self._chroma is None:
+            try:
+                from memory import get_chroma_store
+                self._chroma = get_chroma_store()
+            except Exception:
+                self._chroma = None
+        return self._chroma
 
         # 注册工具
         self.register_tool('classify_intent', self._wrap(self._classify_intent))
@@ -147,11 +161,13 @@ class EngineeringManagementAgent(BaseAgent):
         1. 意图分类
         2. 任务规划（多步则并行/串行调度）
         3. 结果整合
-        4. 返回
+        4. 存储对话历史到 ChromaDB
+        5. 返回
         """
         start_time = datetime.now()
         message = params.get('message', '')
         file_path = params.get('file_path')
+        session_id = context.get('session_id') or context.get('user_id', 'default')
 
         # Step 1: 意图分类
         intent = await self.intent_classifier.classify(message)
@@ -185,29 +201,9 @@ class EngineeringManagementAgent(BaseAgent):
             compiled = await self.result_compiler.compile(result)
 
         elif plan.get('execution_mode') == 'multi':
-            # 多步任务：按计划调度
+            # 多步任务：并行调度多个 Agent
             steps = plan.get('steps', [])
-            results = []
-            for step in steps:
-                agent_id = step.get('agent_id')
-                task_type = step.get('task_type')
-                task_params = step.get('params', {})
-
-                agent = self.sub_agents.get(agent_id)
-                if not agent:
-                    continue
-
-                task = Task(
-                    task_id=str(uuid.uuid4()),
-                    agent_id=agent_id,
-                    task_type=task_type,
-                    params={**task_params, 'message': message},
-                    context={**context, 'message': message}
-                )
-
-                step_result = await agent.run_with_retry(task)
-                results.append(step_result)
-
+            results = await self.orchestrator.dispatch_parallel(steps, self.sub_agents, {**context, 'message': message})
             compiled = await self.result_compiler.compile_multi(results)
         else:
             return {
@@ -217,6 +213,26 @@ class EngineeringManagementAgent(BaseAgent):
             }
 
         elapsed = (datetime.now() - start_time).total_seconds()
+
+        # Step 4: 存储对话历史到 ChromaDB（异步，不阻塞返回）
+        try:
+            chroma = self._chroma_store
+            if chroma:
+                session_id_copy = session_id
+                intent_data = {'agent_id': intent.get('agent_id', 'main'), 'intent': intent.get('intent'), 'confidence': intent.get('confidence', 0)}
+                response_text = compiled.get('text', '') or ''
+                # 在后台线程存储，不阻塞响应
+                import threading
+                def _store():
+                    try:
+                        chroma.add_conversation(session_id=session_id_copy, role='user', content=message, agent_id=intent_data['agent_id'], metadata={'intent': intent_data.get('intent'), 'confidence': intent_data.get('confidence', 0)})
+                        if response_text:
+                            chroma.add_conversation(session_id=session_id_copy, role='agent', content=response_text[:500], agent_id=intent_data['agent_id'], metadata={'plan': plan.get('intent_key'), 'confidence': compiled.get('confidence', 0)})
+                    except Exception:
+                        pass
+                threading.Thread(target=_store, daemon=True).start()
+        except Exception:
+            pass  # 不因记忆存储失败影响主流程
 
         return {
             'success': True,

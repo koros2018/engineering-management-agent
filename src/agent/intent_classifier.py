@@ -147,8 +147,13 @@ class IntentClassifier:
 
     def _infer_task_type(self, message: str, agent_id: str) -> str:
         """根据消息内容推断任务类型"""
-        # tech_rd 任务类型判断
         if agent_id == 'tech_rd':
+            # 无文件时，greeting/chat 类返回 chat
+            file_keywords = ['图纸', 'dwg', 'dxf', 'pdf', '上传', '文件', 'cad', '蓝图']
+            has_file = any(k in message for k in file_keywords)
+            if not has_file:
+                if any(k in message for k in ['你好', 'hi', 'hello', '介绍', '你是谁', '帮助', 'help', '功能', '能力', '做什么', '能']):
+                    return 'chat'
             if any(k in message for k in ['解析', '解析图纸', '读取']):
                 return 'parse'
             elif any(k in message for k in ['识别', '分类', '类型']):
@@ -162,7 +167,7 @@ class IntentClassifier:
             elif any(k in message for k in ['分析', '完整分析', '全面分析']):
                 return 'full_analysis'
             else:
-                return 'full_analysis'  # 默认完整分析
+                return 'chat'  # 默认 chat（无需图纸）
 
         elif agent_id == 'safety_compliance':
             if any(k in message for k in ['消防', '防火', '疏散']):
