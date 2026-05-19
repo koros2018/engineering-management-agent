@@ -111,11 +111,23 @@ app.add_middleware(
         "http://localhost:5189",
         "http://127.0.0.1:5188",
         "http://localhost:5188",
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    """启动时初始化Boss账号"""
+    try:
+        from auth_extended import init_boss_account
+        init_boss_account()
+    except Exception as e:
+        print(f"⚠️ Boss账号初始化跳过: {e}")
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -141,7 +153,13 @@ async def health():
 
 @app.post("/api/v1/auth/register")
 async def auth_register(username: str = Form(...), password: str = Form(...), email: str = Form(""), tenant_name: str = Form(None)):
-    """用户注册 - 自动创建个人租户（企业空间）"""
+    """用户注册 - 密码强度检查 + 用户名验证"""
+    from auth_extended import validate_username, validate_password_strength
+    username_err = validate_username(username)
+    if username_err:
+        raise HTTPException(status_code=400, detail=username_err)
+    if not validate_password_strength(password):
+        raise HTTPException(status_code=400, detail="密码需至少8位，含大小写字母和数字")
     try:
         user = register_user(username, password, email, tenant_name)
         return {"success": True, "user": user}
@@ -150,13 +168,56 @@ async def auth_register(username: str = Form(...), password: str = Form(...), em
 
 
 @app.post("/api/v1/auth/login")
-async def auth_login(username: str = Form(...), password: str = Form(...)):
-    """用户登录 - 返回 JWT access_token + refresh_token"""
+async def auth_login(username: str = Form(...), password: str = Form(...), admin_password: str = Form(None)):
+    """用户登录 - 含Boss双密码 + 登录限流"""
+    from auth_extended import check_login_attempt, reset_login_attempts, boss_login
+    client_ip = "127.0.0.1"
+    check = check_login_attempt(client_ip, username)
+    if not check["allowed"]:
+        raise HTTPException(status_code=429, detail=check["message"])
     try:
-        user = login_user(username, password)
-        return {"success": True, "user": user}
+        result = boss_login(username, password, admin_password)
+        if not result.get("success"):
+            raise HTTPException(status_code=401, detail=result.get("error", "登录失败"))
+        reset_login_attempts(client_ip, username)
+        return {"success": True, **result}
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
+
+
+@app.post("/api/v1/auth/wechat-qr")
+async def wechat_qr():
+    """微信扫码登录二维码"""
+    from auth_extended import generate_wechat_qr
+    return {"success": True, "qr": generate_wechat_qr()}
+
+
+@app.get("/api/v1/auth/wechat-callback")
+async def wechat_login(code: str = "", state: str = ""):
+    """微信扫码登录回调"""
+    from auth_extended import wechat_callback
+    result = wechat_callback(code, state)
+    return {"success": True, **result} if result.get("success") else {"success": False, "error": result.get("error", "unknown")}
+
+
+@app.post("/api/v1/auth/forgot-password")
+async def forgot_password(username: str = Form(...), email: str = Form(...)):
+    """密码找回"""
+    from auth_extended import request_password_reset
+    result = request_password_reset(username, email)
+    if result.get("success"):
+        return {"success": True, "message": result["message"]}
+    raise HTTPException(status_code=400, detail=result.get("message", "请求失败"))
+
+
+@app.post("/api/v1/auth/reset-password")
+async def reset_pw(token: str = Form(...), new_password: str = Form(...)):
+    """重置密码"""
+    from auth_extended import reset_password
+    result = reset_password(token, new_password)
+    if result.get("success"):
+        return {"success": True, "message": result["message"]}
+    raise HTTPException(status_code=400, detail=result.get("message", "重置失败"))
 
 
 @app.get("/api/v1/auth/me")

@@ -7,5 +7,14 @@
     "salt": "8c6345300ff97d8e0f86acf153845f3c",
     "created_at": "2026-05-18T18:12:20.888738",
     "status": "active"
+  },
+  "user_boss_ke": {
+    "user_id": "user_boss_ke",
+    "username": "boss_ke",
+    "email": "boss@ema.local",
+    "password_hash": "8a2c21020e1a4aeed32d6e956aec5711ef1fe9fb5859ea9e54698333d982beb3",
+    "salt": "e095eb309b165d50575e1aa5fc762930",
+    "created_at": "2026-05-19T15:17:33.362778",
+    "status": "active"
   }
 }

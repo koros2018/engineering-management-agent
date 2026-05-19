@@ -4,5 +4,11 @@
     "tenant_id": "tenant_876bd457cf4a",
     "role": "tenant_admin",
     "joined_at": "2026-05-18T18:12:20.896667"
+  },
+  "user_boss_ke": {
+    "user_id": "user_boss_ke",
+    "tenant_id": "tenant_boss",
+    "role": "super_admin",
+    "joined_at": "2026-05-19T15:17:33.390884"
   }
 }

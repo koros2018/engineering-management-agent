@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>EMA 登录 - 工程管理智能体</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh;display:flex;font-family:-apple-system,'Segoe UI',sans-serif}
+.login-wrap{max-width:420px;width:100%;margin:auto;padding:0 16px}
+.login-card{background:#141b23;border:1px solid #1e2a3a;border-radius:16px;padding:36px 32px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.logo{text-align:center;margin-bottom:28px}.logo-icon{font-size:48px;margin-bottom:8px}
+.logo-text{font-size:22px;font-weight:700;color:#e2e8f0}.logo-sub{font-size:12px;color:#64748b;margin-top:4px}
+.tabs{display:flex;border-bottom:1px solid #1e2a3a;margin-bottom:20px}
+.tab{flex:1;padding:10px 0;text-align:center;cursor:pointer;font-size:13px;color:#64748b;border-bottom:2px solid transparent;transition:all .15s}
+.tab.active{color:#3b82f6;border-bottom-color:#3b82f6}
+.fg{margin-bottom:16px}.fg label{display:block;font-size:11px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.fg input{width:100%;padding:10px 12px;background:#0d1117;border:1px solid #1e2a3a;border-radius:8px;font-size:14px;color:#e2e8f0;outline:none;transition:border .15s}
+.fg input:focus{border-color:#3b82f6}.fg input::placeholder{color:#3b82f6}
+.btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-primary{background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;margin-top:8px}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1px solid #3b82f6;color:#3b82f6;margin-top:12px}.btn-outline:hover{background:rgba(59,130,246,.1)}
+.links{display:flex;justify-content:space-between;font-size:11px;margin-top:14px}
+.links a{color:#64748b;text-decoration:none;cursor:pointer}.links a:hover{color:#3b82f6}
+.wechat-section{text-align:center;padding:16px 0;border-top:1px solid #1e2a3a;margin-top:16px}
+.wechat-section .hint{font-size:11px;color:#64748b;margin-bottom:10px}
+.qr-placeholder{width:140px;height:140px;margin:0 auto;border:2px dashed #1e2a3a;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:60px;color:#3b82f6;cursor:pointer;transition:all .15s}
+.qr-placeholder:hover{border-color:#3b82f6;background:rgba(59,130,246,.05)}
+.msg{font-size:12px;padding:8px 0;text-align:center}.msg.error{color:#ef4444}.msg.success{color:#22c55e}.msg.info{color:#3b82f6}
+.admin-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:#64748b;margin-bottom:12px;cursor:pointer}
+.admin-toggle input{margin:0}
+.reset-flow .back-link{font-size:12px;color:#3b82f6;cursor:pointer;margin-top:12px}
+@media(max-width:480px){.login-card{padding:24px 20px}}
+</style></head>
+<body>
+<div class="login-wrap"><div class="login-card" id="card">
+  <div class="logo"><div class="logo-icon">🤖</div><div class="logo-text">EMA</div><div class="logo-sub">工程管理智能体</div></div>
+
+  <!-- 正常登录 -->
+  <template id="login-form">
+    <div class="tabs"><div class="tab active">账号登录</div></div>
+    <div class="fg"><label>用户名</label><input id="login-user" type="text" placeholder="输入用户名" autocomplete="username"></div>
+    <div class="fg"><label>密码</label><input id="login-pw" type="password" placeholder="输入密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="fg" id="admin-pw-fg" style="display:none"><label>👑 管理后台密码</label><input id="admin-pw" type="password" placeholder="Boss管理后台密码" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="admin-toggle" id="boss-toggle" style="display:none" onclick="toggleAdminPw()"><input type="checkbox" id="cb-admin"> Boss模式（管理后台密码）</div>
+    <div id="msg-login" class="msg"></div>
+    <button class="btn btn-primary" onclick="doLogin()">登 录</button>
+    <div class="links"><a onclick="showRegister()">注册账号</a><a onclick="showForgot()">忘记密码</a></div>
+    <div class="wechat-section"><div class="hint">或使用微信扫码登录</div><div class="qr-placeholder" onclick="doWechat()" title="点击模拟微信扫码">📱</div><div id="msg-wechat" class="msg" style="font-size:10px"></div></div>
+  </template>
+
+  <!-- 注册 -->
+  <template id="register-form" style="display:none">
+    <div class="tabs"><div class="tab active">注册账号</div></div>
+    <div class="fg"><label>用户名</label><input id="reg-user" type="text" placeholder="至少3位，字母数字下划线"></div>
+    <div class="fg"><label>邮箱</label><input id="reg-email" type="email" placeholder="用于密码找回"></div>
+    <div class="fg"><label>密码</label><input id="reg-pw" type="password" placeholder="至少8位，含大小写字母和数字"></div>
+    <div class="fg"><label>确认密码</label><input id="reg-pw2" type="password" placeholder="再次输入密码"></div>
+    <div id="msg-reg" class="msg"></div>
+    <button class="btn btn-primary" onclick="doRegister()">注 册</button>
+    <div class="links"><a onclick="showLogin()">← 返回登录</a></div>
+  </template>
+
+  <!-- 忘记密码 -->
+  <template id="forgot-form" style="display:none">
+    <div class="tabs"><div class="tab active">找回密码</div></div>
+    <div id="forgot-step1">
+      <div class="fg"><label>用户名</label><input id="fp-user" type="text" placeholder="输入用户名"></div>
+      <div class="fg"><label>注册邮箱</label><input id="fp-email" type="email" placeholder="输入注册时使用的邮箱"></div>
+      <div id="msg-fp" class="msg"></div>
+      <button class="btn btn-primary" onclick="doForgot()">发送重置链接</button>
+    </div>
+    <div id="forgot-step2" style="display:none">
+      <div class="fg"><label>重置码</label><input id="fp-token" type="text" placeholder="收到的重置码"></div>
+      <div class="fg"><label>新密码</label><input id="fp-newpw" type="password" placeholder="至少8位，含大小写字母和数字"></div>
+      <div class="fg"><label>确认新密码</label><input id="fp-newpw2" type="password" placeholder="再次输入新密码"></div>
+      <div id="msg-fp2" class="msg"></div>
+      <button class="btn btn-primary" onclick="doReset()">重置密码</button>
+    </div>
+    <div class="links"><a onclick="showLogin()">← 返回登录</a></div>
+  </template>
+
+  <!-- 登录成功 -->
+  <template id="success-view" style="display:none">
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:12px">✅</div>
+      <div style="font-size:16px;font-weight:600;color:#e2e8f0;margin-bottom:4px">登录成功</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:16px" id="success-msg">欢迎回来</div>
+      <button class="btn btn-primary" onclick="goToApp()">进入 EMA</button>
+      <button class="btn btn-outline" onclick="goToAdmin()" id="btn-admin" style="display:none">👑 Boss后台</button>
+    </div>
+  </template>
+</div></div>
+
+<script>
+var mode='login',isBoss=false,accessToken='',userInfo={},wechatState='';
+function $(id){return document.getElementById(id)}
+function msg(id,text,cls){var e=$(id);e.textContent=text;e.className='msg '+cls}
+
+function showLogin(){mode='login';render()}
+function showRegister(){mode='register';render()}
+function showForgot(){mode='forgot';render();$('forgot-step1').style.display='block';$('forgot-step2').style.display='none'}
+function showSuccess(){
+  mode='success';render();
+  if(isBoss){$('btn-admin').style.display='block';$('#success-msg').textContent='Boss | '+userInfo.tenant_name}
+  else{$('#success-msg').textContent=userInfo.tenant_name||userInfo.username}
+}
+
+function toggleAdminPw(){
+  var fg=document.getElementById('admin-pw-fg');
+  fg.style.display=fg.style.display==='none'?'block':'none';
+}
+
+function render(){
+  var card=$('card');
+  var templates=document.querySelectorAll('template');
+  templates.forEach(function(t){t.style.display='none'});
+  if(mode==='login') document.getElementById('login-form').style.display='block';
+  else if(mode==='register') document.getElementById('register-form').style.display='block';
+  else if(mode==='forgot') document.getElementById('forgot-form').style.display='block';
+  else if(mode==='success') document.getElementById('success-view').style.display='block';
+}
+
+async function doLogin(){
+  var u=$('login-user').value.trim(),p=$('login-pw').value.trim();
+  if(!u||!p){msg('msg-login','请输入用户名和密码','error');return}
+  msg('msg-login','登录中...','info');
+  var adminPw=$('admin-pw').value.trim()||null;
+  var body='username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p);
+  if(adminPw) body+='&admin_password='+encodeURIComponent(adminPw);
+  try{
+    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body});
+    var d=await r.json();
+    if(d.success){
+      accessToken=d.access_token;userInfo=d.user||{};
+      if(d.is_boss&&d.require_admin_pw&&!adminPw){
+        document.getElementById('boss-toggle').style.display='flex';
+        msg('msg-login','请输入管理后台密码','info');return;
+      }
+      isBoss=d.is_boss&&d.admin_verified;showSuccess();
+    }else{
+      msg('msg-login',d.detail||'登录失败','error');
+    }
+  }catch(e){msg('msg-login','网络错误','error')}
+}
+
+async function doRegister(){
+  var u=$('reg-user').value.trim(),e=$('reg-email').value.trim(),p=$('reg-pw').value,p2=$('reg-pw2').value;
+  if(!u||!e||!p){msg('msg-reg','请填写所有字段','error');return}
+  if(p!==p2){msg('msg-reg','两次密码不一致','error');return}
+  if(p.length<8){msg('msg-reg','密码至少8位','error');return}
+  if(!/[a-z]/.test(p)||!/[A-Z]/.test(p)||!/\d/.test(p)){msg('msg-reg','密码需含大小写字母和数字','error');return}
+  msg('msg-reg','注册中...','info');
+  try{
+    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/register',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p)+'&email='+encodeURIComponent(e)});
+    var d=await r.json();
+    if(d.success){
+      accessToken=d.user.access_token;userInfo=d.user;isBoss=false;
+      msg('msg-reg','注册成功！','success');setTimeout(showSuccess,500);
+    }else{msg('msg-reg',d.detail||'注册失败','error')}
+  }catch(e){msg('msg-reg','网络错误','error')}
+}
+
+async function doForgot(){
+  var u=$('fp-user').value.trim(),e=$('fp-email').value.trim();
+  if(!u||!e){msg('msg-fp','请输入用户名和邮箱','error');return}
+  msg('msg-fp','发送中...','info');
+  try{
+    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'username='+encodeURIComponent(u)+'&email='+encodeURIComponent(e)});
+    var d=await r.json();
+    if(d.success){
+      msg('msg-fp',d.message,'success');$('fp-token').value=d.token||'';
+      $('forgot-step1').style.display='none';$('forgot-step2').style.display='block';
+    }else{msg('msg-fp',d.detail||'请求失败','error')}
+  }catch(e){msg('msg-fp','网络错误','error')}
+}
+
+async function doReset(){
+  var t=$('fp-token').value.trim(),p=$('fp-newpw').value,p2=$('fp-newpw2').value;
+  if(!t||!p){msg('msg-fp2','请输入重置码和新密码','error');return}
+  if(p!==p2){msg('msg-fp2','两次密码不一致','error');return}
+  msg('msg-fp2','重置中...','info');
+  try{
+    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/reset-password',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'token='+encodeURIComponent(t)+'&new_password='+encodeURIComponent(p)});
+    var d=await r.json();
+    if(d.success){msg('msg-fp2','密码重置成功！','success');setTimeout(showLogin,1500)}
+    else{msg('msg-fp2',d.detail||'重置失败','error')}
+  }catch(e){msg('msg-fp2','网络错误','error')}
+}
+
+async function doWechat(){
+  msg('msg-wechat','获取中...','info');
+  try{
+    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/wechat-qr',{method:'POST'});var d=await r.json();
+    if(d.success&&d.qr){wechatState=d.qr.state;
+      msg('msg-wechat','模拟扫码中...','info');
+      setTimeout(async function(){
+        var r2=await fetch('http://127.0.0.1:5188/api/v1/auth/wechat-callback?code=mock_code&state='+wechatState);
+        var d2=await r2.json();
+        if(d2.success){accessToken=d2.access_token;userInfo=d2.user||{};isBoss=false;showSuccess()}
+        else{msg('msg-wechat','扫码失败','error')}
+      },2000);
+    }
+  }catch(e){msg('msg-wechat','网络错误','error')}
+}
+
+function goToApp(){
+  var url='http://127.0.0.1:5189/ui/index.html';
+  if(accessToken) url+='?token='+encodeURIComponent(accessToken);
+  window.location.href=url;
+}
+function goToAdmin(){
+  window.location.href='http://127.0.0.1:5189/ui/admin.html';
+}
+
+render();
+</script></body></html>
