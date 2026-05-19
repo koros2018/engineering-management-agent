@@ -1,0 +1,16 @@
+{
+  "test_tenant": [
+    {
+      "id": "notif_1779156691802_t_tenant",
+      "tenant_id": "test_tenant",
+      "type": "subscription_expiring",
+      "title": "测试",
+      "message": "这是一个测试通知",
+      "severity": "warning",
+      "actionable": true,
+      "action_url": null,
+      "read": false,
+      "created_at": "2026-05-19T10:11:31.802494"
+    }
+  ]
+}

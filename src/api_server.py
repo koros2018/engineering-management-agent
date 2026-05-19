@@ -572,6 +572,95 @@ async def upload_and_analyze(
             pass
 
 
+# ── 订阅套餐 API ────────────────────────────────────────────────
+
+@app.get("/api/v1/subscription/plans")
+async def get_plans():
+    """列出所有订阅套餐"""
+    from subscription import list_plans
+    return {"success": True, "plans": list_plans()}
+
+
+@app.get("/api/v1/subscription/status")
+async def subscription_status(
+    user: dict = Depends(get_optional_user),
+):
+    """获取当前用户/租户的订阅状态"""
+    tenant_id = user["tenant_id"] if user else "guest"
+    from subscription import check_subscription, get_usage, check_quota
+    return {
+        "success": True,
+        "subscription": check_subscription(tenant_id),
+        "usage": get_usage(tenant_id),
+        "quota": check_quota(tenant_id),
+    }
+
+
+@app.post("/api/v1/subscription/subscribe")
+async def subscribe(
+    plan_id: str = Form(...),
+    duration_months: int = Form(1),
+    user: dict = Depends(get_current_user),
+):
+    """订阅/升级套餐"""
+    try:
+        from subscription import subscribe
+        result = subscribe(user["tenant_id"], plan_id, duration_months)
+        return {"success": True, "subscription": result}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ── 主动推送通知 API ──────────────────────────────────────────
+
+@app.get("/api/v1/notifications")
+async def list_notifications(
+    unread_only: bool = False,
+    limit: int = 20,
+    user: dict = Depends(get_optional_user),
+):
+    """获取通知列表"""
+    tenant_id = user["tenant_id"] if user else "guest"
+    from notifications import get_notifications, get_unread_count
+    return {
+        "success": True,
+        "notifications": get_notifications(tenant_id, unread_only, limit),
+        "unread_count": get_unread_count(tenant_id),
+    }
+
+
+@app.post("/api/v1/notifications/read-all")
+async def read_all_notifications(
+    user: dict = Depends(get_optional_user),
+):
+    """标记全部通知已读"""
+    tenant_id = user["tenant_id"] if user else "guest"
+    from notifications import mark_all_read
+    count = mark_all_read(tenant_id)
+    return {"success": True, "marked_count": count}
+
+
+@app.post("/api/v1/notifications/{notification_id}/read")
+async def read_notification(
+    notification_id: str,
+    user: dict = Depends(get_optional_user),
+):
+    """标记单条通知已读"""
+    tenant_id = user["tenant_id"] if user else "guest"
+    from notifications import mark_read
+    ok = mark_read(tenant_id, notification_id)
+    return {"success": ok}
+
+
+# ── 性能缓存 API ──────────────────────────────────────────────
+
+@app.get("/api/v1/system/cache-stats")
+async def cache_stats():
+    """获取解析缓存统计"""
+    from performance import get_cache_stats
+    return {"success": True, "cache": get_cache_stats()}
+
+
 # ─────────────────────────────────────────────────────────────────
 # 启动
 # ─────────────────────────────────────────────────────────────────

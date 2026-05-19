@@ -75,6 +75,24 @@
     .topbar-title { font-size: 14px; font-weight: 600; }
     .topbar-desc { font-size: 11px; color: var(--text-dim); margin-left: auto; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .topbar-badge { font-size: 11px; background: var(--accent); color: #fff; padding: 2px 7px; border-radius: 10px; }
+    .plan-badge {
+      font-size: 10px; background: var(--border); color: var(--text-dim);
+      padding: 2px 8px; border-radius: 10px; cursor: pointer; margin-left: 4px;
+      transition: all 0.15s;
+    }
+    .plan-badge:hover { border-color: var(--accent); color: var(--accent); }
+    .plan-badge.pro { background: var(--accent); color: #fff; }
+    .plan-badge.enterprise { background: var(--warning); color: #000; }
+    .notif-bell {
+      font-size: 16px; cursor: pointer; position: relative; margin-left: 6px;
+      color: var(--text-dim); transition: color 0.15s;
+    }
+    .notif-bell:hover { color: var(--accent); }
+    .notif-bell .count {
+      position: absolute; top: -6px; right: -8px;
+      background: var(--danger); color: #fff; font-size: 9px;
+      border-radius: 8px; padding: 1px 5px; min-width: 16px; text-align: center;
+    }
     .model-select {
       background: var(--agent-bubble); border: 1px solid var(--border);
       color: var(--text); font-size: 12px; border-radius: 6px; padding: 3px 8px;
@@ -246,6 +264,12 @@
       <span class="topbar-title">{{ currentAgent.name }}</span>
       <span class="topbar-desc">{{ currentAgent.description }}</span>
       <span class="topbar-badge">v1.0.0</span>
+      <span :class="['plan-badge', planId]" @click="openSubscribe" :title="planName">
+        {{ planName || '体验版' }}
+      </span>
+      <div class="notif-bell" @click="openNotifications" title="通知">
+        🔔 <span class="count" v-if="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+      </div>
       <select class="model-select" v-model="selectedModel" @change="onModelChange">
         <option v-for="m in availableModels" :key="m.name" :value="m.name">
           {{ m.type === 'cloud' ? '☁️' : '💻' }} {{ m.display || m.name }}
@@ -407,6 +431,40 @@ createApp({
     const currentAgent = ref(agents[0]);
     const availableModels = ref([]);
     const selectedModel = ref('');
+    const planId = ref('free');
+    const planName = ref('体验版');
+    const unreadCount = ref(0);
+
+    function loadSubscription() {
+      fetch(`${API_BASE}/api/v1/subscription/status`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.success && d.subscription) {
+            planId.value = d.subscription.plan_id || 'free';
+            planName.value = d.subscription.plan_name || '体验版';
+          }
+        })
+        .catch(() => {});
+    }
+
+    function loadNotifications() {
+      fetch(`${API_BASE}/api/v1/notifications?unread_only=true`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.success) {
+            unreadCount.value = d.unread_count || 0;
+          }
+        })
+        .catch(() => {});
+    }
+
+    function openSubscribe() {
+      window.open('http://127.0.0.1:5188/docs#/订阅套餐 API', '_blank');
+    }
+
+    function openNotifications() {
+      window.open('http://127.0.0.1:5188/docs#/主动推送通知 API', '_blank');
+    }
 
     function loadModels() {
       fetch(`${API_BASE}/api/v1/llm/models`)
@@ -610,14 +668,16 @@ createApp({
       scrollBottom();
     }
 
-    onMounted(() => { scrollBottom(); loadModels(); });
+    onMounted(() => { scrollBottom(); loadModels(); loadSubscription(); loadNotifications(); });
 
     return {
       messages, input, loading, selectedFile, chatArea, inputBox,
       agents, currentAgent, availableModels, selectedModel,
+      planId, planName, unreadCount,
       showHistory, historySessions, historyLoading, historyQuery, activeHistorySession,
       formatSize, switchAgent, onFileSelect, autoGrow, send, onModelChange,
       toggleHistory, loadHistory, searchHistory, viewHistorySession,
+      openSubscribe, openNotifications,
     };
   }
 }).mount('#app');

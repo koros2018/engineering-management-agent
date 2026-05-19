@@ -1,0 +1,12 @@
+{
+  "test_tenant": {
+    "tenant_id": "test_tenant",
+    "plan_id": "pro",
+    "plan_name": "专业版",
+    "started_at": "2026-05-19T10:11:31.766900",
+    "expires_at": "2026-06-18T10:11:31.766900",
+    "auto_renew": true,
+    "status": "active",
+    "payment_history": []
+  }
+}
