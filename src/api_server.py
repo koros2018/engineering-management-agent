@@ -168,28 +168,42 @@ async def auth_register(username: str = Form(...), password: str = Form(...), em
 
 
 @app.post("/api/v1/auth/login")
-async def auth_login(username: str = Form(...), password: str = Form(...), admin_password: str = Form(None)):
-    """用户登录 - 含Boss双密码 + 登录限流"""
-    from auth_extended import check_login_attempt, reset_login_attempts, boss_login
+async def auth_login(username: str = Form(...), password: str = Form(...)):
+    """用户登录 - Boss只需账号密码即可进入主界面"""
+    from auth_extended import check_login_attempt, reset_login_attempts, boss_login_without_admin_pw
     client_ip = "127.0.0.1"
     check = check_login_attempt(client_ip, username)
     if not check["allowed"]:
         raise HTTPException(status_code=429, detail=check["message"])
     try:
-        result = boss_login(username, password, admin_password)
-        if not result.get("success"):
-            raise HTTPException(status_code=401, detail=result.get("error", "登录失败"))
+        result = boss_login_without_admin_pw(username, password)
         reset_login_attempts(client_ip, username)
         return {"success": True, **result}
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
 
 
+@app.post("/api/v1/auth/verify-admin-password")
+async def verify_admin_pw_route(password: str = Form(...), user: dict = Depends(get_current_user)):
+    """验证管理后台密码（Boss进入后台时调用）"""
+    from auth_extended import verify_admin_password
+    if verify_admin_password(user["user_id"], password):
+        return {"success": True, "message": "管理员密码验证通过"}
+    raise HTTPException(status_code=403, detail="管理后台密码错误")
+
+
 @app.post("/api/v1/auth/wechat-qr")
 async def wechat_qr():
-    """微信扫码登录二维码"""
-    from auth_extended import generate_wechat_qr
-    return {"success": True, "qr": generate_wechat_qr()}
+    """微信扫码登录 - 生成真实QR码(base64) + 会话"""
+    from auth_extended import generate_wechat_qr_with_image
+    return {"success": True, "qr": generate_wechat_qr_with_image()}
+
+
+@app.get("/api/v1/auth/wechat-poll")
+async def wechat_poll(state: str = ""):
+    """轮询微信扫码状态"""
+    from auth_extended import wechat_poll_status
+    return wechat_poll_status(state)
 
 
 @app.get("/api/v1/auth/wechat-callback")

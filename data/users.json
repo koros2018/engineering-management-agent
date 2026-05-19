@@ -16,5 +16,32 @@
     "salt": "e095eb309b165d50575e1aa5fc762930",
     "created_at": "2026-05-19T15:17:33.362778",
     "status": "active"
+  },
+  "user_8374b751aea1a176": {
+    "user_id": "user_8374b751aea1a176",
+    "username": "wx_d5000b89",
+    "email": "wx_openid_7080d5000b89@wechat.local",
+    "password_hash": "c0566637420aff376faf9ba4a8fc6411fbc28ce36f8405e502ef74492a7f9be5",
+    "salt": "91c4973619e0b4547e57933b9519ee31",
+    "created_at": "2026-05-19T15:40:17.297871",
+    "status": "active"
+  },
+  "user_7cd9fdbf74fd9260": {
+    "user_id": "user_7cd9fdbf74fd9260",
+    "username": "wx_f45b4800",
+    "email": "wx_openid_7ca3f45b4800@wechat.local",
+    "password_hash": "b6384c95738f3b50bfe542bbde884af5fabfdd81c15430858c5206a17da6bbb8",
+    "salt": "558006eefa0acbb135f5e7587ff665be",
+    "created_at": "2026-05-19T15:40:19.006874",
+    "status": "active"
+  },
+  "user_03d22fecd7ae26fb": {
+    "user_id": "user_03d22fecd7ae26fb",
+    "username": "wx_e69f0d41",
+    "email": "f1ef9f1e@wechat.local",
+    "password_hash": "2309a88a2cca3c5bb7ffdc7ce963eca9fe8f2e24e4c7521df3e6236ffda11834",
+    "salt": "8dd4af41dbb0316bc8baa7d0aa603606",
+    "created_at": "2026-05-19T15:52:01.021094",
+    "status": "active"
   }
 }

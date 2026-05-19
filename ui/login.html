@@ -14,7 +14,7 @@ body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh
 .tab.active{color:#3b82f6;border-bottom-color:#3b82f6}
 .fg{margin-bottom:16px}.fg label{display:block;font-size:11px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
 .fg input{width:100%;padding:10px 12px;background:#0d1117;border:1px solid #1e2a3a;border-radius:8px;font-size:14px;color:#e2e8f0;outline:none;transition:border .15s}
-.fg input:focus{border-color:#3b82f6}.fg input::placeholder{color:#3b82f6}
+.fg input:focus{border-color:#3b82f6}.fg input::placeholder{color:#475569}
 .btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
 .btn-primary{background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;margin-top:8px}
 .btn-primary:hover{opacity:.9;transform:translateY(-1px)}
@@ -23,33 +23,37 @@ body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh
 .links a{color:#64748b;text-decoration:none;cursor:pointer}.links a:hover{color:#3b82f6}
 .wechat-section{text-align:center;padding:16px 0;border-top:1px solid #1e2a3a;margin-top:16px}
 .wechat-section .hint{font-size:11px;color:#64748b;margin-bottom:10px}
-.qr-placeholder{width:140px;height:140px;margin:0 auto;border:2px dashed #1e2a3a;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:60px;color:#3b82f6;cursor:pointer;transition:all .15s}
-.qr-placeholder:hover{border-color:#3b82f6;background:rgba(59,130,246,.05)}
+.qr-wrap{width:160px;height:160px;margin:0 auto;border:2px solid #1e2a3a;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff}
+.qr-wrap img{width:100%;height:100%}
+.qr-status{font-size:11px;margin-top:8px}
 .msg{font-size:12px;padding:8px 0;text-align:center}.msg.error{color:#ef4444}.msg.success{color:#22c55e}.msg.info{color:#3b82f6}
-.admin-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:#64748b;margin-bottom:12px;cursor:pointer}
-.admin-toggle input{margin:0}
-.reset-flow .back-link{font-size:12px;color:#3b82f6;cursor:pointer;margin-top:12px}
 @media(max-width:480px){.login-card{padding:24px 20px}}
 </style></head>
 <body>
 <div class="login-wrap"><div class="login-card" id="card">
-  <div class="logo"><div class="logo-icon">🤖</div><div class="logo-text">EMA</div><div class="logo-sub">工程管理智能体</div></div>
+  <div class="logo"><div class="logo-icon">🤖</div><div class="logo-text">工程管理智能体</div><div class="logo-sub">EMA v1.1 · 工程管理从"人管"到"智能体协管"</div></div>
 
-  <!-- 正常登录 -->
+  <!-- 账号登录（Boss只需账号密码，无需管理后台密码）-->
   <div id="login-form">
     <div class="tabs"><div class="tab active">账号登录</div></div>
     <div class="fg"><label>用户名</label><input id="login-user" type="text" placeholder="输入用户名" autocomplete="username"></div>
     <div class="fg"><label>密码</label><input id="login-pw" type="password" placeholder="输入密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="fg" id="admin-pw-fg" style="display:none"><label>👑 管理后台密码</label><input id="admin-pw" type="password" placeholder="Boss管理后台密码" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="admin-toggle" id="boss-toggle" style="display:none" onclick="toggleAdminPw()"><input type="checkbox" id="cb-admin"> Boss模式（管理后台密码）</div>
     <div id="msg-login" class="msg"></div>
     <button class="btn btn-primary" onclick="doLogin()">登 录</button>
     <div class="links"><a onclick="showRegister()">注册账号</a><a onclick="showForgot()">忘记密码</a></div>
-    <div class="wechat-section"><div class="hint">或使用微信扫码登录</div><div class="qr-placeholder" onclick="doWechat()" title="点击模拟微信扫码">📱</div><div id="msg-wechat" class="msg" style="font-size:10px"></div></div>
+  </div>
+
+  <!-- 微信扫码登录 -->
+  <div id="wechat-form" style="display:none">
+    <div class="tabs"><div class="tab active">微信扫码登录</div><div style="font-size:11px;color:#64748b;cursor:pointer;padding:10px 0" onclick="showLogin()">← 账号登录</div></div>
+    <div class="wechat-section">
+      <div class="qr-wrap" id="qr-container"><span style="color:#64748b;font-size:12px">生成中...</span></div>
+      <div class="qr-status" id="qr-status">请使用微信扫描二维码</div>
+    </div>
   </div>
 
   <!-- 注册 -->
-  <div id="register-form" style="display:display:none">
+  <div id="register-form" style="display:none">
     <div class="tabs"><div class="tab active">注册账号</div></div>
     <div class="fg"><label>用户名</label><input id="reg-user" type="text" placeholder="至少3位，字母数字下划线"></div>
     <div class="fg"><label>邮箱</label><input id="reg-email" type="email" placeholder="用于密码找回"></div>
@@ -61,7 +65,7 @@ body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh
   </div>
 
   <!-- 忘记密码 -->
-  <div id="forgot-form" style="display:display:none">
+  <div id="forgot-form" style="display:none">
     <div class="tabs"><div class="tab active">找回密码</div></div>
     <div id="forgot-step1">
       <div class="fg"><label>用户名</label><input id="fp-user" type="text" placeholder="输入用户名"></div>
@@ -80,76 +84,120 @@ body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh
   </div>
 
   <!-- 登录成功 -->
-  <div id="success-view" style="display:display:none">
+  <div id="success-view" style="display:none">
     <div style="text-align:center;padding:20px 0">
       <div style="font-size:48px;margin-bottom:12px">✅</div>
       <div style="font-size:16px;font-weight:600;color:#e2e8f0;margin-bottom:4px">登录成功</div>
       <div style="font-size:13px;color:#64748b;margin-bottom:16px" id="success-msg">欢迎回来</div>
-      <button class="btn btn-primary" onclick="goToApp()">进入 EMA</button>
+      <button class="btn btn-primary" onclick="goToApp()">进入工作台</button>
       <button class="btn btn-outline" onclick="goToAdmin()" id="btn-admin" style="display:none">👑 Boss后台</button>
     </div>
   </div>
 </div></div>
 
 <script>
-var mode='login',isBoss=false,accessToken='',userInfo={},wechatState='';
+var mode='login',isBoss=false,accessToken='',userInfo={},wechatState='',pollTimer=null;
 function $(id){return document.getElementById(id)}
 function msg(id,text,cls){var e=$(id);e.textContent=text;e.className='msg '+cls}
 
-function showLogin(){mode='login';render()}
+function showLogin(){
+  mode='login';clearPoll();
+  ['login-form','register-form','forgot-form','success-view','wechat-form'].forEach(function(id){$('id')});
+  render();
+}
 function showRegister(){mode='register';render()}
 function showForgot(){mode='forgot';render();$('forgot-step1').style.display='block';$('forgot-step2').style.display='none'}
+function showWechat(){mode='wechat';render();loadWechatQR()}
+
 function showSuccess(){
   mode='success';render();
-  if(isBoss){$('btn-admin').style.display='block';$('#success-msg').textContent='Boss | '+userInfo.tenant_name}
-  else{$('#success-msg').textContent=userInfo.tenant_name||userInfo.username}
-}
-
-function toggleAdminPw(){
-  var fg=document.getElementById('admin-pw-fg');
-  fg.style.display=fg.style.display==='none'?'block':'none';
+  $('success-msg').textContent=userInfo.username||userInfo.tenant_name||'欢迎';
+  if(isBoss) $('btn-admin').style.display='block';
+  else $('btn-admin').style.display='none';
 }
 
 function render(){
-  // 隐藏所有表单面板
-  ['login-form','register-form','forgot-form','success-view'].forEach(function(id){
-    var el = document.getElementById(id);
-    if (el) el.style.display = 'none';
+  ['login-form','register-form','forgot-form','success-view','wechat-form'].forEach(function(id){
+    var el=$(id); if(el) el.style.display='none';
   });
-  var target = null;
-  if(mode==='login') target = 'login-form';
-  else if(mode==='register') target = 'register-form';
-  else if(mode==='forgot') target = 'forgot-form';
-  else if(mode==='success') target = 'success-view';
-  if (target) {
-    var el = document.getElementById(target);
-    if (el) el.style.display = 'block';
-  }
+  var map={login:'login-form',register:'register-form',forgot:'forgot-form',success:'success-view',wechat:'wechat-form'};
+  var target=map[mode]; if(target){var el=$(target);if(el)el.style.display='block';}
 }
 
+// ── 账号登录（Boss只需账号密码）───────────────────────────
 async function doLogin(){
   var u=$('login-user').value.trim(),p=$('login-pw').value.trim();
   if(!u||!p){msg('msg-login','请输入用户名和密码','error');return}
   msg('msg-login','登录中...','info');
-  var adminPw=$('admin-pw').value.trim()||null;
-  var body='username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p);
-  if(adminPw) body+='&admin_password='+encodeURIComponent(adminPw);
   try{
-    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body});
+    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/login',{
+      method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p)
+    });
     var d=await r.json();
     if(d.success){
-      accessToken=d.access_token;userInfo=d.user||{};
-      if(d.is_boss&&d.require_admin_pw&&!adminPw){
-        document.getElementById('boss-toggle').style.display='flex';
-        msg('msg-login','请输入管理后台密码','info');return;
-      }
-      isBoss=d.is_boss&&d.admin_verified;showSuccess();
+      accessToken=d.access_token;userInfo=d.user||{};isBoss=d.is_boss||false;
+      try{localStorage.setItem('ema_token',accessToken);}catch(e){}
+      try{localStorage.setItem('ema_user',JSON.stringify({isBoss:isBoss,username:u}));}catch(e){}
+      showSuccess();
     }else{
-      msg('msg-login',d.detail||'登录失败','error');
+      msg('msg-login',d.detail||'用户名或密码错误','error');
     }
-  }catch(e){msg('msg-login','网络错误','error')}
+  }catch(e){msg('msg-login','网络错误，请确认API已启动','error')}
 }
 
+// ── 微信扫码登录（真实二维码 + 轮询）─────────────────────────
+async function loadWechatQR(){
+  clearPoll();
+  try{
+    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/wechat-qr',{method:'POST'});var d=await r.json();
+    if(d.success&&d.qr){
+      wechatState=d.qr.state;
+      var qrc=d.qr.qr_base64||'';
+      if(qrc){
+        $('qr-container').innerHTML='<img src="'+qrc+'" alt="微信扫码">';
+      }else{
+        $('qr-container').innerHTML='<span style="font-size:60px">📱</span>';
+      }
+      $('qr-status').textContent='请使用微信扫描二维码';
+      $('qr-status').className='qr-status';
+      pollWechatState();
+    }
+  }catch(e){
+    $('qr-container').innerHTML='<span style="color:#ef4444;font-size:12px">扫码服务暂不可用</span>';
+  }
+}
+
+function pollWechatState(){
+  clearPoll();
+  pollTimer=setInterval(async function(){
+    try{
+      var r=await fetch('http://127.0.0.1:5188/api/v1/auth/wechat-poll?state='+encodeURIComponent(wechatState));
+      var d=await r.json();
+      if(d.success&&d.status==='scanned'){
+        $('qr-status').textContent='已扫码，确认中...';$('qr-status').className='qr-status';
+      }
+      if(d.success&&d.status==='confirmed'){
+        clearPoll();
+        $('qr-status').textContent='✅ 登录成功！';$('qr-status').className='qr-status';
+        $('qr-container').innerHTML='<span style="font-size:60px">✅</span>';
+        accessToken=d.access_token;userInfo=d.user||{};isBoss=d.is_boss||false;
+        try{localStorage.setItem('ema_token',accessToken);}catch(e){}
+        try{localStorage.setItem('ema_user',JSON.stringify({isBoss:isBoss,username:d.user?.username||'微信用户'}));}catch(e){}
+        setTimeout(showSuccess,800);
+      }
+      if(d.status==='expired'){
+        clearPoll();
+        $('qr-status').textContent='二维码已过期，点击刷新';$('qr-status').className='qr-status';$('qr-container').style.cursor='pointer';
+        $('qr-container').onclick=function(){loadWechatQR();$('qr-container').onclick=null;};
+      }
+    }catch(e){}
+  },2000);
+}
+
+function clearPoll(){if(pollTimer){clearInterval(pollTimer);pollTimer=null;}}
+
+// ── 注册 ───────────────────────────────────────────────────
 async function doRegister(){
   var u=$('reg-user').value.trim(),e=$('reg-email').value.trim(),p=$('reg-pw').value,p2=$('reg-pw2').value;
   if(!u||!e||!p){msg('msg-reg','请填写所有字段','error');return}
@@ -158,23 +206,29 @@ async function doRegister(){
   if(!/[a-z]/.test(p)||!/[A-Z]/.test(p)||!/\d/.test(p)){msg('msg-reg','密码需含大小写字母和数字','error');return}
   msg('msg-reg','注册中...','info');
   try{
-    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/register',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:'username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p)+'&email='+encodeURIComponent(e)});
+    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/register',{
+      method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p)+'&email='+encodeURIComponent(e)
+    });
     var d=await r.json();
     if(d.success){
       accessToken=d.user.access_token;userInfo=d.user;isBoss=false;
+      try{localStorage.setItem('ema_token',accessToken);}catch(e){}
       msg('msg-reg','注册成功！','success');setTimeout(showSuccess,500);
     }else{msg('msg-reg',d.detail||'注册失败','error')}
   }catch(e){msg('msg-reg','网络错误','error')}
 }
 
+// ── 密码找回 ───────────────────────────────────────────────
 async function doForgot(){
   var u=$('fp-user').value.trim(),e=$('fp-email').value.trim();
   if(!u||!e){msg('msg-fp','请输入用户名和邮箱','error');return}
   msg('msg-fp','发送中...','info');
   try{
-    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:'username='+encodeURIComponent(u)+'&email='+encodeURIComponent(e)});
+    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/forgot-password',{
+      method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'username='+encodeURIComponent(u)+'&email='+encodeURIComponent(e)
+    });
     var d=await r.json();
     if(d.success){
       msg('msg-fp',d.message,'success');$('fp-token').value=d.token||'';
@@ -189,38 +243,33 @@ async function doReset(){
   if(p!==p2){msg('msg-fp2','两次密码不一致','error');return}
   msg('msg-fp2','重置中...','info');
   try{
-    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/reset-password',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:'token='+encodeURIComponent(t)+'&new_password='+encodeURIComponent(p)});
+    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/reset-password',{
+      method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'token='+encodeURIComponent(t)+'&new_password='+encodeURIComponent(p)
+    });
     var d=await r.json();
     if(d.success){msg('msg-fp2','密码重置成功！','success');setTimeout(showLogin,1500)}
     else{msg('msg-fp2',d.detail||'重置失败','error')}
   }catch(e){msg('msg-fp2','网络错误','error')}
 }
 
-async function doWechat(){
-  msg('msg-wechat','获取中...','info');
-  try{
-    var r=await fetch('http://127.0.0.1:5188/api/v1/auth/wechat-qr',{method:'POST'});var d=await r.json();
-    if(d.success&&d.qr){wechatState=d.qr.state;
-      msg('msg-wechat','模拟扫码中...','info');
-      setTimeout(async function(){
-        var r2=await fetch('http://127.0.0.1:5188/api/v1/auth/wechat-callback?code=mock_code&state='+wechatState);
-        var d2=await r2.json();
-        if(d2.success){accessToken=d2.access_token;userInfo=d2.user||{};isBoss=false;showSuccess()}
-        else{msg('msg-wechat','扫码失败','error')}
-      },2000);
-    }
-  }catch(e){msg('msg-wechat','网络错误','error')}
-}
-
+// ── 跳转 ───────────────────────────────────────────────────
 function goToApp(){
-  var url='http://127.0.0.1:5189/ui/index.html';
-  if(accessToken) url+='?token='+encodeURIComponent(accessToken);
+  var url='/ui/index.html?token='+encodeURIComponent(accessToken);
   window.location.href=url;
 }
 function goToAdmin(){
-  window.location.href='http://127.0.0.1:5189/ui/admin.html';
+  window.location.href='/ui/admin.html?token='+encodeURIComponent(accessToken);
 }
+
+// 底部快捷：微信扫码登录
+setTimeout(function(){
+  var qrLink=document.createElement('div');
+  qrLink.style='text-align:center;margin-top:16px;font-size:12px;color:#64748b;cursor:pointer';
+  qrLink.innerHTML='📱 <span style="color:#3b82f6">微信扫码登录</span>';
+  qrLink.onclick=showWechat;
+  $('card').appendChild(qrLink);
+},100);
 
 render();
 </script></body></html>

@@ -62,7 +62,7 @@ td{padding:8px 12px;border-bottom:1px solid var(--border)}
       <div @click="tab='advice'" :class="['sb-item',{active:tab==='advice'}]">💡 决策建议</div>
     </div>
   </div>
-  <div class="main">
+  <div class="main" v-if="!showAdminGate">
     <div class="topbar">
       <h1>{{pageTitle}}</h1>
       <div class="topbar-badges"><span class="badge boss">🎩 Boss Mode</span><span class="badge live">● 在线</span></div>
@@ -157,6 +157,18 @@ td{padding:8px 12px;border-bottom:1px solid var(--border)}
 
     <button class="refresh" @click="refreshAll" title="刷新全部">🔄</button>
   </div>
+
+  <!-- 管理后台密码弹窗 -->
+  <div v-if="showAdminGate" style="position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;display:flex;align-items:center;justify-content:center">
+    <div style="background:#141b23;border:1px solid #1e2a3a;border-radius:16px;padding:36px 32px;width:380px;text-align:center">
+      <div style="font-size:48px;margin-bottom:12px">👑</div>
+      <div style="font-size:18px;font-weight:700;color:#e2e8f0;margin-bottom:4px">Boss 管理后台</div>
+      <div style="font-size:12px;color:#64748b;margin-bottom:20px">请输入管理后台密码以继续</div>
+      <input v-model="adminPwInput" type="password" placeholder="后台密码" style="width:100%;padding:12px;background:#0d1117;border:1px solid #1e2a3a;border-radius:8px;font-size:14px;color:#e2e8f0;outline:none;margin-bottom:12px" @keydown.enter="verifyAdmin">
+      <div v-if="adminPwError" style="font-size:12px;color:#ef4444;margin-bottom:8px">{{adminPwError}}</div>
+      <button @click="verifyAdmin" style="width:100%;padding:12px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">🔓 验证进入</button>
+    </div>
+  </div>
 </div>
 </div>
 <script>
@@ -169,6 +181,23 @@ createApp({setup(){
   try { localStorage.setItem('ema_token', token); } catch(e) {}
 
   const API='http://127.0.0.1:5188';
+  const adminVerified = ref(false);
+  const showAdminGate = ref(true);
+  const adminPwInput = ref('');
+  const adminPwError = ref('');
+
+  async function verifyAdmin(){
+    try{
+      var r=await fetch(API+'/api/v1/auth/verify-admin-password',{
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','Authorization':'Bearer '+token},
+        body:'password='+encodeURIComponent(adminPwInput.value)
+      });
+      var d=await r.json();
+      if(d.success){ adminVerified.value=true; showAdminGate.value=false; }
+      else{ adminPwError.value='管理员密码错误'; }
+    }catch(e){ adminPwError.value='验证失败'; }
+  }
   const tab=ref('cockpit');
   const cockpit=ref({health_score:0,health_grade:'B',alerts:[],metrics:{revenue:{},projects:{},agents:{heatmap:[]},security:{}},quick_actions:[]});
   const tenants=ref([]);const alerts=ref([]);const report=ref({sections:[]});const suggestions=ref([]);const insights=ref([]);
@@ -209,6 +238,7 @@ createApp({setup(){
   }
 
   onMounted(async()=>{await loadCockpit();loadTenants();loadAlerts();loadAdvice();});
-  return{tab,cockpit,tenants,alerts,report,suggestions,insights,pageTitle,gradeLabel,formatNum,refreshAll,quickAction,genReport};
+  return{tab,cockpit,tenants,alerts,report,suggestions,insights,pageTitle,gradeLabel,formatNum,refreshAll,quickAction,genReport,
+    adminVerified,showAdminGate,adminPwInput,adminPwError,verifyAdmin};
 }}).mount('#app');
 </script></body></html>

@@ -14,5 +14,29 @@
     "admin_user_id": "user_boss_ke",
     "created_at": "2026-05-19T15:17:33.378683",
     "status": "active"
+  },
+  "tenant_2b2ef652f43d": {
+    "tenant_id": "tenant_2b2ef652f43d",
+    "name": "wx_d5000b89的个人空间",
+    "plan": "free",
+    "admin_user_id": "user_8374b751aea1a176",
+    "created_at": "2026-05-19T15:40:17.302756",
+    "status": "active"
+  },
+  "tenant_80a4b0000930": {
+    "tenant_id": "tenant_80a4b0000930",
+    "name": "wx_f45b4800的个人空间",
+    "plan": "free",
+    "admin_user_id": "user_7cd9fdbf74fd9260",
+    "created_at": "2026-05-19T15:40:19.011766",
+    "status": "active"
+  },
+  "tenant_793df9fb6960": {
+    "tenant_id": "tenant_793df9fb6960",
+    "name": "wx_e69f0d41的个人空间",
+    "plan": "free",
+    "admin_user_id": "user_03d22fecd7ae26fb",
+    "created_at": "2026-05-19T15:52:01.026442",
+    "status": "active"
   }
 }
