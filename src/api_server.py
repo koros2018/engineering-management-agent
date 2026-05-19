@@ -611,6 +611,64 @@ async def subscribe(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+# ── 支付 API ─────────────────────────────────────────────────
+
+@app.post("/api/v1/payment/create")
+async def create_payment(
+    plan_id: str = Form(...),
+    amount: float = Form(...),
+    payment_method: str = Form("wechat"),
+    duration_months: int = Form(1),
+    user: dict = Depends(get_current_user),
+):
+    """创建支付订单（微信/支付宝）"""
+    from payment import create_order, wechat_prepay, alipay_prepay
+    tenant_id = user["tenant_id"]
+
+    if payment_method == "wechat":
+        result = wechat_prepay(tenant_id, plan_id, amount)
+    elif payment_method == "alipay":
+        result = alipay_prepay(tenant_id, plan_id, amount)
+    else:
+        raise HTTPException(status_code=400, detail=f"不支持的支付方式: {payment_method}")
+
+    return {"success": True, "payment": result}
+
+
+@app.get("/api/v1/payment/orders")
+async def list_payment_orders(
+    status: str = None,
+    user: dict = Depends(get_current_user),
+):
+    """列出用户的支付订单"""
+    from payment import list_orders
+    return {"success": True, "orders": list_orders(user["tenant_id"], status)}
+
+
+@app.get("/api/v1/payment/orders/{order_id}")
+async def get_payment_order(
+    order_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """查询单个订单"""
+    from payment import get_order
+    order = get_order(order_id)
+    if not order or order.get("tenant_id") != user["tenant_id"]:
+        raise HTTPException(status_code=404, detail="订单不存在")
+    return {"success": True, "order": order}
+
+
+@app.post("/api/v1/payment/mock-pay/{order_id}")
+async def mock_pay(order_id: str):
+    """模拟支付成功（Phase 7 Stub，生产环境改为微信/支付宝回调）"""
+    try:
+        from payment import mock_pay_success
+        result = mock_pay_success(order_id)
+        return {"success": True, "payment": result}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 # ── 主动推送通知 API ──────────────────────────────────────────
 
 @app.get("/api/v1/notifications")

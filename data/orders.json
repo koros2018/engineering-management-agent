@@ -1,0 +1,28 @@
+{
+  "EMA202605191032129DA72A": {
+    "order_id": "EMA202605191032129DA72A",
+    "tenant_id": "test_t",
+    "plan_id": "pro",
+    "amount": 299,
+    "duration_months": 1,
+    "payment_method": "wechat",
+    "status": "paid",
+    "created_at": "2026-05-19T10:32:12.662428",
+    "expires_at": "2026-05-19T12:32:12.662428",
+    "paid_at": "2026-05-19T10:32:12.697462",
+    "pay_url": "http://127.0.0.1:5188/api/v1/payment/mock-pay/EMA202605191032129DA72A"
+  },
+  "EMA202605191032124BE05F": {
+    "order_id": "EMA202605191032124BE05F",
+    "tenant_id": "test_t",
+    "plan_id": "enterprise",
+    "amount": 999,
+    "duration_months": 1,
+    "payment_method": "wechat",
+    "status": "pending",
+    "created_at": "2026-05-19T10:32:12.678394",
+    "expires_at": "2026-05-19T12:32:12.678394",
+    "paid_at": null,
+    "pay_url": "http://127.0.0.1:5188/api/v1/payment/mock-pay/EMA202605191032124BE05F"
+  }
+}

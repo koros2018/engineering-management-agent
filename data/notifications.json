@@ -12,5 +12,19 @@
       "read": false,
       "created_at": "2026-05-19T10:11:31.802494"
     }
+  ],
+  "test_t": [
+    {
+      "id": "notif_1779157932756_test_t",
+      "tenant_id": "test_t",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-19T10:32:12.756737"
+    }
   ]
 }

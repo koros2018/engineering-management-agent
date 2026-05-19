@@ -1,0 +1,11 @@
+{
+  "PAY20260519103212": {
+    "payment_id": "PAY20260519103212",
+    "order_id": "EMA202605191032129DA72A",
+    "tenant_id": "test_t",
+    "amount": 299,
+    "method": "wechat",
+    "paid_at": "2026-05-19T10:32:12.697462",
+    "status": "success"
+  }
+}

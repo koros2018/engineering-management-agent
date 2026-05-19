@@ -1,0 +1,63 @@
+# docker-compose.yml
+# EMA 工程管理智能体 — 一键部署
+
+version: "3.8"
+
+services:
+  # ── EMA API 服务 ───────────────────────────────────────────
+  api:
+    build: .
+    container_name: ema-api
+    restart: unless-stopped
+    ports:
+      - "5188:5188"
+    volumes:
+      - ./data:/app/data                      # 持久化：ChromaDB + 用户 + 会话
+      - ./output:/app/output                  # 文档输出目录
+      - ./ui:/app/ui                          # UI 静态文件
+      # 如需连接 blueprint-ai 源码：
+      # - ../blueprint-ai:/app/../blueprint-ai:ro
+    environment:
+      - PYTHONPATH=/app/src
+      - EMA_ENV=production
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:5188/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ema-network
+
+  # ── Nginx 反向代理 + UI 静态文件 ───────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: ema-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ui:/usr/share/nginx/html/ui:ro
+    depends_on:
+      - api
+    networks:
+      - ema-network
+
+  # ── ChromaDB 独立服务（可选，不配置则用内嵌模式）──────────
+  # chromadb:
+  #   image: chromadb/chroma:latest
+  #   container_name: ema-chromadb
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./data/chromadb-server:/chroma/chroma
+  #   environment:
+  #     - IS_PERSISTENT=TRUE
+  #   networks:
+  #     - ema-network
+
+networks:
+  ema-network:
+    driver: bridge

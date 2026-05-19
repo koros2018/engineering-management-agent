@@ -16,5 +16,14 @@
     "api_calls": 0,
     "storage_used_mb": 0,
     "last_updated": "2026-05-19T10:11:47.018595"
+  },
+  "test_t": {
+    "tenant_id": "test_t",
+    "month": "2026-05",
+    "projects_created": 0,
+    "files_uploaded": 0,
+    "api_calls": 0,
+    "storage_used_mb": 0,
+    "last_updated": "2026-05-19T10:32:12.742516"
   }
 }

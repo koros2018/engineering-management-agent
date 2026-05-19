@@ -248,6 +248,48 @@
     .history-item-preview { color: var(--text-dim); max-height: 32px; overflow: hidden; }
     .history-item-time { color: var(--text-dim); font-size: 10px; }
     .history-empty { font-size: 11px; color: var(--text-dim); text-align: center; padding: 20px 8px; }
+
+    /* ── 移动端响应式 ── */
+    @media (max-width: 768px) {
+      #app { flex-direction: column; }
+      .sidebar {
+        width: 100%; height: auto; flex-shrink: 0;
+        border-right: none; border-bottom: 1px solid var(--border);
+        overflow-x: auto;
+      }
+      .sidebar-header { display: none; }
+      .sidebar-nav {
+        display: flex; overflow-x: auto; padding: 4px 8px;
+        white-space: nowrap; -webkit-overflow-scrolling: touch;
+      }
+      .nav-section { display: none; }
+      .nav-item {
+        flex-shrink: 0; font-size: 11px; padding: 5px 10px;
+        margin-bottom: 0; margin-right: 4px;
+      }
+      .history-panel { max-height: 200px; position: absolute; top: 40px; left: 0; right: 0; z-index: 50; background: var(--sidebar); }
+      .topbar { flex-wrap: wrap; height: auto; padding: 8px 12px; gap: 6px; }
+      .topbar-desc { display: none; }
+      .topbar-title { font-size: 13px; }
+      .chat-area { padding: 12px 10px; }
+      .msg { max-width: 90%; }
+      .msg-bubble { padding: 8px 12px; font-size: 13px; }
+      .input-area { padding: 8px 10px; }
+      .input-box { font-size: 14px; min-height: 40px; }
+      .send-btn { padding: 8px 14px; font-size: 13px; }
+      .overlay { align-items: flex-end; }
+      .popup { width: 100%; max-height: 90vh; border-radius: 12px 12px 0 0; }
+      .plan-card { flex-direction: column; }
+      .plan-card-btn { width: 100%; }
+      .file-row { flex-wrap: nowrap; }
+    }
+
+    /* ── 平板 ── */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .sidebar { width: 180px; }
+      .msg { max-width: 85%; }
+      .popup { width: 480px; }
+    }
   </style>
 </head>
 <body>

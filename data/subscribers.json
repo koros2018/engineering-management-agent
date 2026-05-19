@@ -8,5 +8,15 @@
     "auto_renew": true,
     "status": "active",
     "payment_history": []
+  },
+  "test_t": {
+    "tenant_id": "test_t",
+    "plan_id": "pro",
+    "plan_name": "专业版",
+    "started_at": "2026-05-19T10:32:12.738277",
+    "expires_at": "2026-06-18T10:32:12.738277",
+    "auto_renew": true,
+    "status": "active",
+    "payment_history": []
   }
 }
