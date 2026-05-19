@@ -195,8 +195,8 @@ async def verify_admin_pw_route(password: str = Form(...), user: dict = Depends(
 @app.post("/api/v1/auth/wechat-qr")
 async def wechat_qr():
     """微信扫码登录 - 生成真实QR码(base64) + 会话"""
-    from auth_extended import generate_wechat_qr_with_image
-    return {"success": True, "qr": generate_wechat_qr_with_image()}
+    from auth_extended import generate_wechat_qr
+    return {"success": True, "qr": generate_wechat_qr("login")}
 
 
 @app.get("/api/v1/auth/wechat-poll")
@@ -206,12 +206,16 @@ async def wechat_poll(state: str = ""):
     return wechat_poll_status(state)
 
 
-@app.get("/api/v1/auth/wechat-callback")
-async def wechat_login(code: str = "", state: str = ""):
-    """微信扫码登录回调"""
-    from auth_extended import wechat_callback
-    result = wechat_callback(code, state)
-    return {"success": True, **result} if result.get("success") else {"success": False, "error": result.get("error", "unknown")}
+@app.post("/api/v1/auth/wechat-register")
+async def wechat_register(state: str = Form(...), username: str = Form(...), password: str = Form(...), email: str = Form("")):
+    """扫码后注册新账号 + 绑定微信"""
+    from auth_extended import wechat_register_and_bind, validate_password_strength
+    if not validate_password_strength(password):
+        raise HTTPException(status_code=400, detail="密码需至少8位，含大小写字母和数字")
+    result = wechat_register_and_bind(state, username, password, email)
+    if result.get("success"):
+        return {"success": True, **result}
+    raise HTTPException(status_code=400, detail=result.get("error", "注册失败"))
 
 
 @app.post("/api/v1/auth/forgot-password")

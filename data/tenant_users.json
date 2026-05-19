@@ -28,5 +28,23 @@
     "tenant_id": "tenant_793df9fb6960",
     "role": "tenant_admin",
     "joined_at": "2026-05-19T15:52:01.028451"
+  },
+  "user_0d56f303f2317469": {
+    "user_id": "user_0d56f303f2317469",
+    "tenant_id": "tenant_dbe3ed3b5be5",
+    "role": "tenant_admin",
+    "joined_at": "2026-05-19T15:54:47.244437"
+  },
+  "user_2d4775ae82909104": {
+    "user_id": "user_2d4775ae82909104",
+    "tenant_id": "tenant_fa62304a7238",
+    "role": "tenant_admin",
+    "joined_at": "2026-05-19T15:55:04.370057"
+  },
+  "user_3e739981cccfa90b": {
+    "user_id": "user_3e739981cccfa90b",
+    "tenant_id": "tenant_4108dfa3dd63",
+    "role": "tenant_admin",
+    "joined_at": "2026-05-19T16:07:11.154621"
   }
 }

@@ -1,11 +1,10 @@
 """
-auth_extended.py - 认证扩展 (v2)
+auth_extended.py - 认证扩展 v3
 
-- Boss只需账号密码登录，管理后台密码在进入后台时验证
-- 微信扫码：真实QR码(base64) + 轮询确认机制
-- 注册安全：密码复杂度 + 用户名验证
-- 密码找回：token机制
-- 登录限流防暴力破解
+微信登录流程：
+1. 扫码 → 新用户：注册绑定页面 → 创建账号+绑定微信 → 自动登录
+2. 扫码 → 已绑定：直接登录
+3. 普注用户 → 设置中绑定微信二维码
 """
 
 import os, json, hashlib, secrets, time, re, io, base64
@@ -18,285 +17,234 @@ ADMIN_PASSWORDS_FILE = EMA_DATA_DIR / "admin_passwords.json"
 LOGIN_ATTEMPTS_FILE = EMA_DATA_DIR / "login_attempts.json"
 RESET_TOKENS_FILE = EMA_DATA_DIR / "reset_tokens.json"
 WECHAT_SESSIONS_FILE = EMA_DATA_DIR / "wechat_sessions.json"
+WECHAT_BINDINGS_FILE = EMA_DATA_DIR / "wechat_bindings.json"
 
 MAX_LOGIN_ATTEMPTS = 5
 LOGIN_LOCKOUT_MINUTES = 15
-RESET_TOKEN_EXPIRE_MINUTES = 30
 WECHAT_QR_EXPIRE_SECONDS = 300
 
+def _lj(p: Path) -> dict:
+    return json.load(open(p)) if p.exists() else {}
 
-def _load_json(path: Path) -> dict:
-    if path.exists():
-        with open(path) as f:
-            return json.load(f)
-    return {}
-
-def _save_json(path: Path, data: dict):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+def _sj(p: Path, d: dict):
+    p.parent.mkdir(parents=True, exist_ok=True)
+    json.dump(d, open(p, "w"), indent=2, ensure_ascii=False, default=str)
 
 
-# ── Boss双密码（管理后台独立验证）───────────────────────────
+# ── Boss管理后台密码 ────────────────────────────────────────
 
-def _hash_admin_password(password: str) -> Tuple[str, str]:
+def _hash_admin_pw(pw: str) -> Tuple[str, str]:
     salt = secrets.token_hex(16)
-    h = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 100000)
+    h = hashlib.pbkdf2_hmac("sha256", pw.encode(), salt.encode(), 100000)
     return h.hex(), salt
 
-
 def init_boss_account():
-    from auth import _load_json as auth_load, _save_json as auth_save, hash_password
-    from auth import USERS_FILE, TENANTS_FILE, TENANT_USERS_FILE, Role
-
-    users = auth_load(USERS_FILE)
+    from auth import _lj as al, _sj as a_s, hash_password, USERS_FILE, TENANTS_FILE, TENANT_USERS_FILE, Role
+    users = al(USERS_FILE)
     for uid, u in users.items():
         if u.get("username") == "boss_ke":
-            # 确保管理后台密码存在
             set_admin_password(uid, "kzg@2023@SHMTU")
-            print("✅ Boss账号已存在: boss_ke")
             return
-
     user_id = "user_boss_ke"
-    password_hash, salt = hash_password("koros0001")
-    users[user_id] = {"user_id": user_id, "username": "boss_ke", "email": "boss@ema.local", "password_hash": password_hash, "salt": salt, "created_at": datetime.now().isoformat(), "status": "active"}
-    auth_save(USERS_FILE, users)
-
-    tenants = auth_load(TENANTS_FILE)
-    tenants["tenant_boss"] = {"tenant_id": "tenant_boss", "name": "EMA平台管理", "plan": "private", "admin_user_id": user_id, "created_at": datetime.now().isoformat(), "status": "active"}
-    auth_save(TENANTS_FILE, tenants)
-
-    tenant_users = auth_load(TENANT_USERS_FILE)
-    tenant_users[user_id] = {"user_id": user_id, "tenant_id": "tenant_boss", "role": Role.SUPER_ADMIN, "joined_at": datetime.now().isoformat()}
-    auth_save(TENANT_USERS_FILE, tenant_users)
-
+    pw_hash, salt = hash_password("koros0001")
+    users[user_id] = {"user_id":user_id,"username":"boss_ke","email":"boss@ema.local","password_hash":pw_hash,"salt":salt,"created_at":datetime.now().isoformat(),"status":"active"}
+    a_s(USERS_FILE, users)
+    tenants = al(TENANTS_FILE)
+    tenants["tenant_boss"] = {"tenant_id":"tenant_boss","name":"EMA平台管理","plan":"private","admin_user_id":user_id,"created_at":datetime.now().isoformat(),"status":"active"}
+    a_s(TENANTS_FILE, tenants)
+    tusers = al(TENANT_USERS_FILE)
+    tusers[user_id] = {"user_id":user_id,"tenant_id":"tenant_boss","role":Role.SUPER_ADMIN,"joined_at":datetime.now().isoformat()}
+    a_s(TENANT_USERS_FILE, tusers)
     set_admin_password(user_id, "kzg@2023@SHMTU")
-    print("✅ Boss账号已创建: boss_ke (super_admin)")
+    print("✅ Boss: boss_ke (super_admin)")
 
+def set_admin_password(uid: str, pw: str):
+    h, s = _hash_admin_pw(pw)
+    pws = _lj(ADMIN_PASSWORDS_FILE)
+    pws[uid] = {"user_id":uid,"hash":h,"salt":s,"updated_at":datetime.now().isoformat()}
+    _sj(ADMIN_PASSWORDS_FILE, pws)
 
-def set_admin_password(user_id: str, password: str) -> bool:
-    pw_hash, salt = _hash_admin_password(password)
-    admin_pws = _load_json(ADMIN_PASSWORDS_FILE)
-    admin_pws[user_id] = {"user_id": user_id, "hash": pw_hash, "salt": salt, "updated_at": datetime.now().isoformat()}
-    _save_json(ADMIN_PASSWORDS_FILE, admin_pws)
-    return True
-
-
-def verify_admin_password(user_id: str, password: str) -> bool:
-    admin_pws = _load_json(ADMIN_PASSWORDS_FILE)
-    record = admin_pws.get(user_id)
-    if not record: return False
-    h = hashlib.pbkdf2_hmac("sha256", password.encode(), record["salt"].encode(), 100000)
-    return h.hex() == record["hash"]
-
+def verify_admin_password(uid: str, pw: str) -> bool:
+    r = _lj(ADMIN_PASSWORDS_FILE).get(uid)
+    if not r: return False
+    return hashlib.pbkdf2_hmac("sha256", pw.encode(), r["salt"].encode(), 100000).hex() == r["hash"]
 
 def boss_login_without_admin_pw(username: str, password: str) -> Dict:
-    """Boss只需账号密码即可登录主界面"""
     from auth import login_user
-    result = login_user(username, password)
-    return {
-        "success": True,
-        "access_token": result.get("access_token"),
-        "refresh_token": result.get("refresh_token"),
-        "user": result,
-        "is_boss": (result.get("role") == "super_admin"),
-        "require_admin_pw": False,
-    }
+    r = login_user(username, password)
+    return {"success":True,"access_token":r.get("access_token"),"refresh_token":r.get("refresh_token"),"user":r,"is_boss":(r.get("role")=="super_admin"),"require_admin_pw":False}
 
 
 # ── 登录安全 ────────────────────────────────────────────────
 
-def check_login_attempt(client_ip: str, username: str) -> Dict:
-    attempts = _load_json(LOGIN_ATTEMPTS_FILE)
-    key = f"{client_ip}:{username}"
-    now = time.time()
-    record = attempts.get(key, {"count": 0, "first_at": now, "locked_until": 0})
-    if record.get("locked_until", 0) > now:
-        lock_time = datetime.fromtimestamp(record["locked_until"])
-        return {"allowed": False, "remaining": 0, "locked_until": lock_time.isoformat(), "message": f"账户已锁定，请{lock_time.strftime('%H:%M')}后重试"}
-    if now - record.get("first_at", now) > LOGIN_LOCKOUT_MINUTES * 60:
-        record = {"count": 0, "first_at": now, "locked_until": 0}
-    record["count"] += 1
-    attempts[key] = record
-    if record["count"] >= MAX_LOGIN_ATTEMPTS:
-        record["locked_until"] = now + LOGIN_LOCKOUT_MINUTES * 60
-        attempts[key] = record
-        _save_json(LOGIN_ATTEMPTS_FILE, attempts)
-        return {"allowed": False, "remaining": 0, "locked_until": datetime.fromtimestamp(record["locked_until"]).isoformat(), "message": f"尝试次数过多，已锁定{LOGIN_LOCKOUT_MINUTES}分钟"}
-    _save_json(LOGIN_ATTEMPTS_FILE, attempts)
-    return {"allowed": True, "remaining": MAX_LOGIN_ATTEMPTS - record["count"], "locked_until": None}
+def check_login_attempt(ip: str, user: str) -> Dict:
+    a = _lj(LOGIN_ATTEMPTS_FILE); k = f"{ip}:{user}"; now = time.time()
+    r = a.get(k, {"count":0,"first_at":now,"locked_until":0})
+    if r.get("locked_until",0) > now:
+        lt = datetime.fromtimestamp(r["locked_until"])
+        return {"allowed":False,"remaining":0,"locked_until":lt.isoformat(),"message":f"账户已锁定，请{lt.strftime('%H:%M')}后重试"}
+    if now - r.get("first_at",now) > LOGIN_LOCKOUT_MINUTES*60:
+        r = {"count":0,"first_at":now,"locked_until":0}
+    r["count"] += 1; a[k] = r
+    if r["count"] >= MAX_LOGIN_ATTEMPTS:
+        r["locked_until"] = now + LOGIN_LOCKOUT_MINUTES*60; a[k] = r
+        _sj(LOGIN_ATTEMPTS_FILE, a)
+        return {"allowed":False,"remaining":0,"locked_until":datetime.fromtimestamp(r["locked_until"]).isoformat(),"message":f"尝试次数过多，已锁定{LOGIN_LOCKOUT_MINUTES}分钟"}
+    _sj(LOGIN_ATTEMPTS_FILE, a)
+    return {"allowed":True,"remaining":MAX_LOGIN_ATTEMPTS-r["count"],"locked_until":None}
+
+def reset_login_attempts(ip: str, user: str):
+    a = _lj(LOGIN_ATTEMPTS_FILE); k = f"{ip}:{user}"
+    if k in a: del a[k]; _sj(LOGIN_ATTEMPTS_FILE, a)
 
 
-def reset_login_attempts(client_ip: str, username: str):
-    attempts = _load_json(LOGIN_ATTEMPTS_FILE)
-    key = f"{client_ip}:{username}"
-    if key in attempts:
-        del attempts[key]
-        _save_json(LOGIN_ATTEMPTS_FILE, attempts)
+# ── 微信扫码登录（完整流程）─────────────────────────────────
 
-
-# ── 微信扫码登录（真实QR + 轮询）─────────────────────────────
-
-def generate_wechat_qr_with_image() -> Dict:
-    """生成微信扫码登录二维码（base64 PNG）"""
+def generate_wechat_qr(mode: str = "login") -> Dict:
+    """
+    生成微信登录QR码
+    mode: "login"(扫码登录) / "bind"(绑定微信)
+    """
     state = secrets.token_hex(16)
-    
-    # 生成真实二维码
     try:
         import qrcode
         qr = qrcode.QRCode(version=1, box_size=8, border=2)
-        qr.add_data(f"ema://wechat-login?state={state}&t={int(time.time())}")
+        qr.add_data(f"ema://wechat-{mode}?state={state}&t={int(time.time())}")
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
-        buf = io.BytesIO()
-        img.save(buf, format='PNG')
-        qr_base64 = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
+        buf = io.BytesIO(); img.save(buf, format='PNG')
+        qr_b64 = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
     except ImportError:
-        qr_base64 = ""
+        qr_b64 = ""
 
-    # 创建会话
-    sessions = _load_json(WECHAT_SESSIONS_FILE)
-    sessions[state] = {
-        "state": state,
-        "status": "pending",  # pending → scanned → confirmed → expired
-        "created_at": time.time(),
-        "expires_at": time.time() + WECHAT_QR_EXPIRE_SECONDS,
-        "user_id": None,
-        "access_token": None,
-    }
-    _save_json(WECHAT_SESSIONS_FILE, sessions)
-
-    return {
-        "state": state,
-        "qr_base64": qr_base64,
-        "expires_in": WECHAT_QR_EXPIRE_SECONDS,
-    }
+    sessions = _lj(WECHAT_SESSIONS_FILE)
+    sessions[state] = {"state":state,"mode":mode,"status":"pending","created_at":time.time(),"expires_at":time.time()+WECHAT_QR_EXPIRE_SECONDS,"user_id":None,"access_token":None}
+    _sj(WECHAT_SESSIONS_FILE, sessions)
+    return {"state":state,"qr_base64":qr_b64,"expires_in":WECHAT_QR_EXPIRE_SECONDS,"mode":mode}
 
 
 def wechat_poll_status(state: str) -> Dict:
-    """轮询扫码状态"""
-    sessions = _load_json(WECHAT_SESSIONS_FILE)
+    """轮询扫码/绑定状态"""
+    sessions = _lj(WECHAT_SESSIONS_FILE)
+    s = sessions.get(state)
+    if not s: return {"success":False,"status":"expired"}
+    if time.time() > s.get("expires_at",0):
+        s["status"] = "expired"; _sj(WECHAT_SESSIONS_FILE, sessions)
+        return {"success":True,"status":"expired"}
+
+    # 模拟扫码推进
+    elapsed = time.time() - s["created_at"]
+    if s["status"] == "pending" and elapsed > 5:
+        s["status"] = "scanned"; _sj(WECHAT_SESSIONS_FILE, sessions)
+    if s["status"] == "scanned" and elapsed > 7:
+        s["status"] = "confirmed"; _sj(WECHAT_SESSIONS_FILE, sessions)
+
+    if s["status"] == "scanned":
+        return {"success":True,"status":"scanned","mode":s.get("mode","login")}
+
+    if s["status"] == "confirmed":
+        mode = s.get("mode","login")
+        bindings = _lj(WECHAT_BINDINGS_FILE)
+
+        if mode == "bind":
+            # 绑定模式：创建关联
+            return {"success":True,"status":"confirmed","mode":"bind","state":state}
+
+        # 登录模式：检查是否已绑定
+        for openid, b in bindings.items():
+            if b.get("state") == state:
+                # 模拟：最近3秒内的绑定会话
+                return _do_wechat_login(b.get("user_id",""), state)
+
+        # 未绑定 → 引导注册
+        return {"success":True,"status":"need_register","mode":"login","state":state}
+
+
+def wechat_bind_account(state: str, user_id: str, username: str) -> Dict:
+    """
+    微信绑定已有账号
+    流程：用户扫码(绑定模式) → 输入账号密码 → 绑定微信 → 以后可扫码登录
+    """
+    bindings = _lj(WECHAT_BINDINGS_FILE)
+    openid = f"wx_{state[-16:]}"
+    bindings[openid] = {"openid":openid,"user_id":user_id,"username":username,"bound_at":datetime.now().isoformat()}
+    _sj(WECHAT_BINDINGS_FILE, bindings)
+    return {"success":True,"message":"微信绑定成功，以后可直接扫码登录","openid":openid}
+
+
+def wechat_register_and_bind(state: str, username: str, password: str, email: str = "") -> Dict:
+    """新用户扫码注册 + 绑定微信"""
+    from auth import register_user, get_user_tenant, create_access_token, create_refresh_token
+    try:
+        user = register_user(username, password, email)
+    except ValueError as e:
+        return {"success":False,"error":str(e)}
+
+    bindings = _lj(WECHAT_BINDINGS_FILE)
+    openid = f"wx_{state[-16:]}"
+    bindings[openid] = {"openid":openid,"user_id":user["user_id"],"username":username,"bound_at":datetime.now().isoformat()}
+    _sj(WECHAT_BINDINGS_FILE, bindings)
+
+    # 回写会话
+    sessions = _lj(WECHAT_SESSIONS_FILE)
     session = sessions.get(state)
-    if not session:
-        return {"success": False, "status": "expired"}
+    if session:
+        session["user_id"] = user["user_id"]
+        session["access_token"] = user.get("access_token")
+        _sj(WECHAT_SESSIONS_FILE, sessions)
 
-    # 检查过期
-    if time.time() > session.get("expires_at", 0):
-        session["status"] = "expired"
-        _save_json(WECHAT_SESSIONS_FILE, sessions)
-        return {"success": True, "status": "expired"}
-
-    if session["status"] == "pending":
-        # 模拟扫码：每10秒自动推进 (生产环境由手机扫码触发)
-        elapsed = time.time() - session["created_at"]
-        if elapsed > 5:
-            session["status"] = "scanned"
-            _save_json(WECHAT_SESSIONS_FILE, sessions)
-
-    if session["status"] == "scanned":
-        # 模拟确认：再等2秒
-        elapsed = time.time() - session["created_at"]
-        if elapsed > 7:
-            # 完成登录
-            from auth import register_user, get_user_tenant, create_access_token, create_refresh_token
-            username = f"wx_{state[-8:]}"
-            try:
-                user = register_user(username, secrets.token_hex(16), email=f"{state[:8]}@wechat.local")
-            except Exception:
-                from auth import login_user, _load_json as al, USERS_FILE
-                users = al(USERS_FILE)
-                for uid, u in users.items():
-                    if u.get("username") == username:
-                        break
-                user = {"user_id": uid, "username": username, "tenant_id": "tenant_wx", "tenant_name": "微信用户", "role": "editor"}
-            user_id = user["user_id"]
-            tenant_info = get_user_tenant(user_id)
-            access_token = create_access_token(user_id, username, tenant_info.get("role", ""))
-            session["status"] = "confirmed"
-            session["user_id"] = user_id
-            session["access_token"] = access_token
-            _save_json(WECHAT_SESSIONS_FILE, sessions)
-
-            return {
-                "success": True,
-                "status": "confirmed",
-                "access_token": access_token,
-                "user": {
-                    "user_id": user_id,
-                    "username": username,
-                    "role": tenant_info.get("role", "editor"),
-                    "tenant_id": tenant_info.get("tenant_id", ""),
-                    "tenant_name": tenant_info.get("tenant_name", ""),
-                },
-                "is_boss": False,
-            }
-
-    return {
-        "success": True,
-        "status": session["status"],
-        "access_token": session.get("access_token"),
-        "user": session.get("user"),
-        "is_boss": False,
-    }
+    return {"success":True,"access_token":user.get("access_token"),"user":user,"message":"注册成功！微信已绑定"}
 
 
-def wechat_confirm_scan(state: str) -> Dict:
-    """模拟手机扫码确认（API调用触发）"""
-    sessions = _load_json(WECHAT_SESSIONS_FILE)
-    session = sessions.get(state)
-    if not session:
-        return {"success": False}
-    session["status"] = "scanned"
-    _save_json(WECHAT_SESSIONS_FILE, sessions)
-    return {"success": True, "status": "scanned"}
+def _do_wechat_login(user_id: str, state: str) -> Dict:
+    """已绑定用户 → 直接登录"""
+    from auth import get_user, get_user_tenant, create_access_token, create_refresh_token
+    user = get_user(user_id)
+    if not user: return {"success":False,"status":"error","message":"用户不存在"}
+    ti = get_user_tenant(user_id)
+    token = create_access_token(user_id, user["username"], ti.get("role","editor"))
+    sessions = _lj(WECHAT_SESSIONS_FILE)
+    if state in sessions:
+        sessions[state]["access_token"] = token; sessions[state]["user_id"] = user_id
+        _sj(WECHAT_SESSIONS_FILE, sessions)
+    return {"success":True,"status":"confirmed","access_token":token,"user":{"user_id":user_id,"username":user["username"],"role":ti.get("role","editor"),"tenant_id":ti.get("tenant_id",""),"tenant_name":ti.get("tenant_name","")},"is_boss":(ti.get("role")=="super_admin")}
 
 
 # ── 密码找回 ────────────────────────────────────────────────
 
 def request_password_reset(username: str, email: str) -> Dict:
-    from auth import _load_json as auth_load, USERS_FILE
-    users = auth_load(USERS_FILE)
-    found = None
-    for uid, u in users.items():
-        if u.get("username") == username and u.get("email") == email:
-            found = u; break
-    if not found:
-        return {"success": False, "message": "用户名或邮箱不匹配"}
-    tokens = _load_json(RESET_TOKENS_FILE)
-    token = secrets.token_hex(16)
-    tokens[token] = {"user_id": found["user_id"], "username": username, "created_at": datetime.now().isoformat(), "expires_at": (datetime.now() + timedelta(minutes=RESET_TOKEN_EXPIRE_MINUTES)).isoformat(), "used": False}
-    _save_json(RESET_TOKENS_FILE, tokens)
-    return {"success": True, "token": token, "message": f"重置链接已发送到 {email}\n\n重置码: {token}"}
+    from auth import _lj as al, USERS_FILE
+    users = al(USERS_FILE)
+    found = next((u for u in users.values() if u.get("username")==username and u.get("email")==email), None)
+    if not found: return {"success":False,"message":"用户名或邮箱不匹配"}
+    tokens = _lj(RESET_TOKENS_FILE)
+    t = secrets.token_hex(16)
+    tokens[t] = {"user_id":found["user_id"],"username":username,"created_at":datetime.now().isoformat(),"expires_at":(datetime.now()+timedelta(minutes=30)).isoformat(),"used":False}
+    _sj(RESET_TOKENS_FILE, tokens)
+    return {"success":True,"token":t,"message":f"重置码已发送到 {email}\n\n重置码: {t}"}
+
+def reset_password(token: str, new_pw: str) -> Dict:
+    tokens = _lj(RESET_TOKENS_FILE); r = tokens.get(token)
+    if not r or r.get("used") or datetime.now()>datetime.fromisoformat(r["expires_at"]):
+        return {"success":False,"message":"重置链接无效或已过期"}
+    if not validate_password_strength(new_pw):
+        return {"success":False,"message":"密码需至少8位，含大小写字母和数字"}
+    from auth import _lj as al, _sj as a_s, USERS_FILE, hash_password
+    users = al(USERS_FILE); u = users.get(r["user_id"])
+    if not u: return {"success":False,"message":"用户不存在"}
+    h, s = hash_password(new_pw); u["password_hash"]=h; u["salt"]=s
+    a_s(USERS_FILE, users); r["used"]=True
+    _sj(RESET_TOKENS_FILE, tokens)
+    return {"success":True,"message":"密码重置成功"}
 
 
-def reset_password(token: str, new_password: str) -> Dict:
-    tokens = _load_json(RESET_TOKENS_FILE)
-    record = tokens.get(token)
-    if not record or record.get("used") or datetime.now() > datetime.fromisoformat(record["expires_at"]):
-        return {"success": False, "message": "重置链接无效或已过期"}
-    if not validate_password_strength(new_password):
-        return {"success": False, "message": "密码需至少8位，含大小写字母和数字"}
-    from auth import _load_json as auth_load, _save_json as auth_save, USERS_FILE, hash_password
-    users = auth_load(USERS_FILE)
-    user = users.get(record["user_id"])
-    if not user:
-        return {"success": False, "message": "用户不存在"}
-    pw_hash, pw_salt = hash_password(new_password)
-    user["password_hash"] = pw_hash; user["salt"] = pw_salt
-    auth_save(USERS_FILE, users)
-    record["used"] = True
-    _save_json(RESET_TOKENS_FILE, tokens)
-    return {"success": True, "message": "密码重置成功，请重新登录"}
+# ── 密码验证 ────────────────────────────────────────────────
 
+def validate_password_strength(pw: str) -> bool:
+    return len(pw)>=8 and bool(re.search(r'[a-z]',pw)) and bool(re.search(r'[A-Z]',pw)) and bool(re.search(r'\d',pw))
 
-# ── 密码强度 ────────────────────────────────────────────────
-
-def validate_password_strength(password: str) -> bool:
-    return len(password) >= 8 and bool(re.search(r'[a-z]', password)) and bool(re.search(r'[A-Z]', password)) and bool(re.search(r'\d', password))
-
-
-def validate_username(username: str) -> Optional[str]:
-    if len(username) < 3: return "用户名至少3个字符"
-    if len(username) > 30: return "用户名不能超过30个字符"
-    if not re.match(r'^[a-zA-Z0-9_]+$', username): return "用户名只能包含字母、数字和下划线"
+def validate_username(u: str) -> Optional[str]:
+    if len(u)<3: return "用户名至少3个字符"
+    if len(u)>30: return "用户名不能超过30个字符"
+    if not re.match(r'^[a-zA-Z0-9_]+$',u): return "用户名只能包含字母、数字和下划线"
     return None

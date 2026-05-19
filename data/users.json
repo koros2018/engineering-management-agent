@@ -43,5 +43,32 @@
     "salt": "8dd4af41dbb0316bc8baa7d0aa603606",
     "created_at": "2026-05-19T15:52:01.021094",
     "status": "active"
+  },
+  "user_0d56f303f2317469": {
+    "user_id": "user_0d56f303f2317469",
+    "username": "wx_5be6abf3",
+    "email": "f6b4cf2c@wechat.local",
+    "password_hash": "854e08657a98cd64cc563bc8b5c2a81f193fe556f6e81ccdc48deb83c34205f4",
+    "salt": "fd6e00f8e480122331423f6412595338",
+    "created_at": "2026-05-19T15:54:47.238191",
+    "status": "active"
+  },
+  "user_2d4775ae82909104": {
+    "user_id": "user_2d4775ae82909104",
+    "username": "wx_4c9c9bf3",
+    "email": "586e2f3b@wechat.local",
+    "password_hash": "e391bc7c24be2d548a063cf8607a7d84558c9403c904ff043f958af42c10fc13",
+    "salt": "04e3d68527fb3b094fadde0bf97860a2",
+    "created_at": "2026-05-19T15:55:04.363636",
+    "status": "active"
+  },
+  "user_3e739981cccfa90b": {
+    "user_id": "user_3e739981cccfa90b",
+    "username": "testwx_user",
+    "email": "test@wx.local",
+    "password_hash": "6666dfa08b6a641de5e453879411fbdbe96f3b8e6c02069004a6875d16f4f735",
+    "salt": "9cf578c472436231ebb7ce8cc9a890ad",
+    "created_at": "2026-05-19T16:07:11.146445",
+    "status": "active"
   }
 }
