@@ -617,6 +617,19 @@ const { createApp, ref, nextTick, onMounted } = Vue;
 
 createApp({
   setup() {
+    // Auth guard - 无token时跳转登录页
+    const urlParams = new URLSearchParams(window.location.search);
+    let authToken = urlParams.get('token');
+    if (!authToken) {
+      try { authToken = localStorage.getItem('ema_token'); } catch(e) {}
+    }
+    if (!authToken) {
+      window.location.href = '/ui/login.html';
+      return {};
+    }
+    // 存储到localStorage供后续使用
+    try { localStorage.setItem('ema_token', authToken); } catch(e) {}
+
     const API_BASE = 'http://127.0.0.1:5188';
     const messages = ref([]);
     const input = ref('');

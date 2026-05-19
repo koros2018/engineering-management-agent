@@ -162,6 +162,12 @@ td{padding:8px 12px;border-bottom:1px solid var(--border)}
 <script>
 const {createApp, ref, computed, onMounted} = Vue;
 createApp({setup(){
+  // Auth guard
+  let token = new URLSearchParams(window.location.search).get('token');
+  if (!token) { try { token = localStorage.getItem('ema_token'); } catch(e) {} }
+  if (!token) { window.location.href = '/ui/login.html'; return {}; }
+  try { localStorage.setItem('ema_token', token); } catch(e) {}
+
   const API='http://127.0.0.1:5188';
   const tab=ref('cockpit');
   const cockpit=ref({health_score:0,health_grade:'B',alerts:[],metrics:{revenue:{},projects:{},agents:{heatmap:[]},security:{}},quick_actions:[]});
