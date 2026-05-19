@@ -36,7 +36,7 @@ body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh
   <div class="logo"><div class="logo-icon">🤖</div><div class="logo-text">EMA</div><div class="logo-sub">工程管理智能体</div></div>
 
   <!-- 正常登录 -->
-  <template id="login-form">
+  <div id="login-form">
     <div class="tabs"><div class="tab active">账号登录</div></div>
     <div class="fg"><label>用户名</label><input id="login-user" type="text" placeholder="输入用户名" autocomplete="username"></div>
     <div class="fg"><label>密码</label><input id="login-pw" type="password" placeholder="输入密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
@@ -46,10 +46,10 @@ body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh
     <button class="btn btn-primary" onclick="doLogin()">登 录</button>
     <div class="links"><a onclick="showRegister()">注册账号</a><a onclick="showForgot()">忘记密码</a></div>
     <div class="wechat-section"><div class="hint">或使用微信扫码登录</div><div class="qr-placeholder" onclick="doWechat()" title="点击模拟微信扫码">📱</div><div id="msg-wechat" class="msg" style="font-size:10px"></div></div>
-  </template>
+  </div>
 
   <!-- 注册 -->
-  <template id="register-form" style="display:none">
+  <div id="register-form" style="display:display:none">
     <div class="tabs"><div class="tab active">注册账号</div></div>
     <div class="fg"><label>用户名</label><input id="reg-user" type="text" placeholder="至少3位，字母数字下划线"></div>
     <div class="fg"><label>邮箱</label><input id="reg-email" type="email" placeholder="用于密码找回"></div>
@@ -58,10 +58,10 @@ body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh
     <div id="msg-reg" class="msg"></div>
     <button class="btn btn-primary" onclick="doRegister()">注 册</button>
     <div class="links"><a onclick="showLogin()">← 返回登录</a></div>
-  </template>
+  </div>
 
   <!-- 忘记密码 -->
-  <template id="forgot-form" style="display:none">
+  <div id="forgot-form" style="display:display:none">
     <div class="tabs"><div class="tab active">找回密码</div></div>
     <div id="forgot-step1">
       <div class="fg"><label>用户名</label><input id="fp-user" type="text" placeholder="输入用户名"></div>
@@ -77,10 +77,10 @@ body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh
       <button class="btn btn-primary" onclick="doReset()">重置密码</button>
     </div>
     <div class="links"><a onclick="showLogin()">← 返回登录</a></div>
-  </template>
+  </div>
 
   <!-- 登录成功 -->
-  <template id="success-view" style="display:none">
+  <div id="success-view" style="display:display:none">
     <div style="text-align:center;padding:20px 0">
       <div style="font-size:48px;margin-bottom:12px">✅</div>
       <div style="font-size:16px;font-weight:600;color:#e2e8f0;margin-bottom:4px">登录成功</div>
@@ -88,7 +88,7 @@ body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh
       <button class="btn btn-primary" onclick="goToApp()">进入 EMA</button>
       <button class="btn btn-outline" onclick="goToAdmin()" id="btn-admin" style="display:none">👑 Boss后台</button>
     </div>
-  </template>
+  </div>
 </div></div>
 
 <script>
@@ -111,13 +111,20 @@ function toggleAdminPw(){
 }
 
 function render(){
-  var card=$('card');
-  var templates=document.querySelectorAll('template');
-  templates.forEach(function(t){t.style.display='none'});
-  if(mode==='login') document.getElementById('login-form').style.display='block';
-  else if(mode==='register') document.getElementById('register-form').style.display='block';
-  else if(mode==='forgot') document.getElementById('forgot-form').style.display='block';
-  else if(mode==='success') document.getElementById('success-view').style.display='block';
+  // 隐藏所有表单面板
+  ['login-form','register-form','forgot-form','success-view'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  var target = null;
+  if(mode==='login') target = 'login-form';
+  else if(mode==='register') target = 'register-form';
+  else if(mode==='forgot') target = 'forgot-form';
+  else if(mode==='success') target = 'success-view';
+  if (target) {
+    var el = document.getElementById(target);
+    if (el) el.style.display = 'block';
+  }
 }
 
 async function doLogin(){
