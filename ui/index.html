@@ -155,6 +155,37 @@
     }
     .send-btn:hover { opacity: 0.85; }
     .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── 历史记录面板 ── */
+    .history-panel {
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      max-height: 40%; overflow: hidden;
+    }
+    .history-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 10px; font-size: 11px; color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+    }
+    .history-refresh { cursor: pointer; font-size: 12px; }
+    .history-refresh:hover { color: var(--accent); }
+    .history-search {
+      margin: 6px 8px; background: var(--agent-bubble); border: 1px solid var(--border);
+      border-radius: 6px; padding: 4px 8px; font-size: 11px; color: var(--text); outline: none;
+    }
+    .history-search:focus { border-color: var(--accent); }
+    .history-list { flex: 1; overflow-y: auto; padding: 4px 8px; }
+    .history-item {
+      padding: 6px 8px; border-radius: 4px; cursor: pointer;
+      font-size: 11px; margin-bottom: 3px;
+      border: 1px solid transparent; transition: all 0.12s;
+    }
+    .history-item:hover { background: var(--border); }
+    .history-item.active { border-color: var(--accent); background: var(--agent-bubble); }
+    .history-item-title { color: var(--text); font-weight: 500; margin-bottom: 2px; }
+    .history-item-preview { color: var(--text-dim); max-height: 32px; overflow: hidden; }
+    .history-item-time { color: var(--text-dim); font-size: 10px; }
+    .history-empty { font-size: 11px; color: var(--text-dim); text-align: center; padding: 20px 8px; }
   </style>
 </head>
 <body>
@@ -170,12 +201,41 @@
       <div
         v-for="agent in agents"
         :key="agent.id"
-        :class="['nav-item', { active: currentAgent.id === agent.id }, agent.id]"
+        :class="['nav-item', { active: currentAgent.id === agent.id && !showHistory }, agent.id]"
         @click="switchAgent(agent)"
       >
         <div class="nav-dot" :class="agent.status"></div>
         <span class="nav-agent-icon">{{ agent.icon }}</span>
         <span>{{ agent.name }}</span>
+      </div>
+      <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
+        <div class="nav-section">📋 功能</div>
+        <div :class="['nav-item', { active: showHistory }]" @click="toggleHistory" style="color:var(--text-dim)">
+          <span style="margin-right:6px">📜</span> 历史记录
+        </div>
+      </div>
+    </div>
+
+    <!-- 历史记录面板 -->
+    <div class="history-panel" v-if="showHistory">
+      <div class="history-header">
+        <span>📜 对话历史</span>
+        <span class="history-refresh" @click="loadHistory" title="刷新">🔄</span>
+      </div>
+      <input class="history-search" v-model="historyQuery" placeholder="搜索对话..." @input="searchHistory">
+      <div class="history-list">
+        <div v-if="historyLoading" class="history-empty">⏳ 加载中...</div>
+        <div v-else-if="historySessions.length === 0" class="history-empty">暂无历史对话</div>
+        <div
+          v-for="s in historySessions"
+          :key="s.id"
+          :class="['history-item', { active: s.id === activeHistorySession }]"
+          @click="viewHistorySession(s)"
+        >
+          <div class="history-item-title">{{ s.preview || s.id.slice(-8) }}</div>
+          <div class="history-item-preview">{{ s.last_msg || '(空)' }}</div>
+          <div class="history-item-time">{{ s.agent }}</div>
+        </div>
       </div>
     </div>
   </div>
@@ -387,6 +447,7 @@ createApp({
       messages.value = [];
       input.value = '';
       selectedFile.value = null;
+      showHistory.value = false;
     }
 
     function onFileSelect(e) {
@@ -475,12 +536,88 @@ createApp({
       scrollBottom();
     }
 
+    // ── 历史记录 ──
+    const showHistory = ref(false);
+    const historySessions = ref([]);
+    const historyLoading = ref(false);
+    const historyQuery = ref('');
+    const activeHistorySession = ref(null);
+
+    function toggleHistory() {
+      showHistory.value = !showHistory.value;
+      if (showHistory.value) loadHistory();
+    }
+
+    async function loadHistory() {
+      historyLoading.value = true;
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/conversations?limit=20`);
+        const data = await resp.json();
+        if (data.success && data.conversations) {
+          historySessions.value = data.conversations.slice(0, 15).map(s => {
+            const msgs = (s.messages || []);
+            const last = msgs[msgs.length - 1] || {};
+            return {
+              id: s.id,
+              preview: (msgs[0]?.content || '').slice(0, 30),
+              last_msg: last.content?.slice(0, 40) || '',
+              agent: last.agent_id || '',
+              messages: msgs,
+            };
+          });
+        }
+      } catch (e) {
+        historySessions.value = [];
+      }
+      historyLoading.value = false;
+    }
+
+    async function searchHistory() {
+      if (!historyQuery.value) { loadHistory(); return; }
+      historyLoading.value = true;
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/conversations/search?q=${encodeURIComponent(historyQuery.value)}&limit=10`);
+        const data = await resp.json();
+        if (data.success && data.results) {
+          // 按session_id分组
+          const groups = {};
+          for (const r of data.results) {
+            const sid = r.session_id || 'unknown';
+            if (!groups[sid]) groups[sid] = [];
+            groups[sid].push(r);
+          }
+          historySessions.value = Object.entries(groups).map(([id, msgs]) => ({
+            id, preview: msgs[0]?.content?.slice(0, 30) || '',
+            last_msg: msgs[msgs.length - 1]?.content?.slice(0, 40) || '',
+            agent: msgs[msgs.length - 1]?.agent_id || '',
+            messages: msgs.map(m => ({ role: m.role, content: m.content })),
+          }));
+        }
+      } catch (e) {
+        historySessions.value = [];
+      }
+      historyLoading.value = false;
+    }
+
+    function viewHistorySession(session) {
+      activeHistorySession.value = session.id;
+      // 加载历史对话到消息区
+      messages.value = (session.messages || []).map(m => ({
+        role: m.role === 'user' ? 'user' : 'agent',
+        content: m.content,
+        time: '',
+      }));
+      scrollBottom();
+    }
+
     onMounted(() => { scrollBottom(); loadModels(); });
 
     return {
       messages, input, loading, selectedFile, chatArea, inputBox,
       agents, currentAgent, availableModels, selectedModel,
-      formatSize, switchAgent, onFileSelect, autoGrow, send, onModelChange
+      showHistory, historySessions, historyLoading, historyQuery, activeHistorySession,
+      formatSize, switchAgent, onFileSelect, autoGrow, send, onModelChange,
+      toggleHistory, loadHistory, searchHistory, viewHistorySession,
     };
   }
 }).mount('#app');

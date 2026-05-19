@@ -1,6 +1,6 @@
 # 工程管理智能体 (EMA) - Engineering Management Agent
 
-**版本：** v1.0.0（开发中）
+**版本：** v1.0.0（Phase 5 完成）
 **口号：** 工程管理，从"人管"到"智能体协管"
 
 ---
@@ -120,6 +120,11 @@ Memory 层:
 - [x] ChromaDB 对话历史 API（`/api/v1/conversations` + `/api/v1/conversations/search`）
 - [x] PROJECT.md 技术文档更新（Phase 1-4 完整记录）
 
+### ✅ Phase 5（2026-05-19）
+- [x] UI对话历史展示（侧边栏+搜索+会话切换）
+- [x] API接口文档（架构图+26个端点清单）
+- [x] EMA v1.0 正式release
+
 ---
 
 ## 启动方式
@@ -164,9 +169,10 @@ ac457a9 fix: TechRdAgent - LLMService.call() + Blueprint API调用双重保障
 
 ---
 
-## 下一步
+## 下一步（Phase 6）
 
-- [ ] UI对话历史展示（前端集成 `/api/v1/conversations`）
-- [ ] 完整生命周期文档体系验证
-- [ ] 技术文档完善（架构图/接口文档）
-- [ ] EMA v1.0 正式release
+- [ ] 多租户UI管理面板
+- [ ] 支付/订阅集成（微信/支付宝）
+- [ ] 主动智能推送（项目里程碑提醒/规范更新通知）
+- [ ] 性能优化（DWG解析加速/大文件处理）
+- [ ] 移动端适配（小程序/H5）
