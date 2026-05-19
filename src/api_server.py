@@ -669,6 +669,71 @@ async def mock_pay(order_id: str):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+# ── 安全审计 API ─────────────────────────────────────────────
+
+@app.get("/api/v1/security/audit")
+async def security_audit(
+    severity: str = None,
+    event_type: str = None,
+    limit: int = 50,
+):
+    """查看安全审计日志"""
+    from security import get_security_audit
+    return {"success": True, "events": get_security_audit(severity, event_type, limit)}
+
+
+@app.get("/api/v1/security/baseline")
+async def security_baseline():
+    """执行安全基线检查"""
+    from security import run_security_baseline_check
+    result = run_security_baseline_check()
+    return {"success": True, "baseline": result}
+
+
+@app.get("/api/v1/security/rate-limit")
+async def check_rate(client_ip: str = "127.0.0.1"):
+    """检查当前IP的速率限制状态"""
+    from security import check_rate_limit
+    return {"success": True, "rate": check_rate_limit(client_ip)}
+
+
+# ── 数据看板 API ─────────────────────────────────────────────
+
+@app.get("/api/v1/dashboard")
+async def dashboard():
+    """综合数据看板"""
+    from dashboard import get_dashboard
+    return {"success": True, "dashboard": get_dashboard()}
+
+
+@app.get("/api/v1/dashboard/projects")
+async def dashboard_projects():
+    """项目统计"""
+    from dashboard import get_project_stats
+    return {"success": True, "stats": get_project_stats()}
+
+
+@app.get("/api/v1/dashboard/usage")
+async def dashboard_usage(days: int = 30):
+    """使用趋势"""
+    from dashboard import get_usage_trends
+    return {"success": True, "trends": get_usage_trends(days)}
+
+
+@app.get("/api/v1/dashboard/revenue")
+async def dashboard_revenue():
+    """收益报表"""
+    from dashboard import get_revenue_report
+    return {"success": True, "revenue": get_revenue_report()}
+
+
+@app.get("/api/v1/dashboard/agents")
+async def dashboard_agents():
+    """Agent使用热度"""
+    from dashboard import get_agent_heatmap
+    return {"success": True, "heatmap": get_agent_heatmap()}
+
+
 # ── 主动推送通知 API ──────────────────────────────────────────
 
 @app.get("/api/v1/notifications")
