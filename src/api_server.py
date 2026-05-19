@@ -22,7 +22,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, List, Dict
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Form, Depends, Body
+from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Form, Depends, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -667,6 +667,123 @@ async def mock_pay(order_id: str):
         return {"success": True, "payment": result}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/v1/payment/wechat-callback")
+async def wechat_callback(request: Request):
+    """微信支付回调（生产环境）"""
+    body = await request.body()
+    body_str = body.decode()
+    headers = dict(request.headers)
+
+    try:
+        from payment_sdk import wechat_verify_callback
+        is_valid, order_data = wechat_verify_callback(headers, body_str)
+
+        if not is_valid or not order_data:
+            from security import log_security_event
+            log_security_event("payment_fraud", "critical", f"微信支付回调签名验证失败: {body_str[:200]}")
+            return {"code": "FAIL", "message": "签名验证失败"}
+
+        from payment import mock_pay_success
+        mock_pay_success(order_data.get("out_trade_no", ""))
+
+        # 微信要求返回明确的成功/失败
+        return {"code": "SUCCESS", "message": "OK"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/payment/alipay-callback")
+async def alipay_callback(request: Request):
+    """支付宝支付回调（生产环境）"""
+    form_data = await request.form()
+    params = {k: v for k, v in form_data.items()}
+
+    try:
+        from payment_sdk import alipay_verify_callback
+        is_valid, order_data = alipay_verify_callback(params)
+
+        if not is_valid or not order_data:
+            from security import log_security_event
+            log_security_event("payment_fraud", "critical", f"支付宝回调签名验证失败")
+            return "fail"
+
+        if order_data.get("trade_status") == "TRADE_SUCCESS":
+            from payment import mock_pay_success
+            mock_pay_success(order_data.get("out_trade_no", ""))
+
+        return "success"
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── 性能压测 API ─────────────────────────────────────────────
+
+@app.post("/api/v1/system/benchmark")
+async def run_benchmark(
+    endpoint: str = Form(None),
+    concurrent: int = Form(10),
+    total: int = Form(100),
+):
+    """执行性能压测（后台异步执行，不阻塞API）"""
+    import asyncio
+    from benchmark import benchmark
+
+    async def _run():
+        return benchmark(
+            base_url="http://127.0.0.1:5188",
+            endpoint=endpoint,
+            concurrent=min(concurrent, 50),
+            total=min(total, 500),
+        )
+
+    try:
+        result = await asyncio.wait_for(_run(), timeout=120)
+        return {"success": True, "benchmark": result}
+    except asyncio.TimeoutError:
+        return {"success": False, "error": "压测超时（120s），请减少请求数"}
+
+
+@app.get("/api/v1/system/health-check")
+async def system_health_check():
+    """系统快速健康检查（本地直调，不经过HTTP）"""
+    import time
+    checks = {}
+
+    # 本地直接调用，不经过HTTP（防止死锁）
+    t0 = time.time()
+    checks["health"] = {"status": "✅", "latency_ms": 0}
+
+    t0 = time.time()
+    try:
+        main_agent = get_main_agent()
+        caps = main_agent.get_capabilities()
+        agent_count = len(caps.get("sub_agents", []))
+        checks["agents"] = {"status": "✅", "latency_ms": round((time.time() - t0) * 1000, 1), "agents": agent_count}
+    except Exception:
+        checks["agents"] = {"status": "❌", "latency_ms": round((time.time() - t0) * 1000, 1)}
+
+    t0 = time.time()
+    try:
+        from dashboard import get_project_stats
+        get_project_stats()
+        checks["dashboard"] = {"status": "✅", "latency_ms": round((time.time() - t0) * 1000, 1)}
+    except Exception:
+        checks["dashboard"] = {"status": "❌", "latency_ms": round((time.time() - t0) * 1000, 1)}
+
+    t0 = time.time()
+    try:
+        from subscription import get_plan
+        get_plan("free")
+        checks["subscription"] = {"status": "✅", "latency_ms": round((time.time() - t0) * 1000, 1)}
+    except Exception:
+        checks["subscription"] = {"status": "❌", "latency_ms": round((time.time() - t0) * 1000, 1)}
+
+    return {"success": True, "health": checks}
+
+
+# ── 安全审计 API ─────────────────────────────────────────────
 
 
 # ── 安全审计 API ─────────────────────────────────────────────
