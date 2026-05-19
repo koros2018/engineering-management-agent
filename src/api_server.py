@@ -436,7 +436,8 @@ async def agent_chat(req: AgentChatRequest):
     task_id = str(uuid.uuid4())
     agent_id = req.task_type if req.task_type in [
         'tech_rd', 'safety_compliance', 'market_sales',
-        'engineering_delivery', 'cost_benefit', 'customer_service'
+        'engineering_delivery', 'cost_benefit', 'customer_service',
+        'manager'
     ] else 'tech_rd'
 
     main_agent = get_main_agent()

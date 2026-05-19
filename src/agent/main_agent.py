@@ -87,6 +87,7 @@ class EngineeringManagementAgent(BaseAgent):
             CostBenefitAgent,
             CustomerServiceAgent,
         )
+        from sub_agents.manager_agent import ManagerAgent
 
         self.sub_agents = {
             'tech_rd': TechRdAgent(),
@@ -95,6 +96,7 @@ class EngineeringManagementAgent(BaseAgent):
             'engineering_delivery': EngineeringDeliveryAgent(),
             'cost_benefit': CostBenefitAgent(),
             'customer_service': CustomerServiceAgent(),
+            'manager': ManagerAgent(),
         }
 
         # Agent元数据
@@ -105,6 +107,7 @@ class EngineeringManagementAgent(BaseAgent):
             'engineering_delivery': {'name': '工程交付中心', 'description': '项目计划/施工方案/进度追踪/竣工资料'},
             'cost_benefit': {'name': '成本效益中心', 'description': '工程量计算/预算生成/变更签证/经济效益'},
             'customer_service': {'name': '客户服务中心', 'description': 'FAQ/工单管理/回访计划/培训材料'},
+            'manager': {'name': '🎩 管家中心', 'description': 'Boss专属：运营总览/智能预警/自动报告/决策辅助'},
         }
 
     def _wrap(self, func):

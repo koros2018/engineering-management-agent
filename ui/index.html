@@ -137,6 +137,19 @@
     .usage-bar.warn { background: var(--warning); }
     .usage-bar.full { background: var(--danger); }
 
+    /* ── 一键体验 ── */
+    .tour-panel { margin: 2px 8px; }
+    .tour-step { padding: 8px 10px; font-size: 11px; color: var(--text); background: var(--agent-bubble); border-radius: 6px; margin-bottom: 4px; border-left: 3px solid var(--accent); }
+    .tour-scenario { padding: 8px 10px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.12s; border-radius: 4px; margin-bottom: 2px; font-size: 12px; }
+    .tour-scenario:hover { background: var(--border); }
+    .tour-scenario-desc { font-size: 9px; color: var(--dim); margin-top: 2px; }
+    .upload-dropzone { padding: 12px; margin: 6px 0; border: 2px dashed var(--accent); border-radius: 8px; cursor: pointer; text-align: center; font-size: 12px; color: var(--accent); transition: background 0.15s; }
+    .upload-dropzone:hover { background: rgba(59,130,246,0.08); }
+    .anime-agent-card { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--border); border-radius: 12px; font-size: 11px; margin: 2px; cursor: pointer; transition: all 0.15s; }
+    .anime-agent-card:hover { background: var(--accent); color: #fff; transform: scale(1.05); }
+    .anime-agent-card .emoji { font-size: 20px; animation: bounce 1s infinite; }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+
     .model-select {
       background: var(--agent-bubble); border: 1px solid var(--border);
       color: var(--text); font-size: 12px; border-radius: 6px; padding: 3px 8px;
@@ -297,20 +310,76 @@
   <div class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-logo">🤖 EMA</div>
-      <div class="sidebar-sub">工程管理智能体 v1.0</div>
+      <div class="sidebar-sub" style="margin-bottom:6px">工程管理智能体</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span :class="['plan-badge', planId]" style="font-size:10px;padding:3px 8px">
+          {{ planName || '体验版' }}
+        </span>
+        <span v-if="userRole === 'boss'" class="badge boss" style="font-size:10px;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;padding:3px 8px;border-radius:10px">👑 Boss</span>
+        <span v-else class="badge" style="font-size:10px;background:var(--border);padding:3px 8px;border-radius:10px">{{ userRole === 'enterprise' ? '🏢 企业' : userRole === 'pro' ? '💎 专业' : '👤 用户' }}</span>
+      </div>
     </div>
     <div class="sidebar-nav">
-      <!-- Agent 列表 -->
-      <div class="nav-section">🤖 Agent 中心</div>
+      <!-- 一键体验 -->
+      <div class="nav-section">🚀 快速入口</div>
+      <div :class="['nav-item', { active: showTour }]" @click="startTour" style="color:var(--accent);font-weight:500">
+        <span style="margin-right:6px">✨</span> 一键体验
+        <span v-if="tourStep > 0" style="font-size:10px;color:var(--dim);margin-left:auto">步骤{{ tourStep }}/3</span>
+      </div>
+      <div v-if="showTour" class="tour-panel">
+        <div v-if="tourStep === 1" style="padding:8px 10px;font-size:11px;color:var(--text);background:var(--agent-bubble);border-radius:6px;margin:4px 8px">
+          🎯 <b>选择您的任务类型</b><br>
+          <div v-for="(s,si) in tourScenarios" :key="si" style="padding:6px 0;cursor:pointer;border-bottom:1px solid var(--border)" @click="selectScenario(s)">
+            {{ s.icon }} {{ s.name }}
+            <div style="font-size:9px;color:var(--dim);margin-top:1px">{{ s.desc }}</div>
+          </div>
+        </div>
+        <div v-else-if="tourStep === 2" style="padding:8px 10px;font-size:11px;color:var(--text);background:var(--agent-bubble);border-radius:6px;margin:4px 8px">
+          📤 <b>上传您的图纸文件</b><br>
+          <div @click="triggerUpload" style="padding:8px 10px;margin:6px 0;border:1px dashed var(--accent);border-radius:8px;cursor:pointer;text-align:center;font-size:12px;color:var(--accent)">
+            📎 点击上传 DWG/DXF/PDF
+          </div>
+          <div style="font-size:9px;color:var(--dim)">支持格式：DWG、DXF、PDF（最大500MB）</div>
+        </div>
+        <div v-else-if="tourStep === 3" style="padding:8px 10px;font-size:11px;color:var(--text);background:var(--agent-bubble);border-radius:6px;margin:4px 8px">
+          ✨ <b>自动分析与建议</b><br>
+          <div style="padding:4px 0">
+            <div v-for="(s,si) in tourResults" :key="si" style="font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">
+              <span>{{ s.icon }}</span><span>{{ s.label }}</span>
+              <span v-if="s.ready" style="color:var(--green);font-size:10px">✅</span>
+              <span v-else style="color:var(--dim);font-size:10px">⏳</span>
+            </div>
+          </div>
+          <button @click="finishTour" style="width:100%;margin-top:6px;padding:6px;font-size:11px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer">
+            🚀 开始生成报告
+          </button>
+        </div>
+      </div>
+      <!-- Agent 列表（分级展示）-->
+      <div class="nav-section">🤖 功能中心</div>
       <div
-        v-for="agent in agents"
+        v-for="agent in agents.filter(a => canAccessAgent(a))"
         :key="agent.id"
         :class="['nav-item', { active: currentAgent.id === agent.id && !showHistory }, agent.id]"
         @click="switchAgent(agent)"
       >
         <div class="nav-dot" :class="agent.status"></div>
-        <span class="nav-agent-icon">{{ agent.icon }}</span>
+        <span class="nav-agent-icon">{{ agent.anime_icon || agent.icon }}</span>
         <span>{{ agent.name }}</span>
+      </div>
+      <!-- 锁定Agent（未付费）-->
+      <div v-if="lockedAgents().length > 0" style="margin-top:6px">
+        <div class="nav-section">🔒 升级解锁</div>
+        <div
+          v-for="agent in lockedAgents()"
+          :key="agent.id"
+          class="nav-item" style="opacity:0.5;cursor:pointer"
+          @click="openSubscribe()"
+        >
+          <span style="margin-right:6px">🔒</span>
+          <span class="nav-agent-icon">{{ agent.icon }}</span>
+          <span>{{ agent.name }}</span>
+        </div>
       </div>
       <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
         <div class="nav-section">📋 功能</div>
@@ -557,13 +626,33 @@ createApp({
     const inputBox = ref(null);
 
     const agents = [
-      { id: 'tech_rd', icon: '🔧', name: '技术研发中心', description: '图纸解析/类型识别/AI分析/工程量/设计优化', status: 'online', tasks: ['上传图纸，帮我分析这张图纸', '上传图纸，识别图纸类型', '上传图纸，提取工程量', '上传图纸，生成优化建议', '上传图纸，进行合规审图'] },
-      { id: 'safety_compliance', icon: '🔒', name: '安全与合规中心', description: '消防合规/结构安全/施工安全/法规审核', status: 'online', tasks: ['帮我审查消防合规性', '进行结构安全审查', '检查图纸是否符合国标规范', '上传图纸，执行完整审图'] },
-      { id: 'engineering_delivery', icon: '🏗️', name: '工程交付中心', description: '项目计划/施工方案/进度追踪/竣工资料', status: 'online', tasks: ['生成SOP标准操作程序', '生成MOP维护操作程序', '生成EOP紧急操作程序', '生成LCC生命周期成本', '生成竣工文档'] },
-      { id: 'cost_benefit', icon: '💰', name: '成本效益中心', description: '工程量计算/预算生成/变更签证/经济效益评估', status: 'online', tasks: ['从图纸生成工程预算', '提取工程量清单', '进行成本对比分析', '评估投资回报'] },
-      { id: 'market_sales', icon: '📡', name: '市场与销售中心', description: '市场分析/商务方案/投标文件/客户需求挖掘', status: 'online', tasks: ['介绍EMA定价方案', '如何进行投标文件辅助', '市场分析与需求挖掘'] },
-      { id: 'customer_service', icon: '🤝', name: '客户服务中心', description: 'FAQ/工单管理/回访计划/培训材料', status: 'online', tasks: ['常见问题FAQ', '生成培训材料', '客户反馈分析'] },
+      { id: 'tech_rd', icon: '🔧', anime_icon: '⚙️', name: '技术研发中心', description: '图纸解析/类型识别/AI分析/工程量/设计优化', status: 'online', plan_required: 'free', tasks: ['上传图纸，帮我分析这张图纸', '上传图纸，识别图纸类型', '上传图纸，提取工程量', '上传图纸，生成优化建议'] },
+      { id: 'safety_compliance', icon: '🔒', anime_icon: '🛡️', name: '安全与合规中心', description: '消防合规/结构安全/施工安全/法规审核', status: 'online', plan_required: 'free', tasks: ['帮我审查消防合规性', '进行结构安全审查', '检查图纸是否符合国标规范'] },
+      { id: 'engineering_delivery', icon: '🏗️', anime_icon: '📐', name: '工程交付中心', description: '项目计划/施工方案/进度追踪/竣工资料', status: 'online', plan_required: 'pro', tasks: ['生成SOP标准操作程序', '生成MOP维护操作程序', '生成EOP紧急操作程序', '生成LCC生命周期成本'] },
+      { id: 'cost_benefit', icon: '💰', anime_icon: '📊', name: '成本效益中心', description: '工程量计算/预算生成/变更签证/经济效益评估', status: 'online', plan_required: 'pro', tasks: ['从图纸生成工程预算', '提取工程量清单', '进行成本对比分析'] },
+      { id: 'market_sales', icon: '📡', anime_icon: '🎯', name: '市场与销售中心', description: '市场分析/商务方案/投标文件/客户需求挖掘', status: 'online', plan_required: 'pro', tasks: ['介绍EMA定价方案', '如何进行投标文件辅助', '市场分析与需求挖掘'] },
+      { id: 'customer_service', icon: '🤝', anime_icon: '💬', name: '客户服务中心', description: 'FAQ/工单管理/回访计划/培训材料', status: 'online', plan_required: 'free', tasks: ['常见问题FAQ', '生成培训材料', '客户反馈分析'] },
     ];
+
+    // PLAN_ACCESS 定义套餐能访问的Agent集合
+    const PLAN_ACCESS = {
+      free: ['tech_rd', 'safety_compliance', 'customer_service'],
+      pro: ['tech_rd', 'safety_compliance', 'engineering_delivery', 'cost_benefit', 'market_sales', 'customer_service'],
+      enterprise: ['tech_rd', 'safety_compliance', 'engineering_delivery', 'cost_benefit', 'market_sales', 'customer_service'],
+      private: ['tech_rd', 'safety_compliance', 'engineering_delivery', 'cost_benefit', 'market_sales', 'customer_service'],
+    };
+
+    const userRole = ref('free'); // 'boss'|'enterprise'|'pro'|'free'
+
+    function canAccessAgent(agent) {
+      if (userRole.value === 'boss') return true;
+      const allowed = PLAN_ACCESS[userRole.value] || PLAN_ACCESS.free;
+      return allowed.includes(agent.id);
+    }
+
+    function lockedAgents() {
+      return agents.filter(a => !canAccessAgent(a));
+    }
 
     const currentAgent = ref(agents[0]);
     const availableModels = ref([]);
@@ -583,9 +672,62 @@ createApp({
           if (d.success && d.subscription) {
             planId.value = d.subscription.plan_id || 'free';
             planName.value = d.subscription.plan_name || '体验版';
+            userRole.value = d.subscription.plan_id || 'free';
+            const visible = agents.filter(a => canAccessAgent(a));
+            if (!visible.find(a => a.id === currentAgent.value.id)) {
+              currentAgent.value = visible[0] || agents[0];
+            }
           }
         })
         .catch(() => {});
+    }
+
+    // ── 一键体验 ──
+    const showTour = ref(false);
+    const tourStep = ref(0);
+    const tourScenarios = ref([
+      { icon: '📋', name: '图纸分析', desc: '上传DWG/DXF，自动识别类型并提取工程量', action: 'analyze' },
+      { icon: '🔍', name: '智能审图', desc: '一键审查消防、结构、电气合规', action: 'review' },
+      { icon: '📄', name: '生成文档', desc: '生成设计说明、技术交底、工程量清单', action: 'docs' },
+      { icon: '💰', name: '工程预算', desc: '自动计算造价，生成预算表', action: 'budget' },
+    ]);
+    const tourResults = ref([
+      { icon: '📊', label: '图纸类型识别', ready: false },
+      { icon: '🔍', label: '合规审查', ready: false },
+      { icon: '📄', label: '文档生成', ready: false },
+    ]);
+
+    function startTour() {
+      showTour.value = !showTour.value;
+      if (showTour.value) tourStep.value = 1;
+    }
+
+    function selectScenario(scenario) {
+      tourStep.value = 2;
+      const mapping = { analyze: 'tech_rd', review: 'safety_compliance', docs: 'engineering_delivery', budget: 'cost_benefit' };
+      const target = mapping[scenario.action];
+      if (target) {
+        const ag = agents.find(a => a.id === target);
+        if (ag && canAccessAgent(ag)) switchAgent(ag);
+      }
+      messages.value.push({ role: 'agent', content: '🎯 已选择「' + scenario.name + '」场景。请上传您的图纸文件继续。', time: now() });
+    }
+
+    function triggerUpload() {
+      const inp = document.querySelector('input[type=file]');
+      if (inp) {
+        inp.click();
+        inp.addEventListener('change', function handler() {
+          if (inp.files && inp.files[0]) { tourStep.value = 3; inp.removeEventListener('change', handler); }
+        }, { once: true });
+      }
+    }
+
+    function finishTour() {
+      tourResults.value.forEach(r => r.ready = true);
+      showTour.value = false;
+      tourStep.value = 0;
+      messages.value.push({ role: 'agent', content: '✨ 体验完成！您的图纸已准备就绪。点击 📎 上传图纸，或直接输入文字开始使用。', time: now() });
     }
 
     function loadNotifications() {
@@ -887,6 +1029,9 @@ createApp({
       showHistory, historySessions, historyLoading, historyQuery, activeHistorySession,
       formatSize, switchAgent, onFileSelect, autoGrow, send, onModelChange,
       toggleHistory, loadHistory, searchHistory, viewHistorySession,
+      userRole, canAccessAgent, lockedAgents,
+      showTour, tourStep, tourScenarios, tourResults,
+      startTour, selectScenario, triggerUpload, finishTour,
       openSubscribe, openNotifications, doSubscribe, loadNotificationsList, markAllRead, readNotif, formatNotifTime,
     };
   }
