@@ -250,6 +250,74 @@ async def list_agents():
     }
 
 
+@app.get("/api/v1/conversations")
+async def get_conversations(
+    session_id: str = None,
+    limit: int = 20,
+):
+    """
+    获取对话历史（从 ChromaDB）
+    """
+    try:
+        from memory import get_chroma_store
+        store = get_chroma_store()
+        if session_id:
+            results = store.search_conversations(query="", session_id=session_id, limit=limit)
+        else:
+            # 返回所有会话的最新消息（取每个session最近一条）
+            results = store.search_conversations(query="*", limit=min(limit, 50))
+        
+        # 按session_id分组
+        sessions = {}
+        for r in results:
+            sid = r['metadata'].get('session_id', 'unknown')
+            if sid not in sessions:
+                sessions[sid] = {'id': sid, 'messages': [], 'last_time': 0}
+            ts = r['metadata'].get('timestamp', 0)
+            sessions[sid]['messages'].append({
+                'role': r['metadata'].get('role', 'unknown'),
+                'content': r['content'][:200],  # 截断
+                'agent_id': r['metadata'].get('agent_id', ''),
+            })
+            if ts > sessions[sid]['last_time']:
+                sessions[sid]['last_time'] = ts
+        
+        # 转换为列表并排序
+        session_list = sorted(sessions.values(), key=lambda x: x['last_time'], reverse=True)[:limit]
+        for s in session_list:
+            s.pop('last_time', None)
+        
+        return {"success": True, "conversations": session_list}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.get("/api/v1/conversations/search")
+async def search_conversations(q: str = None, session_id: str = None, limit: int = 10):
+    """搜索对话历史"""
+    try:
+        from memory import get_chroma_store
+        store = get_chroma_store()
+        if not q:
+            return {"success": False, "error": "q参数必填"}
+        results = store.search_conversations(query=q, session_id=session_id, limit=limit)
+        return {
+            "success": True,
+            "results": [
+                {
+                    "content": r['content'][:500],
+                    "session_id": r['metadata'].get('session_id', ''),
+                    "role": r['metadata'].get('role', ''),
+                    "agent_id": r['metadata'].get('agent_id', ''),
+                    "distance": r.get('distance', 0),
+                }
+                for r in results
+            ],
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @app.get("/api/v1/llm/models")
 async def list_llm_models():
     """

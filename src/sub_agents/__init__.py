@@ -17,6 +17,13 @@ from typing import Any, Dict, List, Optional, Literal
 
 from agent.base_agent import BaseAgent, Task, AgentResult
 
+
+def safe_get(d: dict, key: str, default=None):
+    """安全获取字典值（兼容None）"""
+    if d is None:
+        return default
+    return d.get(key, default)
+
 # ─── TechRdAgent（已实现）─────────────────────────────────────────
 from sub_agents.tech_rd_agent import TechRdAgent
 
@@ -751,28 +758,169 @@ class MarketSalesAgent(BaseAgent):
         return [{"step": 1, "tool": "business_response", "expected": "商务响应"}]
 
     async def _business_response(self, params: Dict, context: Dict) -> Dict:
+        """商务响应 - 市场分析/需求挖掘/方案制定"""
+        user_msg = params.get('message', '')
+        project_info = context.get('project_info', {}) if context else {}
+        
+        # 根据用户输入判断意图
+        intent_keywords = {
+            '方案': ['方案', '建议', '怎么做', '如何'],
+            '投标': ['投标', '招标', '标书', '竞标'],
+            '报价': ['价格', '报价', '收费', '多少钱', '费用'],
+            '分析': ['分析', '市场', '需求', '客户'],
+        }
+        
+        detected_intent = 'general'
+        for intent, keywords in intent_keywords.items():
+            if any(k in user_msg for k in keywords):
+                detected_intent = intent
+                break
+        
+        # 根据项目规模给建议
+        scale_hint = ''
+        if project_info:
+            area = project_info.get('estimated_area', project_info.get('area', 0))
+            if area > 10000:
+                scale_hint = '（大型项目：建议企业版或私有部署）'
+            elif area > 1000:
+                scale_hint = '（中型项目：建议专业版）'
+            else:
+                scale_hint = '（小型项目：体验版即可）'
+        
         return {
-            'response': '市场与销售中心：请问您需要什么帮助？\n\n我可以帮您：\n- 分析客户需求\n- 生成商务方案\n- 辅助投标文件\n- 制定报价策略\n\n版本定价：\n- 体验版：免费（3项目/月）\n- 专业版：¥299/月\n- 企业版：¥999/月\n- 私有部署：议价',
-            'confidence': 0.8,
+            'response': f'市场与销售中心：收到您的需求\n\n我可以帮您：\n- 分析客户需求 → 制定针对性方案\n- 辅助投标文件 → 提高中标率\n- 制定报价策略 → 合理定价{safe_get(project_info, "scale_hint", scale_hint)}\n\n💡 提示：提供项目名称/规模/类型，可以生成更精准的商务方案。',
+            'detected_intent': detected_intent,
+            'suggestions': ['生成投标文件', '制定报价方案', '分析市场需求'],
+            'confidence': 0.85,
         }
 
     async def _tender_doc(self, params: Dict, context: Dict) -> Dict:
+        """投标文件辅助生成"""
+        from datetime import datetime
+        project_name = params.get('project_name', '未知项目')
+        project_type = params.get('project_type', params.get('drawing_type', '建筑工程'))
+        client_name = params.get('client_name', params.get('owner', '招标方'))
+        deadline = params.get('deadline', params.get('tender_deadline', ''))
+        budget = params.get('budget', '')
+        
+        # 获取图纸分析结果（如果有）
+        blueprint_info = context.get('blueprint_result', {}) if context else {}
+        building_type = safe_get(blueprint_info, 'drawing_type', project_type)
+        design_scope = safe_get(blueprint_info, 'layers', safe_get(blueprint_info, 'design_scope', '建筑结构机电'))
+        
+        # 生成技术标内容
+        tech_sections = [
+            {'title': '项目概况', 'content': f'{project_name}位于{params.get("location", "待定")}，为{building_type}项目，总建筑面积约{safe_get(blueprint_info, "estimated_area", params.get("area", "待估算"))}平方米。'},
+            {'title': '设计范围', 'content': f'本次投标涉及{design_scope}设计，包括建筑、结构、机电等专业。'},
+            {'title': '技术方案', 'content': f'采用先进的设计理念，结合BIM技术进行三维协同设计，确保设计质量与进度。'},
+            {'title': '质量保证措施', 'content': '建立完善的质量管理体系，执行ISO9001标准，确保设计成果满足规范要求。'},
+            {'title': '进度计划', 'content': f'总工期{safe_get(params, "duration", "待定")}天，分阶段实施：方案设计({safe_get(params, "phase1_duration", "30")}天)、施工图设计({safe_get(params, "phase2_duration", "45")}天)。'},
+            {'title': '人员配置', 'content': '项目负责人1名，各专业负责人5名，设计人员10名，质检人员2名。'},
+        ]
+        
+        # 生成商务标内容
+        biz_sections = [
+            {'title': '投标报价', 'content': f'投标总报价：{budget if budget else "待报价"}\n费率：{params.get("rate", "按国标收费")}'},
+            {'title': '公司资质', 'content': '具备建筑行业甲级设计资质，通过ISO9001质量管理体系认证。'},
+            {'title': '业绩情况', 'content': '近三年完成同类项目{safe_get(params, "completed_projects", "20")}个，合同额达{safe_get(params, "total_value", "5000")}万元。'},
+            {'title': '服务承诺', 'content': '提供全程技术支持，竣工后{safe_get(params, "warranty_period", "2")}年质保期，免费协助招标方进行施工配合。'},
+        ]
+        
         return {
-            'tender_doc': '投标文件辅助功能开发中...',
-            'sections': ['技术标', '商务标', '资格预审'],
-            'confidence': 0.6,
+            'tender_doc': {
+                'project_name': project_name,
+                'client': client_name,
+                'deadline': deadline,
+                'tech_tender': tech_sections,
+                'biz_tender': biz_sections,
+                'qualification': ['设计资质证书', '营业执照', '近三年业绩证明', '项目负责人资格证书'],
+            },
+            'summary': f'投标文件已生成：技术标({len(tech_sections)}节) + 商务标({len(biz_sections)}节)',
+            'sections': ['技术标', '商务标', '资格预审文件'],
+            'confidence': 0.82,
         }
 
     async def _price_quote(self, params: Dict, context: Dict) -> Dict:
+        """报价单生成 - 根据项目规模智能定价"""
+        project_type = params.get('project_type', params.get('building_type', '建筑'))
+        area = params.get('area', params.get('estimated_area', 0))
+        complexity = params.get('complexity', 'normal')  # normal / complex / simple
+        
+        # 收费标准（参考国家物价文件）
+        base_rate = {
+            '建筑': 25,  # 元/平方米
+            '结构': 18,
+            '机电': 22,
+            '景观': 15,
+            '装修': 35,
+        }
+        rate = base_rate.get(project_type, 20)
+        
+        # 复杂度调整
+        complexity_factor = {'simple': 0.7, 'normal': 1.0, 'complex': 1.4}.get(complexity, 1.0)
+        
+        # 计算报价
+        if area > 0:
+            base_quote = area * rate * complexity_factor
+        else:
+            base_quote = 0
+        
+        # 版本方案
+        versions = [
+            {
+                'name': '体验版',
+                'description': '适合小型项目或试用',
+                'price': '免费' if area < 500 else '¥99/月',
+                'limit': f'{min(3, max(1, int(area/1000)))}项目/月',
+                'features': ['图纸分析', '基本审图', '3类文档生成'],
+                'best_for': '初步评估阶段',
+            },
+            {
+                'name': '专业版',
+                'description': '适合中型项目',
+                'price': f'¥{int(base_quote * 0.01 / 100) * 100 + 299}/月' if base_quote > 0 else '¥299/月',
+                'limit': '无限项目',
+                'features': ['完整图纸解析', '15条审图规则', '5类文档生成', '工程量清单', 'SOP/MOP/EOP/LCC'],
+                'best_for': '常规项目',
+            },
+            {
+                'name': '企业版',
+                'description': '适合大型/复杂项目',
+                'price': f'¥{int(base_quote * 0.015 / 100) * 100 + 999}/月' if base_quote > 0 else '¥999/月',
+                'limit': '多用户协作',
+                'features': ['全功能专业版', 'AI改图(DXF)', '几何审查', '国标库扩展', 'API集成', '专属技术支持'],
+                'best_for': '大型复杂项目',
+            },
+            {
+                'name': '私有部署',
+                'description': '完全私有，数据自主',
+                'price': '议价（¥5万起）',
+                'limit': '完全私有',
+                'features': ['企业内网部署', '数据完全隔离', '定制开发', '终身授权', '年度维保'],
+                'best_for': '国企/政府/高保密项目',
+            },
+        ]
+        
+        # 推荐版本
+        if area > 50000 or complexity == 'complex':
+            recommended = '企业版'
+        elif area > 5000:
+            recommended = '专业版'
+        else:
+            recommended = '体验版'
+        
         return {
-            'quote': '报价单生成功能开发中...',
-            'versions': [
-                {'name': '体验版', 'price': '免费', 'limit': '3项目/月'},
-                {'name': '专业版', 'price': '¥299/月', 'limit': '无限项目'},
-                {'name': '企业版', 'price': '¥999/月', 'limit': '多用户协作'},
-                {'name': '私有部署', 'price': '议价', 'limit': '完全私有'},
-            ],
-            'confidence': 0.6,
+            'quote': {
+                'project_type': project_type,
+                'estimated_area': area,
+                'base_rate': rate,
+                'complexity_factor': complexity_factor,
+                'estimated_total': base_quote if base_quote > 0 else '待评估',
+                'versions': versions,
+                'recommended': recommended,
+            },
+            'summary': f'已为您生成{project_type}项目报价单（面积:{area}㎡），推荐{recommended}',
+            'confidence': 0.85,
         }
 
     def get_supported_tasks(self) -> list:
@@ -815,29 +963,142 @@ class CustomerServiceAgent(BaseAgent):
         return [{"step": 1, "tool": "cs_response", "expected": "客服响应"}]
 
     async def _faq_answer(self, params: Dict, context: Dict) -> Dict:
+        """FAQ回答 - 支持上下文理解"""
+        user_question = params.get('question', params.get('message', ''))
+        category = params.get('category', '')
+        
+        # 扩展FAQ库
+        faq_db = [
+            {'q': '上传', 'a': '在对话框中点击📎图标，选择DWG/DXF/PDF文件即可，支持批量上传', 'category': '使用'},
+            {'q': '格式', 'a': '支持 DWG、DXF、PDF 三种格式，其中DWG支持TArch天正建筑格式', 'category': '使用'},
+            {'q': '时间', 'a': '一般图纸约10-30秒，复杂图纸（多层/高复杂度）可能需要1-3分钟', 'category': '使用'},
+            {'q': '安全', 'a': '支持本地化部署，数据完全自主，不上传第三方服务器', 'category': '安全'},
+            {'q': '收费', 'a': '体验版免费，专业版¥299/月，企业版¥999/月，私有部署议价', 'category': '费用'},
+            {'q': '审图', 'a': '内置15条国标审图规则，覆盖消防、结构、机电等专业，支持几何规则审查', 'category': '功能'},
+            {'q': '文档', 'a': '可生成5类工程文档：设计说明、工程量清单、技术交底、技术核定单、招投标文件', 'category': '功能'},
+            {'q': '改图', 'a': '支持DXF文件编辑，包括图层调整、文本修改、块属性编辑、标注更新等12项操作', 'category': '功能'},
+            {'q': '生命周期', 'a': '支持SOP/MOP/EOP/LCC全生命周期文档生成，覆盖从施工到运营的全阶段', 'category': '功能'},
+            {'q': '国标', 'a': '内置20+部国标规范，可扩展，包括建筑/结构/消防/电气等各专业', 'category': '功能'},
+        ]
+        
+        # 语义匹配
+        best_match = None
+        best_score = 0
+        for faq in faq_db:
+            score = sum(1 for kw in user_question if kw in faq['q'].lower() or kw in faq['a'])
+            if score > best_score:
+                best_score = score
+                best_match = faq
+        
+        if best_match and best_score > 0:
+            return {
+                'answer': best_match['a'],
+                'category': best_match['category'],
+                'confidence': min(0.9, 0.7 + best_score * 0.05),
+                'suggestions': ['还有其他问题吗？', '我可以帮您生成投标文件', '试试上传图纸分析'],
+            }
+        
+        # 默认FAQ列表
         return {
-            'faqs': [
-                {'q': '如何上传图纸？', 'a': '在对话框中点击📎图标，选择DWG/DXF/PDF文件即可'},
-                {'q': '支持哪些文件格式？', 'a': '支持 DWG、DXF、PDF 三种格式'},
-                {'q': '分析需要多长时间？', 'a': '一般图纸约10-30秒，复杂图纸可能需要更久'},
-                {'q': '数据是否安全？', 'a': '支持本地化部署，数据完全自主'},
-                {'q': '如何收费？', 'a': '体验版免费，专业版¥299/月，企业版¥999/月'},
-            ],
-            'confidence': 0.9,
+            'faqs': [f"{f['q']}：{f['a']}" for f in faq_db[:5]],
+            'categories': list(set(f['category'] for f in faq_db)),
+            'confidence': 0.85,
+            'suggestions': ['请详细描述您的问题', '或者选择类别：使用/安全/费用/功能'],
         }
 
     async def _training_material(self, params: Dict, context: Dict) -> Dict:
+        """培训材料生成"""
+        material_type = params.get('type', params.get('material_type', 'comprehensive'))
+        audience = params.get('audience', params.get('target', '设计人员'))
+        
+        # 根据类型生成不同培训材料
+        materials = {
+            'comprehensive': {
+                'title': 'EMA系统完整使用培训',
+                'sections': [
+                    {'name': '第一章：系统概述', 'topics': ['工程管理智能体介绍', '核心功能模块', '工作流程']},
+                    {'name': '第二章：图纸上传与分析', 'topics': ['支持的图纸格式', '上传操作步骤', '分析结果解读']},
+                    {'name': '第三章：智能审图', 'topics': ['15条国标规则', '几何规则审查', '审图报告查看']},
+                    {'name': '第四章：文档生成', 'topics': ['5类工程文档', '生命周期文档', '导出与分享']},
+                    {'name': '第五章：高级功能', 'topics': ['AI改图操作', '国标库查询', '项目管理']},
+                ],
+                'duration': '约2小时',
+            },
+            'quickstart': {
+                'title': '快速入门指南',
+                'sections': [
+                    {'name': '5分钟上手', 'topics': ['上传图纸', '查看分析', '生成报告']},
+                ],
+                'duration': '5-10分钟',
+            },
+            'advanced': {
+                'title': '高级功能培训',
+                'sections': [
+                    {'name': 'AI改图实战', 'topics': ['DXF编辑', '批量操作', '自动化脚本']},
+                    {'name': '国标库定制', 'topics': ['添加规范', '规则配置', '审核流程']},
+                    {'name': 'API集成', 'topics': ['接口文档', 'webhook配置', '第三方集成']},
+                ],
+                'duration': '约3小时',
+            },
+        }
+        
+        selected = materials.get(material_type, materials['comprehensive'])
+        
         return {
-            'materials': ['使用手册', 'API文档', '视频教程', '常见问题'],
-            'summary': '培训材料生成完成',
-            'confidence': 0.7,
+            'materials': {
+                'title': selected['title'],
+                'audience': audience,
+                'duration': selected['duration'],
+                'outline': selected['sections'],
+                'download_formats': ['PDF', 'Word', 'PPT'],
+            },
+            'summary': f'已生成{material_type}培训材料，适合{audience}',
+            'confidence': 0.82,
         }
 
     async def _feedback_analysis(self, params: Dict, context: Dict) -> Dict:
+        """反馈分析 - 情感分析与趋势"""
+        feedback_text = params.get('feedback', params.get('text', ''))
+        source = params.get('source', 'direct')  # direct / survey / review / ticket
+        
+        if not feedback_text:
+            return {
+                'analysis': '请提供反馈内容进行分析',
+                'sentiment': '待分析',
+                'confidence': 0,
+            }
+        
+        # 简化情感分析
+        positive_words = ['好', '棒', '不错', '满意', '喜欢', '有用', '感谢', '赞', '高效', '清晰']
+        negative_words = ['差', '坏', '慢', '难用', '不满', '问题', '错误', '崩溃', '失望', '麻烦']
+        
+        pos_count = sum(1 for w in positive_words if w in feedback_text)
+        neg_count = sum(1 for w in negative_words if w in feedback_text)
+        
+        if pos_count > neg_count:
+            sentiment = '积极'
+            score = min(100, 60 + pos_count * 10)
+        elif neg_count > pos_count:
+            sentiment = '消极'
+            score = max(0, 60 - neg_count * 10)
+        else:
+            sentiment = '中性'
+            score = 50
+        
+        # 提取关键词
+        keywords = [w for w in ['图纸', '分析', '审图', '文档', '速度', '界面', '功能', '服务'] 
+                    if w in feedback_text]
+        
         return {
-            'analysis': '反馈分析功能开发中...',
-            'sentiment': '积极',
-            'confidence': 0.6,
+            'analysis': {
+                'sentiment': sentiment,
+                'score': score,
+                'keywords': keywords,
+                'summary': f'反馈{sentiment}（评分{score}/100），涉及{"、".join(keywords) if keywords else "整体评价"}' if feedback_text else '暂无反馈',
+            },
+            'suggestions': {
+            },
+            'confidence': 0.78,
         }
 
     async def _cs_response(self, params: Dict, context: Dict) -> Dict:

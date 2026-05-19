@@ -113,7 +113,12 @@ Memory 层:
 - [x] dispatch_parallel 多 Agent 并行执行
 - [x] IntentClassifier greeting 优化（无图纸返回 chat）
 - [x] TechRdAgent chat task_type 响应
-- [ ] PROJECT.md 技术文档更新
+
+### ✅ Phase 4（2026-05-19）
+- [x] MarketSalesAgent 真实业务能力（投标文件生成/报价单生成/商务响应）
+- [x] CustomerServiceAgent 真实业务能力（FAQ语义匹配/培训材料/反馈分析）
+- [x] ChromaDB 对话历史 API（`/api/v1/conversations` + `/api/v1/conversations/search`）
+- [x] PROJECT.md 技术文档更新（Phase 1-4 完整记录）
 
 ---
 
@@ -161,7 +166,7 @@ ac457a9 fix: TechRdAgent - LLMService.call() + Blueprint API调用双重保障
 
 ## 下一步
 
-- [ ] 完善 MarketSalesAgent / CustomerServiceAgent 的实际业务能力
-- [ ] UI 对话历史展示（基于 ChromaDB）
+- [ ] UI对话历史展示（前端集成 `/api/v1/conversations`）
 - [ ] 完整生命周期文档体系验证
 - [ ] 技术文档完善（架构图/接口文档）
+- [ ] EMA v1.0 正式release
