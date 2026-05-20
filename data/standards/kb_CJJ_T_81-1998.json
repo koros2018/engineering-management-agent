@@ -1,0 +1,20 @@
+{
+  "spec_code": "CJJ/T 81-1998",
+  "spec_name": "城镇直埋供热管道工程技术规程",
+  "category": "供热工程",
+  "version": "1998版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "直埋敷设供热管道的设计计算、管道安装、防腐保温、管道预热",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "管道设计",
+      "summary": "直埋供热管道应采用钢管，保温层宜采用聚氨酯硬质泡沫塑料"
+    },
+    {
+      "section_num": "5.1",
+      "title": "管道安装",
+      "summary": "直埋管道焊接接头应进行100%无损检测"
+    }
+  ]
+}

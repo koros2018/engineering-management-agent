@@ -1,0 +1,34 @@
+{
+  "spec_code": "GB 50177-2005",
+  "spec_name": "氢气站设计规范",
+  "category": "动力工程",
+  "version": "2005版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "氢气站、供氢站的工艺系统、设备布置、管道设计、电气防爆、建筑结构",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "站址选择",
+      "summary": "氢气站宜独立设置，与周边建筑满足防火间距"
+    },
+    {
+      "section_num": "6.1",
+      "title": "防爆设计",
+      "summary": "氢气站爆炸危险区域划分为1区和2区"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.1.2",
+      "title": "防爆间距",
+      "requirement": "氢气罐与民用建筑间距不小于25m，与重要公共建筑不小于50m",
+      "mandatory": true
+    },
+    {
+      "section": "6.2.1",
+      "title": "电气防爆",
+      "requirement": "氢气站爆炸危险区电气设备防爆等级不低于ⅡCT1",
+      "mandatory": true
+    }
+  ]
+}

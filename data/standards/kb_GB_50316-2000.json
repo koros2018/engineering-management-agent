@@ -1,0 +1,28 @@
+{
+  "spec_code": "GB 50316-2000",
+  "spec_name": "工业金属管道设计规范",
+  "category": "管道储运",
+  "version": "2000版(2008年修订)",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "工业金属管道的材料选用、壁厚计算、应力分析、管道布置、支吊架",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "管道分级",
+      "summary": "按介质毒性和设计条件分为GC1/GC2/GC3三个等级"
+    },
+    {
+      "section_num": "10.1",
+      "title": "应力分析",
+      "summary": "下列管道应进行详细应力分析：DN≥150且温度≥230℃的管道"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.1.1",
+      "title": "管道分级",
+      "requirement": "输送剧毒介质的管道为GC1级，输送可燃易爆介质的为GC2级",
+      "mandatory": true
+    }
+  ]
+}

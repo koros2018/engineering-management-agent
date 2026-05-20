@@ -1,0 +1,34 @@
+{
+  "spec_code": "GB 13271-2001",
+  "spec_name": "锅炉大气污染物排放标准",
+  "category": "动力工程",
+  "version": "2001版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "锅炉烟气中烟尘、SO₂、NOx等污染物的最高允许排放浓度和烟气黑度限值",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "时段划分",
+      "summary": "按锅炉建成时间分为Ⅰ时段/Ⅱ时段，不同时段排放限值不同"
+    },
+    {
+      "section_num": "4.3",
+      "title": "烟囱高度要求",
+      "summary": "每个新建锅炉房只能设一根烟囱，高度按锅炉总吨位确定"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.1",
+      "title": "烟尘排放限值",
+      "requirement": "Ⅰ时段燃煤锅炉烟尘≤200mg/m³，Ⅱ时段≤80mg/m³",
+      "mandatory": true
+    },
+    {
+      "section": "4.2",
+      "title": "SO₂排放限值",
+      "requirement": "燃煤锅炉SO₂排放浓度≤900mg/m³(Ⅰ时段)，≤400mg/m³(Ⅱ时段)",
+      "mandatory": true
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "spec_code": "GB/T 13612-2006",
+  "spec_name": "人工煤气",
+  "category": "燃气工程",
+  "version": "2006版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "人工煤气的质量指标：华白数、热值、含硫量、含萘量、含焦油量等",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "质量指标",
+      "summary": "人工煤气硫化氢含量≤20mg/m³，含萘量冬季≤50mg/m³（夏季≤100）"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "spec_code": "GB 50516-2010",
+  "spec_name": "加氢站技术规范",
+  "category": "动力工程",
+  "version": "2010版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "加氢站工艺设施、氢储存、加注系统、消防与安全",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "站址选择",
+      "summary": "加氢站按储氢容量分为一级/二级/三级"
+    },
+    {
+      "section_num": "8.1",
+      "title": "消防设施",
+      "summary": "应设消防给水系统，配备干粉灭火器和灭火毯"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.2.2",
+      "title": "站外防火间距",
+      "requirement": "一级加氢站与民用建筑间距不小于40m",
+      "mandatory": true
+    },
+    {
+      "section": "8.2.1",
+      "title": "氢气泄漏检测",
+      "requirement": "加氢站应设氢气泄漏检测报警装置，报警值设为0.4%",
+      "mandatory": true
+    }
+  ]
+}

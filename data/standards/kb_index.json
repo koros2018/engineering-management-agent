@@ -255,6 +255,326 @@
       "version": "2015版",
       "file": "kb_JTG_D60-2015.json",
       "key_requirements_count": 2
+    },
+    {
+      "code": "CJJ 34-2010",
+      "name": "城镇供热管网设计规范",
+      "category": "供热工程",
+      "version": "2010版",
+      "file": "kb_CJJ_34-2010.json",
+      "key_requirements_count": 1
+    },
+    {
+      "code": "CJJ/T 81-1998",
+      "name": "城镇直埋供热管道工程技术规程",
+      "category": "供热工程",
+      "version": "1998版",
+      "file": "kb_CJJ_T_81-1998.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "DL/T 5054-1996",
+      "name": "火力发电厂汽水管道设计技术规定",
+      "category": "动力工程",
+      "version": "1996版",
+      "file": "kb_DL_T_5054-1996.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 12710-2008",
+      "name": "焦化安全规程",
+      "category": "动力工程",
+      "version": "2008版",
+      "file": "kb_GB_12710-2008.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 13271-2001",
+      "name": "锅炉大气污染物排放标准",
+      "category": "动力工程",
+      "version": "2001版",
+      "file": "kb_GB_13271-2001.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB/T 13611-2006",
+      "name": "城镇燃气分类和基本特性",
+      "category": "燃气工程",
+      "version": "2006版",
+      "file": "kb_GB_13611-2006.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB/T 13612-2006",
+      "name": "人工煤气",
+      "category": "燃气工程",
+      "version": "2006版",
+      "file": "kb_GB_13612-2006.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 1576-2008",
+      "name": "工业锅炉水质",
+      "category": "动力工程",
+      "version": "2008版",
+      "file": "kb_GB_1576-2008.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 17625.1-2012",
+      "name": "电磁兼容 限值 谐波电流发射限值",
+      "category": "电气工程",
+      "version": "2012版",
+      "file": "kb_GB_17625.1-2012.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB/T 20801-2020",
+      "name": "压力管道规范 工业管道",
+      "category": "管道储运",
+      "version": "2020版（替代2006版）",
+      "file": "kb_GB_20801-2020.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 3095-1996",
+      "name": "环境空气质量标准",
+      "category": "环境标准",
+      "version": "1996版（已升级为GB3095-2012）",
+      "file": "kb_GB_3095-1996.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 3096-2008",
+      "name": "声环境质量标准",
+      "category": "环境标准",
+      "version": "2008版",
+      "file": "kb_GB_3096-2008.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 50028-2006",
+      "name": "城镇燃气设计规范",
+      "category": "燃气工程",
+      "version": "2006版",
+      "file": "kb_GB_50028-2006.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50030-1991",
+      "name": "氧气站设计规范",
+      "category": "动力工程",
+      "version": "1991版",
+      "file": "kb_GB_50030-1991.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50041-2008",
+      "name": "锅炉房设计规范",
+      "category": "动力工程",
+      "version": "2008版",
+      "file": "kb_GB_50041-2008.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50049-2011",
+      "name": "小型火力发电厂设计规范",
+      "category": "动力工程",
+      "version": "2011版",
+      "file": "kb_GB_50049-2011.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50074-2002",
+      "name": "石油库设计规范",
+      "category": "管道储运",
+      "version": "2002版",
+      "file": "kb_GB_50074-2002.json",
+      "key_requirements_count": 1
+    },
+    {
+      "code": "GB 50109-2006",
+      "name": "工业用水软化脱盐设计规范",
+      "category": "动力工程",
+      "version": "2006版",
+      "file": "kb_GB_50109-2006.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50126-2008",
+      "name": "工业设备及管道绝热工程施工规范",
+      "category": "防腐保温",
+      "version": "2008版",
+      "file": "kb_GB_50126-2008.json",
+      "key_requirements_count": 1
+    },
+    {
+      "code": "GB 50170-2018",
+      "name": "电气装置安装工程 旋转电机施工及验收标准",
+      "category": "设备安装",
+      "version": "2018版",
+      "file": "kb_GB_50170-2018.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 50177-2005",
+      "name": "氢气站设计规范",
+      "category": "动力工程",
+      "version": "2005版",
+      "file": "kb_GB_50177-2005.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50185-2010",
+      "name": "工业设备及管道绝热工程施工质量验收规范",
+      "category": "防腐保温",
+      "version": "2010版",
+      "file": "kb_GB_50185-2010.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 50187-1993",
+      "name": "工业企业总平面设计规范",
+      "category": "燃气工程",
+      "version": "1993版",
+      "file": "kb_GB_50187-1993.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 50195-1994",
+      "name": "发生炉煤气站设计规范",
+      "category": "动力工程",
+      "version": "1994版",
+      "file": "kb_GB_50195-1994.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 50235-2010",
+      "name": "工业金属管道工程施工规范",
+      "category": "管道储运",
+      "version": "2010版",
+      "file": "kb_GB_50235-2010.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50256-2014",
+      "name": "电气装置安装工程 起重机电气装置施工及验收规范",
+      "category": "设备安装",
+      "version": "2014版",
+      "file": "kb_GB_50256-2014.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 50270-2010",
+      "name": "输送设备安装工程施工及验收规范",
+      "category": "设备安装",
+      "version": "2010版",
+      "file": "kb_GB_50270-2010.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 50275-2010",
+      "name": "风机、压缩机、泵安装工程施工及验收规范",
+      "category": "设备安装",
+      "version": "2010版",
+      "file": "kb_GB_50275-2010.json",
+      "key_requirements_count": 1
+    },
+    {
+      "code": "GB 50276-2010",
+      "name": "破碎粉磨设备安装工程施工及验收规范",
+      "category": "设备安装",
+      "version": "2010版",
+      "file": "kb_GB_50276-2010.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 50278-2010",
+      "name": "起重设备安装工程施工及验收规范",
+      "category": "设备安装",
+      "version": "2010版",
+      "file": "kb_GB_50278-2010.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 50303-2015",
+      "name": "建筑电气工程施工质量验收规范",
+      "category": "设备安装",
+      "version": "2015版",
+      "file": "kb_GB_50303-2015.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50316-2000",
+      "name": "工业金属管道设计规范",
+      "category": "管道储运",
+      "version": "2000版(2008年修订)",
+      "file": "kb_GB_50316-2000.json",
+      "key_requirements_count": 1
+    },
+    {
+      "code": "GB 50390-2017",
+      "name": "焦化机械设备安装验收规范",
+      "category": "设备安装",
+      "version": "2017版",
+      "file": "kb_GB_50390-2017.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 50432-2007",
+      "name": "炼焦工艺设计规范",
+      "category": "动力工程",
+      "version": "2007版",
+      "file": "kb_GB_50432-2007.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 50516-2010",
+      "name": "加氢站技术规范",
+      "category": "动力工程",
+      "version": "2010版",
+      "file": "kb_GB_50516-2010.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB/T 5751-2009",
+      "name": "中国煤炭分类",
+      "category": "燃气工程",
+      "version": "2009版",
+      "file": "kb_GB_5751-2009.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "GB 6222-2005",
+      "name": "工业企业煤气安全规程",
+      "category": "动力工程",
+      "version": "2005版",
+      "file": "kb_GB_6222-2005.json",
+      "key_requirements_count": 1
+    },
+    {
+      "code": "GB/T 9143-2008",
+      "name": "常压固定床气化用煤技术条件",
+      "category": "燃气工程",
+      "version": "2008版",
+      "file": "kb_GB_9143-2008.json",
+      "key_requirements_count": 0
+    },
+    {
+      "code": "NB/T 47043-2014",
+      "name": "锅炉钢结构制造技术规范",
+      "category": "动力工程",
+      "version": "2014版",
+      "file": "kb_NB_T_47043-2014.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "TSG 11-2020",
+      "name": "锅炉安全技术规程",
+      "category": "动力工程",
+      "version": "2020版",
+      "file": "kb_TSG_11-2020.json",
+      "key_requirements_count": 2
     }
   ],
   "categories": {
@@ -262,7 +582,7 @@
     "结构工程": 5,
     "给排水": 3,
     "勘察测绘": 2,
-    "电气工程": 2,
+    "电气工程": 3,
     "消防工程": 2,
     "建筑节能": 2,
     "建筑": 4,
@@ -274,7 +594,14 @@
     "BIM/信息化": 1,
     "安全管理": 1,
     "隧道工程": 1,
-    "桥梁工程": 1
+    "桥梁工程": 1,
+    "供热工程": 2,
+    "动力工程": 15,
+    "燃气工程": 6,
+    "管道储运": 4,
+    "环境标准": 2,
+    "防腐保温": 2,
+    "设备安装": 8
   },
-  "total": 32
+  "total": 72
 }

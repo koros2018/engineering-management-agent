@@ -1,0 +1,15 @@
+{
+  "spec_code": "GB/T 9143-2008",
+  "spec_name": "常压固定床气化用煤技术条件",
+  "category": "燃气工程",
+  "version": "2008版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "常压固定床煤气发生炉用煤的粒度、灰分、灰熔点、热稳定性等要求",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "煤质要求",
+      "summary": "块煤粒度25~80mm，灰分Ad≤24%，灰熔点ST≥1250℃"
+    }
+  ]
+}

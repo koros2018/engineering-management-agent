@@ -1,0 +1,34 @@
+{
+  "spec_code": "NB/T 47043-2014",
+  "spec_name": "锅炉钢结构制造技术规范",
+  "category": "动力工程",
+  "version": "2014版",
+  "source": "BaiduNetdiskDownload/锅炉规范",
+  "summary": "锅炉钢结构的材料、制造、焊接、检验和验收要求，适用于电站锅炉和工业锅炉",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "材料要求",
+      "summary": "主要受力构件钢材屈服强度≥235MPa，应有出厂质量证明书"
+    },
+    {
+      "section_num": "8.1",
+      "title": "焊缝检验",
+      "summary": "主要受力焊缝应进行无损检测，超声波+射线双方法"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.1.1",
+      "title": "钢材复验",
+      "requirement": "厚度≥40mm的钢板和主要受力构件材料应进行复验",
+      "mandatory": true
+    },
+    {
+      "section": "8.2.1",
+      "title": "焊缝无损检测比例",
+      "requirement": "主要受力构件对接焊缝超声波探伤比例100%，射线探伤比例≥20%",
+      "mandatory": true
+    }
+  ]
+}

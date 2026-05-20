@@ -1,0 +1,28 @@
+{
+  "spec_code": "GB 50275-2010",
+  "spec_name": "风机、压缩机、泵安装工程施工及验收规范",
+  "category": "设备安装",
+  "version": "2010版",
+  "source": "BaiduNetdiskDownload/设备等安装规范",
+  "summary": "离心/轴流风机、往复/离心压缩机、离心泵/往复泵/螺杆泵安装验收",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "风机安装",
+      "summary": "离心风机机壳中心线与转子中心线水平度偏差≤0.1mm/m"
+    },
+    {
+      "section_num": "5.1",
+      "title": "泵安装",
+      "summary": "泵的找正：联轴器径向位移≤0.05mm，轴向倾斜≤0.2/1000"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.2.2",
+      "title": "风机试运转",
+      "requirement": "风机试运转时间：离心式≥30min，轴流式≥2h，轴承温升≤40℃",
+      "mandatory": true
+    }
+  ]
+}

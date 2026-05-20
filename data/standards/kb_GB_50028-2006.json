@@ -1,0 +1,34 @@
+{
+  "spec_code": "GB 50028-2006",
+  "spec_name": "城镇燃气设计规范",
+  "category": "燃气工程",
+  "version": "2006版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "城镇燃气输配系统管网/调压/储配站/液化石油气供应/加气站等设计",
+  "sections": [
+    {
+      "section_num": "6.1",
+      "title": "燃气管道",
+      "summary": "高压燃气管线不得进入四级地区，中压A管线可进入道路红线内"
+    },
+    {
+      "section_num": "6.3",
+      "title": "压力级制",
+      "summary": "燃气管道分为高压A/B、次高压A/B、中压A/B、低压七级"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "6.3.3",
+      "title": "管道埋深",
+      "requirement": "车行道下燃气管道埋深≥0.9m，非车行道≥0.6m",
+      "mandatory": true
+    },
+    {
+      "section": "6.3.11",
+      "title": "钢质管道防腐",
+      "requirement": "埋地钢质燃气管道必须采用防腐层辅以阴极保护的联合保护方式",
+      "mandatory": true
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 50278-2010",
+  "spec_name": "起重设备安装工程施工及验收规范",
+  "category": "设备安装",
+  "version": "2010版",
+  "source": "BaiduNetdiskDownload/设备等安装规范",
+  "summary": "桥式/门式/门座式起重机的轨道安装、机械安装和试运转验收",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "轨道安装",
+      "summary": "轨道接头间隙≤2mm，高低差≤1mm"
+    },
+    {
+      "section_num": "8.1",
+      "title": "负荷试验",
+      "summary": "静负荷试验125%，动负荷试验110%"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "spec_code": "GB 50074-2002",
+  "spec_name": "石油库设计规范",
+  "category": "管道储运",
+  "version": "2002版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "石油库的总平面布置、油罐区、装卸设施、消防给水和管道设计",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "库址选择",
+      "summary": "石油库与周围设施安全距离按油库等级确定"
+    },
+    {
+      "section_num": "11.1",
+      "title": "消防设施",
+      "summary": "油罐区应设固定式泡沫灭火系统和消防冷却水系统"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.0.7",
+      "title": "安全距离",
+      "requirement": "一级石油库与居住区不小于100m，二级不小于90m",
+      "mandatory": true
+    }
+  ]
+}

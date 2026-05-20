@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 50187-1993",
+  "spec_name": "工业企业总平面设计规范",
+  "category": "燃气工程",
+  "version": "1993版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "工业企业厂址选择、总平面布置、竖向设计、管线综合、绿化等设计规范",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "厂址选择",
+      "summary": "综合考虑原料燃料供应、交通运输、水源电源、环境保护等因素"
+    },
+    {
+      "section_num": "5.1",
+      "title": "总平面布置",
+      "summary": "按功能分区布置，合理组织物流和人流"
+    }
+  ]
+}

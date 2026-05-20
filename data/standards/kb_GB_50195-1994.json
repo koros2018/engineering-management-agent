@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 50195-1994",
+  "spec_name": "发生炉煤气站设计规范",
+  "category": "动力工程",
+  "version": "1994版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "空气煤气/水煤气/混合煤气发生站的设计，含工艺/设备/管道/安全",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "站址选择",
+      "summary": "发生炉煤气站应远离居民区，主导风向的下风侧"
+    },
+    {
+      "section_num": "5.1",
+      "title": "安全设施",
+      "summary": "应设CO泄漏检测报警和防爆通风设施"
+    }
+  ]
+}

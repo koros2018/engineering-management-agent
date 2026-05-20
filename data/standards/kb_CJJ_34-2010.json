@@ -1,0 +1,28 @@
+{
+  "spec_code": "CJJ 34-2010",
+  "spec_name": "城镇供热管网设计规范",
+  "category": "供热工程",
+  "version": "2010版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "热水和蒸汽供热管网的水力计算、管道布置、热力站、中继泵站设计",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "水力工况",
+      "summary": "热水管网应进行水力计算，管网比摩阻主干线30~70Pa/m"
+    },
+    {
+      "section_num": "8.1",
+      "title": "热力站",
+      "summary": "热力站供热面积一般为5~30万m²"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "10.1.1",
+      "title": "管道热补偿",
+      "requirement": "供热管道必须设置热补偿装置，补偿能力应满足计算的热伸长量",
+      "mandatory": true
+    }
+  ]
+}

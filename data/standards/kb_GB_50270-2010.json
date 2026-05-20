@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 50270-2010",
+  "spec_name": "输送设备安装工程施工及验收规范",
+  "category": "设备安装",
+  "version": "2010版",
+  "source": "BaiduNetdiskDownload/设备等安装规范",
+  "summary": "带式输送机/板式输送机/斗式提升机/螺旋输送机/气力输送装置安装验收",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "带式输送机安装",
+      "summary": "机架中心线直线度偏差≤长度的1/1000且不大于40mm"
+    },
+    {
+      "section_num": "7.1",
+      "title": "试运转",
+      "summary": "空负荷试运转不少于2h，负荷试运转不少于4h"
+    }
+  ]
+}

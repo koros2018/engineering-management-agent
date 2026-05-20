@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 17625.1-2012",
+  "spec_name": "电磁兼容 限值 谐波电流发射限值",
+  "category": "电气工程",
+  "version": "2012版",
+  "source": "BaiduNetdiskDownload/通信网络规范",
+  "summary": "每相输入电流≤16A的电气电子设备谐波电流发射限值（等同IEC 61000-3-2）",
+  "sections": [
+    {
+      "section_num": "5.1",
+      "title": "设备分类",
+      "summary": "按谐波发射水平将设备分为A/B/C/D四类"
+    },
+    {
+      "section_num": "7.1",
+      "title": "限值要求",
+      "summary": "D类设备(功率>75W的PC/TV等)3次谐波≤3.4mA/W"
+    }
+  ]
+}

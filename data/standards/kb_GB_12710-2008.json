@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 12710-2008",
+  "spec_name": "焦化安全规程",
+  "category": "动力工程",
+  "version": "2008版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "焦化企业的设计、施工、生产、检修安全技术要求和安全管理",
+  "sections": [
+    {
+      "section_num": "5.1",
+      "title": "防火防爆",
+      "summary": "焦化企业应按甲类火灾危险场所进行消防设计"
+    },
+    {
+      "section_num": "7.1",
+      "title": "职业健康",
+      "summary": "应定期监测作业场所苯、焦炉逸散物、粉尘等有害物质浓度"
+    }
+  ]
+}

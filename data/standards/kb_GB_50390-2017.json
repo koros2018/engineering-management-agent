@@ -1,0 +1,15 @@
+{
+  "spec_code": "GB 50390-2017",
+  "spec_name": "焦化机械设备安装验收规范",
+  "category": "设备安装",
+  "version": "2017版",
+  "source": "BaiduNetdiskDownload/设备等安装规范",
+  "summary": "焦炉本体/熄焦车/拦焦车/推焦车/装煤车的安装精度和验收标准",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "焦炉本体安装",
+      "summary": "炭化室中心距偏差≤±3mm，炉柱垂直度≤H/1000且≤15mm"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "spec_code": "GB 6222-2005",
+  "spec_name": "工业企业煤气安全规程",
+  "category": "动力工程",
+  "version": "2005版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "工业企业煤气生产/净化/输配/储存/使用各环节的安全管理和技术要求",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "煤气生产安全管理",
+      "summary": "煤气区域应划分危险等级，作业人员应配备CO检测报警仪"
+    },
+    {
+      "section_num": "7.1",
+      "title": "煤气柜安全要求",
+      "summary": "干式煤气柜应设密封油位检测和紧急放散装置"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.10",
+      "title": "煤气区域作业",
+      "requirement": "带煤气作业应在白天进行，雷雨天、大雾天和气温低于5℃时不得作业",
+      "mandatory": true
+    }
+  ]
+}

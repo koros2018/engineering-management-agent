@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 50432-2007",
+  "spec_name": "炼焦工艺设计规范",
+  "category": "动力工程",
+  "version": "2007版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "焦化厂工艺设计，含备煤/炼焦/熄焦/筛焦/化产回收",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "炼焦工艺",
+      "summary": "炭化室高度≥4.3m，焦炉周转时间根据炉型和煤质确定"
+    },
+    {
+      "section_num": "10.1",
+      "title": "环保要求",
+      "summary": "应配套建设熄焦废水处理、烟气脱硫脱硝和煤尘治理设施"
+    }
+  ]
+}

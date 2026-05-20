@@ -1,0 +1,39 @@
+{
+  "spec_code": "TSG 11-2020",
+  "spec_name": "锅炉安全技术规程",
+  "category": "动力工程",
+  "version": "2020版",
+  "source": "BaiduNetdiskDownload/锅炉规范",
+  "summary": "锅炉的设计、制造、安装、改造、修理、使用管理和检验安全技术要求",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "设计一般要求",
+      "summary": "锅炉设计应保证各部件在预定工况下有足够强度"
+    },
+    {
+      "section_num": "7.1",
+      "title": "安全附件",
+      "summary": "锅炉必须配备安全阀、压力表、水位表等安全附件"
+    },
+    {
+      "section_num": "9.1",
+      "title": "定期检验",
+      "summary": "外部检验每年一次，内部检验每2年一次，水压试验每6年一次"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "7.1.1",
+      "title": "安全阀设置",
+      "requirement": "每台锅炉至少装设两个安全阀（额定蒸发量≤0.5t/h的除外），整定压力应在设计压力范围内",
+      "mandatory": true
+    },
+    {
+      "section": "9.1.1",
+      "title": "检验周期",
+      "requirement": "锅炉运行状态下外部检验每年一次，停炉内外部检验每2年一次",
+      "mandatory": true
+    }
+  ]
+}

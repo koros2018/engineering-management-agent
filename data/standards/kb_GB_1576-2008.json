@@ -1,0 +1,34 @@
+{
+  "spec_code": "GB 1576-2008",
+  "spec_name": "工业锅炉水质",
+  "category": "动力工程",
+  "version": "2008版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "工业锅炉给水、锅水的水质标准，含硬度/碱度/pH值/含盐量/溶解氧等指标",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "给水水质标准",
+      "summary": "蒸汽锅炉给水硬度≤0.03mmol/L，含氧量≤0.1mg/L"
+    },
+    {
+      "section_num": "5.1",
+      "title": "锅水水质标准",
+      "summary": "锅水总碱度6~26mmol/L，含盐量≤3500mg/L"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.1",
+      "title": "给水硬度限值",
+      "requirement": "额定蒸发量≤2t/h的蒸汽锅炉给水硬度≤0.03mmol/L",
+      "mandatory": true
+    },
+    {
+      "section": "4.2",
+      "title": "除氧要求",
+      "requirement": "额定蒸发量≥6t/h的蒸汽锅炉必须除氧",
+      "mandatory": true
+    }
+  ]
+}

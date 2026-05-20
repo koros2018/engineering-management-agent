@@ -1,0 +1,33 @@
+{
+  "spec_code": "GB 50126-2008",
+  "spec_name": "工业设备及管道绝热工程施工规范",
+  "category": "防腐保温",
+  "version": "2008版",
+  "source": "BaiduNetdiskDownload/防腐、保温规范",
+  "summary": "工业设备和管道的保温层/保冷层/防潮层/保护层的施工和验收",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "保温层施工",
+      "summary": "保温层厚度≥40mm时应分层施工，层间接缝应错开"
+    },
+    {
+      "section_num": "6.1",
+      "title": "防潮层施工",
+      "summary": "保冷设备及管道在保温层外必须设置防潮层"
+    },
+    {
+      "section_num": "7.1",
+      "title": "保护层施工",
+      "summary": "金属保护层接缝应采用搭接或咬接方式"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "6.1.1",
+      "title": "保冷防潮层",
+      "requirement": "保冷设备及管道绝热层外必须设置防潮层，防潮层不得有破损",
+      "mandatory": true
+    }
+  ]
+}

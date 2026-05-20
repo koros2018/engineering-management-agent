@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 50170-2018",
+  "spec_name": "电气装置安装工程 旋转电机施工及验收标准",
+  "category": "设备安装",
+  "version": "2018版",
+  "source": "BaiduNetdiskDownload/设备等安装规范",
+  "summary": "发电机/电动机安装前检查、安装、试运行和交接验收",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "电机安装",
+      "summary": "电机找正：联轴器径向偏差≤0.05mm，轴向倾斜≤0.2/1000"
+    },
+    {
+      "section_num": "6.1",
+      "title": "试运行",
+      "summary": "电动机空载运行时间≥2h，轴承温度≤95℃（滑动轴承≤80℃）"
+    }
+  ]
+}

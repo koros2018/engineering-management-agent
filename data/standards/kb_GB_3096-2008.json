@@ -1,0 +1,15 @@
+{
+  "spec_code": "GB 3096-2008",
+  "spec_name": "声环境质量标准",
+  "category": "环境标准",
+  "version": "2008版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "按区域使用功能划分5类声环境功能区，规定各类区环境噪声限值",
+  "sections": [
+    {
+      "section_num": "5.1",
+      "title": "环境噪声限值",
+      "summary": "1类(居住)昼间55dB(A)/夜间45dB，2类(混合)昼间60dB/夜间50dB"
+    }
+  ]
+}

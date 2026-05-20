@@ -1,0 +1,15 @@
+{
+  "spec_code": "GB/T 5751-2009",
+  "spec_name": "中国煤炭分类",
+  "category": "燃气工程",
+  "version": "2009版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "按煤化程度和工艺性能将煤分为无烟煤/烟煤/褐煤三大类",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "分类指标",
+      "summary": "主要分类指标：干燥无灰基挥发分Vdaf、粘结指数G、胶质层最大厚度Y"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "spec_code": "GB/T 13611-2006",
+  "spec_name": "城镇燃气分类和基本特性",
+  "category": "燃气工程",
+  "version": "2006版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "城镇燃气的分类方法和技术指标，含天然气/液化石油气/人工煤气/沼气",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "燃气分类",
+      "summary": "按华白数和燃烧势分为10T/12T/19Y/22Y等类别"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB/T 20801-2020",
+  "spec_name": "压力管道规范 工业管道",
+  "category": "管道储运",
+  "version": "2020版（替代2006版）",
+  "source": "BaiduNetdiskDownload/管道规范",
+  "summary": "工业压力管道的材料/设计/制作安装/检验试验/安全防护全生命周期要求",
+  "sections": [
+    {
+      "section_num": "1.1",
+      "title": "总则",
+      "summary": "适用于设计压力≤42MPa的工业金属压力管道"
+    },
+    {
+      "section_num": "5.1",
+      "title": "检验和试验",
+      "summary": "压力管道无损检测比例根据管道分级确定：GC1≥20%，GC2≥10%"
+    }
+  ]
+}

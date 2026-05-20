@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 50256-2014",
+  "spec_name": "电气装置安装工程 起重机电气装置施工及验收规范",
+  "category": "设备安装",
+  "version": "2014版",
+  "source": "BaiduNetdiskDownload/设备等安装规范",
+  "summary": "桥式/门式/塔式起重机的供配电、电气控制、照明信号、接地安装验收",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "滑触线安装",
+      "summary": "滑触线安装后其平直度偏差≤长度的1/1000"
+    },
+    {
+      "section_num": "7.1",
+      "title": "接地",
+      "summary": "起重机轨道两端应接地，接地电阻≤4Ω"
+    }
+  ]
+}

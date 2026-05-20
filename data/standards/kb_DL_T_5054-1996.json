@@ -1,0 +1,34 @@
+{
+  "spec_code": "DL/T 5054-1996",
+  "spec_name": "火力发电厂汽水管道设计技术规定",
+  "category": "动力工程",
+  "version": "1996版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "火力发电厂汽水管道的布置、水力计算、应力分析、支吊架设计",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "管道布置原则",
+      "summary": "管道布置应满足工艺流程，便于安装维修和热补偿"
+    },
+    {
+      "section_num": "7.1",
+      "title": "管道应力分析",
+      "summary": "高温高压管道应进行应力分析和柔性计算"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.2.1",
+      "title": "管道间距",
+      "requirement": "平行管道净距应满足保温和检修要求，不小于管径的1.5倍",
+      "mandatory": true
+    },
+    {
+      "section": "7.2.1",
+      "title": "热胀应力",
+      "requirement": "管系对设备管口的推力和力矩不超过设备允许值",
+      "mandatory": true
+    }
+  ]
+}

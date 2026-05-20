@@ -1,0 +1,39 @@
+{
+  "spec_code": "GB 50235-2010",
+  "spec_name": "工业金属管道工程施工规范",
+  "category": "管道储运",
+  "version": "2010版",
+  "source": "BaiduNetdiskDownload/管道规范",
+  "summary": "工业金属管道的管道加工、焊接、安装、试验检验和系统吹扫清洗",
+  "sections": [
+    {
+      "section_num": "7.1",
+      "title": "管道焊接",
+      "summary": "焊工应持有相应项目合格证，焊条应按规定烘干"
+    },
+    {
+      "section_num": "8.1",
+      "title": "管段预制",
+      "summary": "管道预制应按单线图进行，标明焊缝编号和焊工钢印号"
+    },
+    {
+      "section_num": "9.1",
+      "title": "管道安装",
+      "summary": "管道安装应保证坡向和坡度符合设计要求"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "9.1.1",
+      "title": "管道坡度",
+      "requirement": "管道安装坡度不小于0.2%，坡向应与介质流向一致",
+      "mandatory": true
+    },
+    {
+      "section": "10.1.1",
+      "title": "压力试验",
+      "requirement": "管道安装完毕后应进行压力试验，液压试验压力为设计压力的1.5倍",
+      "mandatory": true
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 50185-2010",
+  "spec_name": "工业设备及管道绝热工程施工质量验收规范",
+  "category": "防腐保温",
+  "version": "2010版",
+  "source": "BaiduNetdiskDownload/防腐、保温规范",
+  "summary": "绝热工程的检验批划分、主控项目和一般项目验收标准",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "主控项目",
+      "summary": "绝热材料品种规格性能应符合设计要求"
+    },
+    {
+      "section_num": "5.1",
+      "title": "绝热层验收",
+      "summary": "保温层厚度偏差：硬质+10%/-5%，半硬质和软质+10%"
+    }
+  ]
+}

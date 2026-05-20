@@ -1,0 +1,39 @@
+{
+  "spec_code": "GB 50049-2011",
+  "spec_name": "小型火力发电厂设计规范",
+  "category": "动力工程",
+  "version": "2011版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "单机容量125MW及以下火力发电厂设计，含热机、电气、热工自动化、水工、土建、环保",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "厂址选择",
+      "summary": "应靠近负荷中心，有可靠供水水源，满足环保和安全要求"
+    },
+    {
+      "section_num": "6.1",
+      "title": "热机部分",
+      "summary": "锅炉选型应满足汽轮机参数要求，给水温度应通过技术经济比较确定"
+    },
+    {
+      "section_num": "12.1",
+      "title": "环境保护",
+      "summary": "应同步建设烟气脱硫脱硝设施，灰渣应综合利用"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.0.3",
+      "title": "厂址防洪",
+      "requirement": "发电厂厂址标高应高于重现期100年一遇的洪水位",
+      "mandatory": true
+    },
+    {
+      "section": "12.1.1",
+      "title": "烟气排放",
+      "requirement": "燃煤机组烟尘排放浓度≤30mg/Nm³, SO₂≤100mg/Nm³(重点地区)",
+      "mandatory": true
+    }
+  ]
+}

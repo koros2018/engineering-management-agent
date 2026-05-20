@@ -1,0 +1,39 @@
+{
+  "spec_code": "GB 50041-2008",
+  "spec_name": "锅炉房设计规范",
+  "category": "动力工程",
+  "version": "2008版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "蒸汽锅炉、热水锅炉的锅炉房和热力站设计，含锅炉选型、燃料系统、烟风系统、水处理、热工检测",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "锅炉房布置",
+      "summary": "锅炉房宜独立设置，与民用建筑间距应符合防火规范要求"
+    },
+    {
+      "section_num": "8.1",
+      "title": "烟风系统",
+      "summary": "烟囱高度应符合大气污染物排放标准，出口烟速宜为10~20m/s"
+    },
+    {
+      "section_num": "13.1",
+      "title": "热工检测与控制",
+      "summary": "锅炉房应设置蒸汽/给水流量、温度、压力等参数检测仪表"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.1.1",
+      "title": "锅炉房选址",
+      "requirement": "锅炉房宜为独立建筑物，与住宅距离须符合GB50016防火间距要求，燃油燃气锅炉房严禁设在人员密集场所",
+      "mandatory": true
+    },
+    {
+      "section": "8.1.4",
+      "title": "烟囱高度",
+      "requirement": "燃煤锅炉房烟囱高度：锅炉总容量1~<2t/h≥25m，2~<4t/h≥30m，4~<10t/h≥35m",
+      "mandatory": true
+    }
+  ]
+}

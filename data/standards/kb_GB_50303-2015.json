@@ -1,0 +1,34 @@
+{
+  "spec_code": "GB 50303-2015",
+  "spec_name": "建筑电气工程施工质量验收规范",
+  "category": "设备安装",
+  "version": "2015版",
+  "source": "BaiduNetdiskDownload/设备等安装规范",
+  "summary": "变压器/配电柜/母线/电缆桥架/导管敷设/灯具/开关/插座/防雷接地安装验收",
+  "sections": [
+    {
+      "section_num": "5.1",
+      "title": "变压器安装",
+      "summary": "变压器安装前应进行器身检查，绝缘油应做简化分析"
+    },
+    {
+      "section_num": "23.1",
+      "title": "防雷接地",
+      "summary": "建筑物防雷接地装置接地电阻≤1Ω"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "23.1.1",
+      "title": "防雷接地",
+      "requirement": "建筑物防雷接地装置的接地电阻值应符合设计要求，一般≤1Ω",
+      "mandatory": true
+    },
+    {
+      "section": "6.1.1",
+      "title": "母线安装",
+      "requirement": "母线相序排列：上A下B下C，左A中B右C",
+      "mandatory": true
+    }
+  ]
+}

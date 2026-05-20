@@ -1,0 +1,34 @@
+{
+  "spec_code": "GB 50109-2006",
+  "spec_name": "工业用水软化脱盐设计规范",
+  "category": "动力工程",
+  "version": "2006版",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "离子交换软化、膜分离脱盐等水处理工艺设计，含预处理/离子交换器/反渗透系统",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "预处理",
+      "summary": "应根据原水水质选择混凝沉降、过滤或超滤等预处理工艺"
+    },
+    {
+      "section_num": "5.1",
+      "title": "离子交换系统",
+      "summary": "一级除盐+混床系统产水电导率≤0.2μS/cm"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.1.2",
+      "title": "预处理出水指标",
+      "requirement": "进入反渗透膜的水质：浊度≤1NTU，SDI≤5，余氯≤0.1mg/L",
+      "mandatory": true
+    },
+    {
+      "section": "5.2.1",
+      "title": "混床出水标准",
+      "requirement": "混床产水电导率≤0.2μS/cm，SiO₂≤20μg/L",
+      "mandatory": true
+    }
+  ]
+}

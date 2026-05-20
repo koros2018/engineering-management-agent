@@ -1,0 +1,20 @@
+{
+  "spec_code": "GB 3095-1996",
+  "spec_name": "环境空气质量标准",
+  "category": "环境标准",
+  "version": "1996版（已升级为GB3095-2012）",
+  "source": "BaiduNetdiskDownload/11-动力规范合集",
+  "summary": "环境空气功能区分类和各项污染物浓度限值：SO₂/NO₂/CO/O₃/PM10/PM2.5等",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "功能区分类",
+      "summary": "分一类区(自然保护区)和二类区(居住/商业/工业区)"
+    },
+    {
+      "section_num": "4.1",
+      "title": "污染物限值",
+      "summary": "SO₂年平均：一类区≤0.02mg/m³，二类区≤0.06mg/m³"
+    }
+  ]
+}
