@@ -65,7 +65,7 @@ td{padding:8px 12px;border-bottom:1px solid var(--border)}
   <div class="main" v-if="!showAdminGate">
     <div class="topbar">
       <h1>{{pageTitle}}</h1>
-      <div class="topbar-badges"><span class="badge boss">🎩 Boss Mode</span><span class="badge live">● 在线</span></div>
+      <div class="topbar-badges"><span class="badge boss">🎩 Boss Mode</span><span class="badge live">● 在线</span><span style="font-size:12px;color:var(--dim);cursor:pointer;margin-left:4px" @click="logout" title="登出">🚪 登出</span></div>
     </div>
 
     <!-- 驾驶舱 -->
@@ -238,7 +238,8 @@ createApp({setup(){
   }
 
   onMounted(async()=>{await loadCockpit();loadTenants();loadAlerts();loadAdvice();});
+  function logout(){try{localStorage.removeItem('ema_token');}catch(e){}window.location.href='/ui/login.html';}
   return{tab,cockpit,tenants,alerts,report,suggestions,insights,pageTitle,gradeLabel,formatNum,refreshAll,quickAction,genReport,
-    adminVerified,showAdminGate,adminPwInput,adminPwError,verifyAdmin};
+    adminVerified,showAdminGate,adminPwInput,adminPwError,verifyAdmin,logout};
 }}).mount('#app');
 </script></body></html>

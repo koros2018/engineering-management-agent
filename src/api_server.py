@@ -33,6 +33,14 @@ from agent.base_agent import Task, AgentResult
 from agent.main_agent import EngineeringManagementAgent
 from sub_agents import TechRdAgent
 
+# 统一日志系统
+from tools.logging_utils import get_logger, log_api_request, set_request_context
+logger = get_logger("api_server")
+
+# 统一日志
+from tools.logging_utils import get_logger, log_api_request, set_request_context
+logger = get_logger("api_server")
+
 # 认证模块
 from auth import (
     register_user, login_user, get_user, get_user_tenant,
@@ -123,11 +131,14 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     """启动时初始化Boss账号"""
+    logger.info("EMA API Server 启动中...")
     try:
         from auth_extended import init_boss_account
         init_boss_account()
+        logger.info("Boss账号初始化完成")
     except Exception as e:
-        print(f"⚠️ Boss账号初始化跳过: {e}")
+        logger.warning(f"Boss账号初始化跳过: {e}")
+    logger.info("EMA API Server 启动完成", extra={"extra_data": {"port": 5188, "docs": "/docs"}})
 
 
 # ─────────────────────────────────────────────────────────────────

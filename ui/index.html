@@ -481,6 +481,7 @@
           {{ m.type === 'cloud' ? '☁️' : '💻' }} {{ m.display || m.name }}
         </option>
       </select>
+      <span style="font-size:12px;color:var(--dim);cursor:pointer;margin-left:4px" @click="logout" title="登出">🚪</span>
     </div>
 
     <div class="chat-area" ref="chatArea">
@@ -1035,6 +1036,11 @@ createApp({
 
     onMounted(() => { scrollBottom(); loadModels(); loadSubscription(); loadNotifications(); });
 
+    function logout() {
+      try { localStorage.removeItem('ema_token'); } catch(e) {}
+      window.location.href = '/ui/login.html';
+    }
+
     return {
       messages, input, loading, selectedFile, chatArea, inputBox,
       agents, currentAgent, availableModels, selectedModel,
@@ -1046,6 +1052,7 @@ createApp({
       showTour, tourStep, tourScenarios, tourResults,
       startTour, selectScenario, triggerUpload, finishTour,
       openSubscribe, openNotifications, doSubscribe, loadNotificationsList, markAllRead, readNotif, formatNotifTime,
+      logout,
     };
   }
 }).mount('#app');

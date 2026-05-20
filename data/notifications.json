@@ -26,5 +26,253 @@
       "read": false,
       "created_at": "2026-05-19T10:32:12.756737"
     }
+  ],
+  "t-008": [
+    {
+      "id": "notif_1779237611412_t-008",
+      "tenant_id": "t-008",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:40:11.412011"
+    },
+    {
+      "id": "notif_1779237511956_t-008",
+      "tenant_id": "t-008",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:38:31.956741"
+    },
+    {
+      "id": "notif_1779237406870_t-008",
+      "tenant_id": "t-008",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:36:46.870919"
+    },
+    {
+      "id": "notif_1779237311987_t-008",
+      "tenant_id": "t-008",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:35:11.987678"
+    },
+    {
+      "id": "notif_1779237201952_t-008",
+      "tenant_id": "t-008",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:33:21.952136"
+    }
+  ],
+  "t-pay-001": [
+    {
+      "id": "notif_1779237611455_-pay-001",
+      "tenant_id": "t-pay-001",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:40:11.455935"
+    },
+    {
+      "id": "notif_1779237512010_-pay-001",
+      "tenant_id": "t-pay-001",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:38:32.010587"
+    },
+    {
+      "id": "notif_1779237406924_-pay-001",
+      "tenant_id": "t-pay-001",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:36:46.924154"
+    },
+    {
+      "id": "notif_1779237312038_-pay-001",
+      "tenant_id": "t-pay-001",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:35:12.038409"
+    },
+    {
+      "id": "notif_1779237202013_-pay-001",
+      "tenant_id": "t-pay-001",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:33:22.013084"
+    }
+  ],
+  "t-pay-002": [
+    {
+      "id": "notif_1779237611480_-pay-002",
+      "tenant_id": "t-pay-002",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:40:11.480841"
+    },
+    {
+      "id": "notif_1779237512038_-pay-002",
+      "tenant_id": "t-pay-002",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:38:32.038175"
+    },
+    {
+      "id": "notif_1779237406952_-pay-002",
+      "tenant_id": "t-pay-002",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:36:46.952724"
+    },
+    {
+      "id": "notif_1779237312070_-pay-002",
+      "tenant_id": "t-pay-002",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:35:12.070649"
+    },
+    {
+      "id": "notif_1779237202039_-pay-002",
+      "tenant_id": "t-pay-002",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:33:22.039972"
+    }
+  ],
+  "t-pay-003": [
+    {
+      "id": "notif_1779237611507_-pay-003",
+      "tenant_id": "t-pay-003",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:40:11.507299"
+    },
+    {
+      "id": "notif_1779237512070_-pay-003",
+      "tenant_id": "t-pay-003",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:38:32.070717"
+    },
+    {
+      "id": "notif_1779237406980_-pay-003",
+      "tenant_id": "t-pay-003",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:36:46.980145"
+    },
+    {
+      "id": "notif_1779237312106_-pay-003",
+      "tenant_id": "t-pay-003",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:35:12.106726"
+    },
+    {
+      "id": "notif_1779237202072_-pay-003",
+      "tenant_id": "t-pay-003",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:33:22.072271"
+    }
   ]
 }

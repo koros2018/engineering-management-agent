@@ -18,5 +18,45 @@
     "auto_renew": true,
     "status": "active",
     "payment_history": []
+  },
+  "t-008": {
+    "tenant_id": "t-008",
+    "plan_id": "pro",
+    "plan_name": "专业版",
+    "started_at": "2026-05-20T08:40:11.398764",
+    "expires_at": "2026-06-19T08:40:11.398764",
+    "auto_renew": true,
+    "status": "active",
+    "payment_history": []
+  },
+  "t-pay-001": {
+    "tenant_id": "t-pay-001",
+    "plan_id": "pro",
+    "plan_name": "专业版",
+    "started_at": "2026-05-20T08:40:11.444427",
+    "expires_at": "2026-06-19T08:40:11.444427",
+    "auto_renew": true,
+    "status": "active",
+    "payment_history": []
+  },
+  "t-pay-002": {
+    "tenant_id": "t-pay-002",
+    "plan_id": "pro",
+    "plan_name": "专业版",
+    "started_at": "2026-05-20T08:40:11.465072",
+    "expires_at": "2026-06-19T08:40:11.465072",
+    "auto_renew": true,
+    "status": "active",
+    "payment_history": []
+  },
+  "t-pay-003": {
+    "tenant_id": "t-pay-003",
+    "plan_id": "pro",
+    "plan_name": "专业版",
+    "started_at": "2026-05-20T08:40:11.494557",
+    "expires_at": "2026-06-19T08:40:11.494557",
+    "auto_renew": true,
+    "status": "active",
+    "payment_history": []
   }
 }

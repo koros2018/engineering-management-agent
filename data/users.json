@@ -70,5 +70,14 @@
     "salt": "9cf578c472436231ebb7ce8cc9a890ad",
     "created_at": "2026-05-19T16:07:11.146445",
     "status": "active"
+  },
+  "user_65daa73c4f84993f": {
+    "user_id": "user_65daa73c4f84993f",
+    "username": "test01",
+    "email": "2698835828@qq.com",
+    "password_hash": "4b4111c7bbf36efc0d437e4bc8ab0aad84c146be110b086377d2965a5fb679dd",
+    "salt": "db619fa5fdc8558dc6c0524c8c437a9a",
+    "created_at": "2026-05-20T08:17:34.290051",
+    "status": "active"
   }
 }
