@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-  <meta name="theme-color" content="#1f6feb">
+  <meta name="theme-color" content="#1f6feb" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="/ui/manifest.json">
@@ -28,6 +29,27 @@
       --market: #d29922;
       --delivery: #3fb950;
       --cost: #58a6ff;
+    }
+    /* 亮色模式 */
+    @media (prefers-color-scheme: light) {
+      :root:not(.force-dark) {
+        --bg: #ffffff;
+        --sidebar: #f6f8fa;
+        --border: #d0d7de;
+        --accent: #0969da;
+        --accent2: #218bff;
+        --text: #1f2328;
+        --text-dim: #656d76;
+        --danger: #cf222e;
+        --warning: #9a6700;
+        --agent-bubble: #f6f8fa;
+      }
+    }
+    /* 动画 */
+    @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .slide-in { animation: slideInRight 0.3s ease-out; }
+    .fade-in { animation: fadeIn 0.2s ease-in; }
       --service: #8b949e;
     }
     body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
