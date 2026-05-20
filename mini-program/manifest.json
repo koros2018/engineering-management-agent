@@ -1,0 +1,52 @@
+{
+  "name": "工程管理智能体",
+  "appid": "__UNI__EMA001",
+  "description": "工程管理智能体小程序客户端",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "app-plus": {
+    "usingComponents": true,
+    "splashscreen": {
+      "alwaysShowBeforeRender": true,
+      "autoclose": true
+    },
+    "modules": {},
+    "distribute": {
+      "android": {
+        "permissions": [
+          "<uses-permission android:name=\"android.permission.INTERNET\"/>",
+          "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
+          "<uses-permission android:name=\"android.permission.CAMERA\"/>",
+          "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>",
+          "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>"
+        ]
+      },
+      "ios": {
+        "InfoPlist": {
+          "NSCameraUsageDescription": "用于上传图纸拍照",
+          "NSPhotoLibraryUsageDescription": "用于选择图纸图片"
+        }
+      }
+    }
+  },
+  "h5": {
+    "devServer": {
+      "port": 8080,
+      "disableHostCheck": true
+    },
+    "router": {
+      "mode": "hash"
+    }
+  },
+  "mp-weixin": {
+    "appid": "wx0000000000000000",
+    "setting": {
+      "urlCheck": false,
+      "es6": true,
+      "postcss": false,
+      "minified": true
+    },
+    "usingComponents": true
+  }
+}
