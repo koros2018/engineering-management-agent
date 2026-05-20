@@ -76,7 +76,8 @@
 </template>
 
 <script>
-const API_BASE = 'http://127.0.0.1:5188';
+import config from '@/common/config.js';
+const API_BASE = config.apiBase;
 
 export default {
   data() {

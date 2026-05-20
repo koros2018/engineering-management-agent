@@ -3,5 +3,10 @@
     "count": 5,
     "first_at": 1779240314.2758734,
     "locked_until": 1779241252.2183511
+  },
+  "127.0.0.1:boss_ke": {
+    "count": 2,
+    "first_at": 1779241844.9098482,
+    "locked_until": 0
   }
 }
