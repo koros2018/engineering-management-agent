@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB 50005-2017",
+  "spec_name": "木结构设计标准",
+  "category": "结构工程",
+  "version": "2017版",
+  "summary": "木结构建筑设计、构件计算、连接设计、防火和防腐要求",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "材料",
+      "summary": "结构用木材分为普通木结构/胶合木结构/轻型木结构"
+    },
+    {
+      "section_num": "5.1",
+      "title": "构件计算",
+      "summary": "木结构构件应进行抗弯/抗压/抗拉/抗剪承载力验算"
+    },
+    {
+      "section_num": "11.1",
+      "title": "防火设计",
+      "summary": "木结构防火设计可采用构件耐火极限法"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.2.1",
+      "title": "木材含水率",
+      "requirement": "承重结构用木材含水率不应大于18%",
+      "mandatory": true
+    },
+    {
+      "section": "11.2.1",
+      "title": "防火处理",
+      "requirement": "木结构构件外露表面应采用防火涂料处理，达到相应耐火极限",
+      "mandatory": true
+    }
+  ]
+}

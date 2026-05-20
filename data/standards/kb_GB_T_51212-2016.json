@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB/T 51212-2016",
+  "spec_name": "建筑信息模型应用统一标准",
+  "category": "BIM/信息化",
+  "version": "2016版",
+  "summary": "建筑信息模型(BIM)在建设工程全生命期中的应用要求，含模型创建、共享、协同",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "BIM应用模式",
+      "summary": "分为模型创建、模型应用和模型协同三种基本模式"
+    },
+    {
+      "section_num": "4.1",
+      "title": "模型创建要求",
+      "summary": "模型应包含几何信息和非几何信息，模型深度满足应用需求"
+    },
+    {
+      "section_num": "5.1",
+      "title": "模型共享方式",
+      "summary": "应制定信息交换协议和模型交付标准"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.0.3",
+      "title": "BIM应用策划",
+      "requirement": "建设工程BIM应用前应编制BIM应用策划文件",
+      "mandatory": false
+    },
+    {
+      "section": "5.0.2",
+      "title": "模型协同",
+      "requirement": "多专业协同设计时各专业模型应以统一坐标系统为基准",
+      "mandatory": true
+    }
+  ]
+}

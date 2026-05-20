@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB 50084-2017",
+  "spec_name": "自动喷水灭火系统设计规范",
+  "category": "消防工程",
+  "version": "2017版",
+  "summary": "自动喷水灭火系统的设计、施工和验收，含湿式/干式/预作用/雨淋等系统",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "系统选型",
+      "summary": "环境温度不低于4℃且不高于70℃的场所应采用湿式系统"
+    },
+    {
+      "section_num": "5.0.1",
+      "title": "设置场所火灾危险等级",
+      "summary": "分为轻危险级/中危险级(ⅠⅡ)/严重危险级(ⅠⅡ)/仓库危险级(ⅠⅡⅢ)"
+    },
+    {
+      "section_num": "7.1",
+      "title": "喷头布置",
+      "summary": "喷头间距根据危险等级从1.8m到4.6m不等"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "6.1.1",
+      "title": "报警阀组",
+      "requirement": "湿式系统一个报警阀组控制的喷头数不宜超过800只",
+      "mandatory": true
+    },
+    {
+      "section": "11.0.1",
+      "title": "供水设施",
+      "requirement": "自动喷水灭火系统应设置独立的消防水泵和消防水池",
+      "mandatory": true
+    }
+  ]
+}

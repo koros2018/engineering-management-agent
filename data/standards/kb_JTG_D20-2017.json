@@ -1,0 +1,38 @@
+{
+  "spec_code": "JTG D20-2017",
+  "spec_name": "公路路线设计规范",
+  "category": "道路交通",
+  "version": "2017版",
+  "summary": "公路路线设计的基本原则、横断面、平面、纵断面、线形组合、交叉设计",
+  "sections": [
+    {
+      "section_num": "6.2",
+      "title": "横断面组成",
+      "summary": "高速公路整体式断面：中间带+行车道+硬路肩+土路肩"
+    },
+    {
+      "section_num": "7.3",
+      "title": "圆曲线最小半径",
+      "summary": "设计速度120km/h时圆曲线一般最小半径1000m，极限650m"
+    },
+    {
+      "section_num": "8.3",
+      "title": "最大纵坡",
+      "summary": "设计速度120km/h时最大纵坡3%，80km/h时最大纵坡5%"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "6.2.1",
+      "title": "行车道宽度",
+      "requirement": "高速公路设计速度120km/h时车道宽度为3.75m",
+      "mandatory": true
+    },
+    {
+      "section": "9.4.1",
+      "title": "停车视距",
+      "requirement": "设计速度120km/h的公路停车视距应不小于210m",
+      "mandatory": true
+    }
+  ]
+}

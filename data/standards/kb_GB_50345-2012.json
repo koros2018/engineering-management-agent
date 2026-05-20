@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB 50345-2012",
+  "spec_name": "屋面工程技术规范",
+  "category": "建筑",
+  "version": "2012版",
+  "summary": "屋面防水等级划分、找平层/保温层/防水层/保护层设计、细部构造",
+  "sections": [
+    {
+      "section_num": "3.0.1",
+      "title": "防水等级",
+      "summary": "屋面防水分为Ⅰ级（重要建筑和高层建筑）和Ⅱ级（一般建筑）"
+    },
+    {
+      "section_num": "4.3",
+      "title": "卷材防水屋面",
+      "summary": "Ⅰ级防水屋面应采用不少于两道防水设防"
+    },
+    {
+      "section_num": "4.8",
+      "title": "种植屋面",
+      "summary": "种植屋面防水层应满足耐根穿刺要求"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.5.1",
+      "title": "防水层厚度",
+      "requirement": "合成高分子防水卷材厚度：Ⅰ级防水≥1.5mm，Ⅱ级≥1.2mm",
+      "mandatory": true
+    },
+    {
+      "section": "5.3.4",
+      "title": "女儿墙泛水",
+      "requirement": "女儿墙泛水高度不应小于250mm，压顶向内排水坡度不应小于5%",
+      "mandatory": true
+    }
+  ]
+}

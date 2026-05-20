@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB 50209-2010",
+  "spec_name": "建筑地面工程施工质量验收规范",
+  "category": "建筑",
+  "version": "2010版",
+  "summary": "建筑地面各构造层（基层/垫层/找平层/隔离层/面层）的施工质量验收",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "基层铺设",
+      "summary": "基土应均匀密实，压实系数符合设计要求≥0.9"
+    },
+    {
+      "section_num": "5.1",
+      "title": "整体面层铺设",
+      "summary": "水泥混凝土面层强度等级不应低于C20，厚度不小于50mm"
+    },
+    {
+      "section_num": "6.1",
+      "title": "板块面层铺设",
+      "summary": "地砖铺贴前砖背面应清理干净并浸水2h以上"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "5.1.4",
+      "title": "混凝土面层强度",
+      "requirement": "水泥混凝土面层强度等级不应低于C20，水泥砂浆面层体积比不应低于1:2",
+      "mandatory": true
+    },
+    {
+      "section": "6.1.8",
+      "title": "板块面层空鼓",
+      "requirement": "板块面层空鼓面积不应大于400cm²且每自然间不超过2处",
+      "mandatory": true
+    }
+  ]
+}

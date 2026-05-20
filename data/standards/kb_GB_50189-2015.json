@@ -1,0 +1,49 @@
+{
+  "spec_code": "GB 50189-2015",
+  "spec_name": "公共建筑节能设计标准",
+  "category": "建筑节能",
+  "version": "2015版",
+  "summary": "公共建筑节能设计的气候分区、建筑与热工设计、供暖通风与空调节能、给排水节能、电气节能等",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "建筑与热工设计",
+      "summary": "根据建筑所处气候区确定围护结构热工性能参数限值"
+    },
+    {
+      "section_num": "3.3",
+      "title": "窗墙比限制",
+      "summary": "不同朝向窗墙面积比限值：南向≤0.5，北向≤0.4，东西向≤0.45"
+    },
+    {
+      "section_num": "4.1",
+      "title": "冷热源效率",
+      "summary": "电机驱动压缩机的蒸气压缩循环冷水机组性能系数COP应满足最低要求"
+    },
+    {
+      "section_num": "6.1",
+      "title": "电气节能",
+      "summary": "照明功率密度值不应大于现行国标规定的目标值"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.3.1",
+      "title": "窗墙比限值",
+      "requirement": "严寒地区各朝向窗墙比均不应大于0.3",
+      "mandatory": true
+    },
+    {
+      "section": "3.4.1",
+      "title": "围护结构热工设计",
+      "requirement": "屋面传热系数应满足对应气候区的限值要求",
+      "mandatory": true
+    },
+    {
+      "section": "6.2.1",
+      "title": "照明控制",
+      "requirement": "公共建筑照明系统应采用分区、定时、感应等节能控制措施",
+      "mandatory": true
+    }
+  ]
+}

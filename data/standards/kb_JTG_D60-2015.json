@@ -1,0 +1,38 @@
+{
+  "spec_code": "JTG D60-2015",
+  "spec_name": "公路桥涵设计通用规范",
+  "category": "桥梁工程",
+  "version": "2015版",
+  "summary": "公路桥涵结构设计基准期、荷载分类和组合、桥梁抗震设计原则等",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "荷载分类",
+      "summary": "永久作用/可变作用/偶然作用/地震作用四类荷载"
+    },
+    {
+      "section_num": "4.3",
+      "title": "汽车荷载",
+      "summary": "分为车道荷载和车辆荷载，分别用于整体计算和局部计算"
+    },
+    {
+      "section_num": "4.4",
+      "title": "人群荷载",
+      "summary": "人行道宽度>1.5m时人群荷载标准值取3.5kN/m²"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.1.5",
+      "title": "荷载组合",
+      "requirement": "承载能力极限状态采用基本组合，正常使用极限状态采用频遇组合和准永久组合",
+      "mandatory": true
+    },
+    {
+      "section": "5.1.1",
+      "title": "抗震设防目标",
+      "requirement": "E1地震作用后不应发生损伤，E2地震作用后可发生可修复损伤",
+      "mandatory": true
+    }
+  ]
+}

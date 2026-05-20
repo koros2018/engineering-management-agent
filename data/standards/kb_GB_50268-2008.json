@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB 50268-2008",
+  "spec_name": "给水排水管道工程施工及验收规范",
+  "category": "给排水",
+  "version": "2008版",
+  "summary": "给排水管道工程的开槽施工、不开槽施工、管道安装、功能性试验和验收",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "沟槽开挖",
+      "summary": "沟槽开挖应根据土质和深度确定支撑方式，放坡系数1:0.5~1:1"
+    },
+    {
+      "section_num": "6.1",
+      "title": "管道安装",
+      "summary": "钢管焊接接头应按设计规定进行无损检测"
+    },
+    {
+      "section_num": "9.1",
+      "title": "闭水试验",
+      "summary": "污水管道必须做闭水试验，试验水头按规范确定"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "9.1.1",
+      "title": "闭水试验",
+      "requirement": "污水、雨污水合流管道及湿陷土膨胀土地区的雨水管道必须进行闭水试验",
+      "mandatory": true
+    },
+    {
+      "section": "5.1.2",
+      "title": "管道基础",
+      "requirement": "管道基础应采用中粗砂或砂砾石，不得含有机杂质和尖锐颗粒",
+      "mandatory": true
+    }
+  ]
+}

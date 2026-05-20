@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB/T 51095-2015",
+  "spec_name": "建设工程造价咨询规范",
+  "category": "造价工程",
+  "version": "2015版",
+  "summary": "工程造价咨询业务的工作程序、质量管理、成果文件编制",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "业务分类",
+      "summary": "投资估算/设计概算/施工图预算/工程量清单/招标控制价/投标报价/工程结算/竣工决算"
+    },
+    {
+      "section_num": "5.1",
+      "title": "投资估算编制",
+      "summary": "投资估算应采用指标估算法，精度要求±30%"
+    },
+    {
+      "section_num": "6.1",
+      "title": "设计概算编制",
+      "summary": "设计概算应采用概算定额法或概算指标法，精度要求±10%"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.1.1",
+      "title": "质量管理体系",
+      "requirement": "工程造价咨询企业应建立质量管理体系，实行编制、复核、审定三级审核制度",
+      "mandatory": true
+    },
+    {
+      "section": "4.1.2",
+      "title": "三级复核制",
+      "requirement": "工程造价成果文件应由编制人自检、项目负责人复核、技术负责人审定",
+      "mandatory": true
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "spec_code": "GB 50003-2011",
+  "spec_name": "砌体结构设计规范",
+  "category": "结构工程",
+  "version": "2011版",
+  "summary": "房屋建筑砌体结构设计，含材料强度、构件计算、圈梁与构造柱、配筋砌体",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "材料强度",
+      "summary": "烧结普通砖MU10~MU30，混凝土砌块MU5~MU20"
+    },
+    {
+      "section_num": "5.1",
+      "title": "无筋砌体构件",
+      "summary": "受压构件承载力计算应考虑高厚比影响的稳定系数"
+    },
+    {
+      "section_num": "7.1",
+      "title": "圈梁与构造柱",
+      "summary": "多层砌体房屋应在每层设置钢筋混凝土圈梁"
+    },
+    {
+      "section_num": "10.1",
+      "title": "配筋砌体",
+      "summary": "网状配筋砖砌体可提高构件承载力但不应超过50%"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "6.1.1",
+      "title": "房屋总高度限制",
+      "requirement": "7度设防区烧结普通砖砌体房屋最大高度：6层/18m，8度区：5层/15m",
+      "mandatory": true
+    },
+    {
+      "section": "7.1.2",
+      "title": "构造柱设置",
+      "requirement": "较大洞口两侧、大房间内外墙交接处应设钢筋混凝土构造柱",
+      "mandatory": true
+    }
+  ]
+}

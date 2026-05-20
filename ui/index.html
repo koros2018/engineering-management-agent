@@ -2,7 +2,11 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1f6feb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/ui/manifest.json">
   <title>工程管理智能体 (EMA)</title>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <style>
@@ -1056,6 +1060,14 @@ createApp({
     };
   }
 }).mount('#app');
+</script>
+<script>
+  // PWA Service Worker 注册
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/ui/service-worker.js', { scope: '/ui/' })
+      .then(() => console.log('SW registered'))
+      .catch(() => console.log('SW failed (non-critical)'));
+  }
 </script>
 </body>
 </html>

@@ -1,0 +1,280 @@
+{
+  "standards": [
+    {
+      "code": "CJJ 1-2008",
+      "name": "城镇道路工程施工与质量验收规范",
+      "category": "道路交通",
+      "version": "2008版",
+      "file": "kb_CJJ_1-2008.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50003-2011",
+      "name": "砌体结构设计规范",
+      "category": "结构工程",
+      "version": "2011版",
+      "file": "kb_GB_50003-2011.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50005-2017",
+      "name": "木结构设计标准",
+      "category": "结构工程",
+      "version": "2017版",
+      "file": "kb_GB_50005-2017.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50007-2011",
+      "name": "建筑地基基础设计规范",
+      "category": "结构工程",
+      "version": "2011版",
+      "file": "kb_GB_50007-2011.json",
+      "key_requirements_count": 3
+    },
+    {
+      "code": "GB 50013-2018",
+      "name": "室外给水设计标准",
+      "category": "给排水",
+      "version": "2018版",
+      "file": "kb_GB_50013-2018.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50014-2021",
+      "name": "室外排水设计标准",
+      "category": "给排水",
+      "version": "2021版",
+      "file": "kb_GB_50014-2021.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50017-2017",
+      "name": "钢结构设计标准",
+      "category": "结构工程",
+      "version": "2017版",
+      "file": "kb_GB_50017-2017.json",
+      "key_requirements_count": 3
+    },
+    {
+      "code": "GB 50021-2001",
+      "name": "岩土工程勘察规范",
+      "category": "勘察测绘",
+      "version": "2001版（2009年局部修订）",
+      "file": "kb_GB_50021-2001.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50026-2020",
+      "name": "工程测量标准",
+      "category": "勘察测绘",
+      "version": "2020版",
+      "file": "kb_GB_50026-2020.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50057-2010",
+      "name": "建筑物防雷设计规范",
+      "category": "电气工程",
+      "version": "2010版",
+      "file": "kb_GB_50057-2010.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50084-2017",
+      "name": "自动喷水灭火系统设计规范",
+      "category": "消防工程",
+      "version": "2017版",
+      "file": "kb_GB_50084-2017.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50116-2013",
+      "name": "火灾自动报警系统设计规范",
+      "category": "消防工程",
+      "version": "2013版",
+      "file": "kb_GB_50116-2013.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50189-2015",
+      "name": "公共建筑节能设计标准",
+      "category": "建筑节能",
+      "version": "2015版",
+      "file": "kb_GB_50189-2015.json",
+      "key_requirements_count": 3
+    },
+    {
+      "code": "GB 50209-2010",
+      "name": "建筑地面工程施工质量验收规范",
+      "category": "建筑",
+      "version": "2010版",
+      "file": "kb_GB_50209-2010.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50210-2018",
+      "name": "建筑装饰装修工程质量验收标准",
+      "category": "建筑",
+      "version": "2018版",
+      "file": "kb_GB_50210-2018.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50268-2008",
+      "name": "给水排水管道工程施工及验收规范",
+      "category": "给排水",
+      "version": "2008版",
+      "file": "kb_GB_50268-2008.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50300-2013",
+      "name": "建筑工程施工质量验收统一标准",
+      "category": "施工管理",
+      "version": "2013版",
+      "file": "kb_GB_50300-2013.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50314-2015",
+      "name": "智能建筑设计标准",
+      "category": "电气工程",
+      "version": "2015版",
+      "file": "kb_GB_50314-2015.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50345-2012",
+      "name": "屋面工程技术规范",
+      "category": "建筑",
+      "version": "2012版",
+      "file": "kb_GB_50345-2012.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB 50500-2013",
+      "name": "建设工程工程量清单计价规范",
+      "category": "造价工程",
+      "version": "2013版",
+      "file": "kb_GB_50500-2013.json",
+      "key_requirements_count": 3
+    },
+    {
+      "code": "GB 7588-2003",
+      "name": "电梯制造与安装安全规范",
+      "category": "机电工程",
+      "version": "2003版（2015年第一次修改）",
+      "file": "kb_GB_7588-2003.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB/T 19001-2016",
+      "name": "质量管理体系要求",
+      "category": "质量管理",
+      "version": "2016版（等同ISO 9001:2015）",
+      "file": "kb_GB_T_19001-2016.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB/T 50378-2019",
+      "name": "绿色建筑评价标准",
+      "category": "绿色建筑",
+      "version": "2019版",
+      "file": "kb_GB_T_50378-2019.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB/T 51095-2015",
+      "name": "建设工程造价咨询规范",
+      "category": "造价工程",
+      "version": "2015版",
+      "file": "kb_GB_T_51095-2015.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "GB/T 51212-2016",
+      "name": "建筑信息模型应用统一标准",
+      "category": "BIM/信息化",
+      "version": "2016版",
+      "file": "kb_GB_T_51212-2016.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "JGJ 102-2003",
+      "name": "玻璃幕墙工程技术规范",
+      "category": "建筑",
+      "version": "2003版",
+      "file": "kb_JGJ_102-2003.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "JGJ 144-2019",
+      "name": "外墙外保温工程技术标准",
+      "category": "建筑节能",
+      "version": "2019版",
+      "file": "kb_JGJ_144-2019.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "JGJ 59-2011",
+      "name": "建筑施工安全检查标准",
+      "category": "安全管理",
+      "version": "2011版",
+      "file": "kb_JGJ_59-2011.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "JGJ 79-2012",
+      "name": "建筑地基处理技术规范",
+      "category": "结构工程",
+      "version": "2012版",
+      "file": "kb_JGJ_79-2012.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "JTG 3370.1-2018",
+      "name": "公路隧道设计规范 第一册 土建工程",
+      "category": "隧道工程",
+      "version": "2018版",
+      "file": "kb_JTG_3370_1-2018.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "JTG D20-2017",
+      "name": "公路路线设计规范",
+      "category": "道路交通",
+      "version": "2017版",
+      "file": "kb_JTG_D20-2017.json",
+      "key_requirements_count": 2
+    },
+    {
+      "code": "JTG D60-2015",
+      "name": "公路桥涵设计通用规范",
+      "category": "桥梁工程",
+      "version": "2015版",
+      "file": "kb_JTG_D60-2015.json",
+      "key_requirements_count": 2
+    }
+  ],
+  "categories": {
+    "道路交通": 2,
+    "结构工程": 5,
+    "给排水": 3,
+    "勘察测绘": 2,
+    "电气工程": 2,
+    "消防工程": 2,
+    "建筑节能": 2,
+    "建筑": 4,
+    "施工管理": 1,
+    "造价工程": 2,
+    "机电工程": 1,
+    "质量管理": 1,
+    "绿色建筑": 1,
+    "BIM/信息化": 1,
+    "安全管理": 1,
+    "隧道工程": 1,
+    "桥梁工程": 1
+  },
+  "total": 32
+}

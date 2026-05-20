@@ -29,6 +29,18 @@
   ],
   "t-008": [
     {
+      "id": "notif_1779238621585_t-008",
+      "tenant_id": "t-008",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:57:01.585275"
+    },
+    {
       "id": "notif_1779237611412_t-008",
       "tenant_id": "t-008",
       "type": "subscription_expiring",
@@ -90,6 +102,18 @@
     }
   ],
   "t-pay-001": [
+    {
+      "id": "notif_1779238621636_-pay-001",
+      "tenant_id": "t-pay-001",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:57:01.636510"
+    },
     {
       "id": "notif_1779237611455_-pay-001",
       "tenant_id": "t-pay-001",
@@ -153,6 +177,18 @@
   ],
   "t-pay-002": [
     {
+      "id": "notif_1779238621662_-pay-002",
+      "tenant_id": "t-pay-002",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:57:01.662061"
+    },
+    {
       "id": "notif_1779237611480_-pay-002",
       "tenant_id": "t-pay-002",
       "type": "subscription_expiring",
@@ -214,6 +250,18 @@
     }
   ],
   "t-pay-003": [
+    {
+      "id": "notif_1779238621689_-pay-003",
+      "tenant_id": "t-pay-003",
+      "type": "subscription_expiring",
+      "title": "✅ 订阅激活成功",
+      "message": "您已成功订阅pro套餐（¥299.0），有效期1个月。",
+      "severity": "info",
+      "actionable": true,
+      "action_url": "/settings/subscription",
+      "read": false,
+      "created_at": "2026-05-20T08:57:01.689603"
+    },
     {
       "id": "notif_1779237611507_-pay-003",
       "tenant_id": "t-pay-003",

@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB 7588-2003",
+  "spec_name": "电梯制造与安装安全规范",
+  "category": "机电工程",
+  "version": "2003版（2015年第一次修改）",
+  "summary": "乘客电梯和载货电梯的设计、制造、安装和检验安全要求",
+  "sections": [
+    {
+      "section_num": "7.1",
+      "title": "井道要求",
+      "summary": "电梯井道应由无孔的墙与周围空间分隔，井道壁耐火极限不低于2h"
+    },
+    {
+      "section_num": "8.1",
+      "title": "机房要求",
+      "summary": "机房应有良好的通风，环境温度保持在5~40℃之间"
+    },
+    {
+      "section_num": "9.1",
+      "title": "层门要求",
+      "summary": "层门净高度不小于2m，层门关闭后门扇间间隙不大于6mm"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "9.1.1",
+      "title": "层门高度",
+      "requirement": "电梯层门入口的最小净高度为2m",
+      "mandatory": true
+    },
+    {
+      "section": "12.5.1",
+      "title": "限速器",
+      "requirement": "电梯轿厢均应设置限速器-安全钳联动装置",
+      "mandatory": true
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "spec_code": "JGJ 102-2003",
+  "spec_name": "玻璃幕墙工程技术规范",
+  "category": "建筑",
+  "version": "2003版",
+  "summary": "玻璃幕墙的材料/建筑设计/结构设计/施工和验收",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "材料要求",
+      "summary": "幕墙玻璃应采用安全玻璃（钢化/夹层/中空玻璃）"
+    },
+    {
+      "section_num": "5.1",
+      "title": "建筑设计",
+      "summary": "幕墙开启扇开启角度不宜大于30°，开启距离不宜大于300mm"
+    },
+    {
+      "section_num": "6.1",
+      "title": "结构设计",
+      "summary": "幕墙结构应进行重力荷载/风荷载/地震作用/温度作用组合验算"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "5.5.1",
+      "title": "防火设计",
+      "requirement": "玻璃幕墙与每层楼板隔墙间的缝隙应采用防火封堵材料封堵，高度不小于800mm",
+      "mandatory": true
+    },
+    {
+      "section": "10.1.1",
+      "title": "竣工验收",
+      "requirement": "玻璃幕墙应对工程资料、观感质量、抽样检验进行验收",
+      "mandatory": true
+    }
+  ]
+}

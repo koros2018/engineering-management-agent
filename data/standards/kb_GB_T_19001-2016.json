@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB/T 19001-2016",
+  "spec_name": "质量管理体系要求",
+  "category": "质量管理",
+  "version": "2016版（等同ISO 9001:2015）",
+  "summary": "组织质量管理体系的要求，含组织环境/领导作用/策划/支持/运行/绩效评价/改进7章",
+  "sections": [
+    {
+      "section_num": "6.1",
+      "title": "风险应对措施",
+      "summary": "应确定需要应对的风险和机遇并策划应对措施"
+    },
+    {
+      "section_num": "8.1",
+      "title": "运行的策划和控制",
+      "summary": "应通过策划、实施和控制满足要求所需的过程"
+    },
+    {
+      "section_num": "10.1",
+      "title": "持续改进",
+      "summary": "应持续改进质量管理体系的适宜性、充分性和有效性"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "7.1.5",
+      "title": "监视和测量资源",
+      "requirement": "当要求测量溯源时测量设备应按规定时间间隔或使用前进行校准和检定",
+      "mandatory": true
+    },
+    {
+      "section": "8.6",
+      "title": "产品和服务的放行",
+      "requirement": "应在适当阶段实施策划的安排以验证产品和服务要求已得到满足",
+      "mandatory": true
+    }
+  ]
+}

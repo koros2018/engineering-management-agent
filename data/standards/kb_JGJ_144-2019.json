@@ -1,0 +1,38 @@
+{
+  "spec_code": "JGJ 144-2019",
+  "spec_name": "外墙外保温工程技术标准",
+  "category": "建筑节能",
+  "version": "2019版",
+  "summary": "外墙外保温工程的设计、施工和验收，含EPS/XPS/岩棉/发泡水泥等保温系统",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "系统构造",
+      "summary": "外保温系统由粘结层/保温层/抹面层/饰面层构成"
+    },
+    {
+      "section_num": "5.1",
+      "title": "保温材料要求",
+      "summary": "EPS板表观密度18~22kg/m³，导热系数≤0.041W/(m·K)"
+    },
+    {
+      "section_num": "6.1",
+      "title": "施工要求",
+      "summary": "基层墙体应坚实平整，表面清洁无油污脱模剂等附着物"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.2.1",
+      "title": "防火隔离带",
+      "requirement": "采用B1/B2级保温材料时应在每层设置不燃材料防火隔离带，高度不小于300mm",
+      "mandatory": true
+    },
+    {
+      "section": "7.1.1",
+      "title": "粘结强度检验",
+      "requirement": "保温板与基层墙体粘结强度不应小于0.1MPa",
+      "mandatory": true
+    }
+  ]
+}

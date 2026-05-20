@@ -1,0 +1,38 @@
+{
+  "spec_code": "JTG 3370.1-2018",
+  "spec_name": "公路隧道设计规范 第一册 土建工程",
+  "category": "隧道工程",
+  "version": "2018版",
+  "summary": "公路隧道土建工程设计，含总体设计/围岩分级/衬砌结构/防排水/通风照明",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "围岩分级",
+      "summary": "按BQ法分为Ⅰ~Ⅵ级，考虑岩石坚硬程度和岩体完整程度"
+    },
+    {
+      "section_num": "8.1",
+      "title": "衬砌结构设计",
+      "summary": "复合式衬砌由初期支护+防水层+二次衬砌组成"
+    },
+    {
+      "section_num": "11.1",
+      "title": "防排水设计",
+      "summary": "隧道防排水应遵循防、排、截、堵结合原则"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.3.1",
+      "title": "隧道建筑限界",
+      "requirement": "高速公路隧道建筑限界净高5.0m，行车道宽度3.75m×车道数",
+      "mandatory": true
+    },
+    {
+      "section": "13.1.2",
+      "title": "运营通风",
+      "requirement": "长度大于1km的隧道应设置机械通风系统",
+      "mandatory": true
+    }
+  ]
+}

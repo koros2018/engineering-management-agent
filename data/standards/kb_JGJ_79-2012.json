@@ -1,0 +1,38 @@
+{
+  "spec_code": "JGJ 79-2012",
+  "spec_name": "建筑地基处理技术规范",
+  "category": "结构工程",
+  "version": "2012版",
+  "summary": "换填垫层、预压地基、压实和夯实地基、复合地基等地基处理方案的设计和施工技术要求",
+  "sections": [
+    {
+      "section_num": "3.0.1",
+      "title": "地基处理方案选择",
+      "summary": "根据上部结构要求、地基条件、施工条件及工期等因素综合考虑"
+    },
+    {
+      "section_num": "4.1",
+      "title": "换填垫层法",
+      "summary": "换填厚度宜为0.5~3m，垫层底面宽度应满足应力扩散要求"
+    },
+    {
+      "section_num": "7.1",
+      "title": "强夯法和强夯置换法",
+      "summary": "单击夯击能应根据所需加固深度确定，一般有效加固深度5~12m"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.0.5",
+      "title": "承载力检验",
+      "requirement": "处理后的地基应进行承载力检验，检测点不少于3处",
+      "mandatory": true
+    },
+    {
+      "section": "4.2.1",
+      "title": "垫层材料要求",
+      "requirement": "砂石垫层含泥量不应超过5%，不得含有草根垃圾等有机杂质",
+      "mandatory": true
+    }
+  ]
+}

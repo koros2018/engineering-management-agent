@@ -1,0 +1,49 @@
+{
+  "spec_code": "GB 50017-2017",
+  "spec_name": "钢结构设计标准",
+  "category": "结构工程",
+  "version": "2017版",
+  "summary": "房屋建筑和一般构筑物钢结构设计，含材料选用、结构分析、连接设计、构件设计、抗震设计",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "钢材选用",
+      "summary": "承重钢结构宜采用Q235/Q355/Q390/Q420/Q460钢"
+    },
+    {
+      "section_num": "3.4",
+      "title": "连接材料",
+      "summary": "螺栓连接分级：4.6级/4.8级/5.6级/8.8级/10.9级/12.9级"
+    },
+    {
+      "section_num": "7.1",
+      "title": "轴心受力构件",
+      "summary": "轴心受压构件应计算整体稳定性和局部稳定性"
+    },
+    {
+      "section_num": "17.1",
+      "title": "抗震设计",
+      "summary": "钢结构抗震设计应满足强柱弱梁、强节点弱构件原则"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.1.1",
+      "title": "承载能力极限状态",
+      "requirement": "钢结构应进行承载能力极限状态和正常使用极限状态设计",
+      "mandatory": true
+    },
+    {
+      "section": "11.1.6",
+      "title": "高强螺栓连接",
+      "requirement": "高强度螺栓连接应按摩擦型和承压型分别进行承载力验算",
+      "mandatory": true
+    },
+    {
+      "section": "17.1.5",
+      "title": "抗震构造",
+      "requirement": "抗震等级一、二、三级的框架结构，梁与柱的连接应采用刚接",
+      "mandatory": true
+    }
+  ]
+}

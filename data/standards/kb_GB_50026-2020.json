@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB 50026-2020",
+  "spec_name": "工程测量标准",
+  "category": "勘察测绘",
+  "version": "2020版",
+  "summary": "工程建设各阶段的测量工作技术要求，含控制测量、地形测量、施工放样、变形监测",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "平面控制测量",
+      "summary": "平面控制网分为二/三/四等和一/二/三级，GPS静态测量为主要手段"
+    },
+    {
+      "section_num": "7.1",
+      "title": "施工测量",
+      "summary": "建筑施工测量包括建筑方格网、轴线投测、高程传递"
+    },
+    {
+      "section_num": "10.1",
+      "title": "变形监测",
+      "summary": "对受基坑开挖影响的周边建筑应进行沉降和倾斜监测"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.2.1",
+      "title": "控制点密度",
+      "requirement": "测区建筑物密集区一级导线点间距宜为100~300m",
+      "mandatory": true
+    },
+    {
+      "section": "10.1.3",
+      "title": "变形监测等级",
+      "requirement": "一等变形监测用于重要建(构)筑物和大型基础设施的变形监测",
+      "mandatory": true
+    }
+  ]
+}

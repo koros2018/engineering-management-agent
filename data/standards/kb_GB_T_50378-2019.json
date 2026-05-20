@@ -1,0 +1,43 @@
+{
+  "spec_code": "GB/T 50378-2019",
+  "spec_name": "绿色建筑评价标准",
+  "category": "绿色建筑",
+  "version": "2019版",
+  "summary": "绿色建筑的评价指标体系：安全耐久/健康舒适/生活便利/资源节约/环境宜居5大类",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "评价指标体系",
+      "summary": "5大类指标按评分项+加分项评定，总分110分"
+    },
+    {
+      "section_num": "3.2",
+      "title": "绿色建筑等级",
+      "summary": "一星级≥60分，二星级≥70分，三星级≥85分"
+    },
+    {
+      "section_num": "5.1",
+      "title": "安全耐久",
+      "summary": "场地安全+结构耐久+围护结构安全"
+    },
+    {
+      "section_num": "7.1",
+      "title": "资源节约",
+      "summary": "节地/节能/节水/节材 四节控制"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.2.2",
+      "title": "绿色建筑基本要求",
+      "requirement": "绿色建筑评价应在建筑工程竣工后进行，全装修住宅才可参评",
+      "mandatory": true
+    },
+    {
+      "section": "7.2.4",
+      "title": "可再生能源利用",
+      "requirement": "一星需可再生能源利用率≥1%，二星≥2%，三星≥3%",
+      "mandatory": true
+    }
+  ]
+}

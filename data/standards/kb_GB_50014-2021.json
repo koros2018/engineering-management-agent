@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB 50014-2021",
+  "spec_name": "室外排水设计标准",
+  "category": "给排水",
+  "version": "2021版",
+  "summary": "城镇及工业企业室外排水工程设计，含雨水管网、污水管网、污水处理、污泥处理",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "排水体制",
+      "summary": "新建地区应采用分流制排水体制（雨污分流）"
+    },
+    {
+      "section_num": "4.1",
+      "title": "设计流量",
+      "summary": "污水设计流量包括综合生活污水量和工业废水量"
+    },
+    {
+      "section_num": "5.1",
+      "title": "水力计算",
+      "summary": "污水管道应按非满流计算，最大设计充满度根据管径确定"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.1.2",
+      "title": "排水体制选择",
+      "requirement": "除降雨量少的干旱地区外，新建地区的排水系统应采用分流制",
+      "mandatory": true
+    },
+    {
+      "section": "4.2.1",
+      "title": "雨水设计流量",
+      "requirement": "雨水设计流量应按暴雨强度公式计算，重现期一般地区2~3年",
+      "mandatory": true
+    }
+  ]
+}

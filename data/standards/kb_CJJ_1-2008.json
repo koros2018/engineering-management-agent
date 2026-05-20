@@ -1,0 +1,38 @@
+{
+  "spec_code": "CJJ 1-2008",
+  "spec_name": "城镇道路工程施工与质量验收规范",
+  "category": "道路交通",
+  "version": "2008版",
+  "summary": "城镇道路路基/基层/面层/附属构筑物施工与质量验收",
+  "sections": [
+    {
+      "section_num": "6.1",
+      "title": "路基施工",
+      "summary": "填方路基应分层填筑压实，每层虚铺厚度不超过300mm"
+    },
+    {
+      "section_num": "8.1",
+      "title": "沥青面层施工",
+      "summary": "沥青混合料摊铺温度不低于135℃，碾压终了温度不低于70℃"
+    },
+    {
+      "section_num": "10.1",
+      "title": "人行道施工",
+      "summary": "人行道基层压实度应≥93%，面层平整度≤5mm"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "6.8.1",
+      "title": "路基压实度",
+      "requirement": "快速路和主干路路床压实度≥95%，次干路≥93%，支路≥90%",
+      "mandatory": true
+    },
+    {
+      "section": "10.4.1",
+      "title": "盲道设置",
+      "requirement": "城镇主要道路人行道必须设置盲道，行进盲道宽度0.3~0.6m",
+      "mandatory": true
+    }
+  ]
+}

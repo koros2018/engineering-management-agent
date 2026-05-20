@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB 50057-2010",
+  "spec_name": "建筑物防雷设计规范",
+  "category": "电气工程",
+  "version": "2010版",
+  "summary": "建筑物和构筑物的防雷设计、施工和检测，含雷击风险评估和防护措施",
+  "sections": [
+    {
+      "section_num": "3.0.1",
+      "title": "防雷分类",
+      "summary": "根据建筑物重要性、使用性质、预计雷击次数分为第一/二/三类防雷建筑"
+    },
+    {
+      "section_num": "4.1",
+      "title": "接闪器",
+      "summary": "接闪杆/接闪带/接闪网的几何尺寸和保护范围计算方法（滚球法）"
+    },
+    {
+      "section_num": "4.3",
+      "title": "接地装置",
+      "summary": "防雷接地与电气系统接地宜共用一套接地装置，接地电阻≤1Ω"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.2.1",
+      "title": "接闪器保护范围",
+      "requirement": "第一类防雷建筑物滚球半径30m，第二类45m，第三类60m",
+      "mandatory": true
+    },
+    {
+      "section": "6.1.1",
+      "title": "防雷等电位连接",
+      "requirement": "进出建筑物的金属管线应在防雷区界面处做等电位连接",
+      "mandatory": true
+    }
+  ]
+}

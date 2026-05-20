@@ -1,0 +1,49 @@
+{
+  "spec_code": "GB 50007-2011",
+  "spec_name": "建筑地基基础设计规范",
+  "category": "结构工程",
+  "version": "2011版",
+  "summary": "建筑地基基础的设计原则、地基承载力、变形计算、基础设计、边坡与基坑支护等",
+  "sections": [
+    {
+      "section_num": "3.0.1",
+      "title": "地基基础设计等级",
+      "summary": "根据地基复杂程度、建筑规模和功能特征分为甲/乙/丙三个设计等级"
+    },
+    {
+      "section_num": "5.1",
+      "title": "基础埋置深度",
+      "summary": "基础埋深应考虑建筑物用途、荷载大小、工程地质条件等因素"
+    },
+    {
+      "section_num": "5.2",
+      "title": "地基承载力",
+      "summary": "地基承载力特征值由载荷试验或其他原位测试、公式计算确定"
+    },
+    {
+      "section_num": "5.3",
+      "title": "地基变形",
+      "summary": "砌体承重结构地基变形由局部倾斜控制，框架结构由沉降差控制"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "3.0.2",
+      "title": "地基变形限制",
+      "reason_requirement": "甲级、乙级建筑物均应做地基变形验算",
+      "mandatory": true
+    },
+    {
+      "section": "5.2.4",
+      "title": "承载力修正",
+      "requirement": "基础宽度大于3m或埋深大于0.5m时，地基承载力特征值应进行修正",
+      "mandatory": true
+    },
+    {
+      "section": "10.2.1",
+      "title": "基坑支护",
+      "requirement": "开挖深度大于5m的基坑工程应进行支护设计",
+      "mandatory": true
+    }
+  ]
+}

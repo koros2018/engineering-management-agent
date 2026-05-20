@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB 50314-2015",
+  "spec_name": "智能建筑设计标准",
+  "category": "电气工程",
+  "version": "2015版",
+  "summary": "建筑物智能化系统工程设计，含信息设施/安全防范/建筑设备管理/信息化应用",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "信息设施系统",
+      "summary": "通信接入/电话交换/信息网络/综合布线/室内移动通信覆盖"
+    },
+    {
+      "section_num": "5.1",
+      "title": "安全防范系统",
+      "summary": "入侵报警/视频监控/出入口控制/电子巡查/停车库管理"
+    },
+    {
+      "section_num": "6.1",
+      "title": "建筑设备管理系统",
+      "summary": "建筑设备监控/建筑能效监管"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.2.1",
+      "title": "综合布线",
+      "requirement": "信息配线设备应安装在建筑物的进线间或设备间，面积不小于10m²",
+      "mandatory": true
+    },
+    {
+      "section": "5.2.3",
+      "title": "视频监控存储",
+      "requirement": "视频图像存储时间不少于30天，重点区域不少于90天",
+      "mandatory": true
+    }
+  ]
+}

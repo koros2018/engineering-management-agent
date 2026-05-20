@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB 50210-2018",
+  "spec_name": "建筑装饰装修工程质量验收标准",
+  "category": "建筑",
+  "version": "2018版",
+  "summary": "抹灰/门窗/吊顶/轻质隔墙/饰面板/幕墙/涂饰/裱糊/细部工程验收标准",
+  "sections": [
+    {
+      "section_num": "4.1",
+      "title": "一般抹灰",
+      "summary": "普通抹灰表面应光滑洁净接槎平整，分格缝应清晰"
+    },
+    {
+      "section_num": "6.1",
+      "title": "吊顶工程",
+      "summary": "吊杆距主龙骨端部距离不得大于300mm，否则应增设吊杆"
+    },
+    {
+      "section_num": "9.1",
+      "title": "饰面板工程",
+      "summary": "饰面板安装必须牢固，石材饰面板采用干挂法施工时膨胀螺栓需做抗拔试验"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.2.5",
+      "title": "抹灰层厚度",
+      "requirement": "内墙普通抹灰厚度不大于20mm，高层框架填充墙不大于25mm",
+      "mandatory": true
+    },
+    {
+      "section": "6.1.11",
+      "title": "吊顶检修口",
+      "requirement": "设有检修口的重型吊顶应在检修口四周增设附加龙骨",
+      "mandatory": true
+    }
+  ]
+}

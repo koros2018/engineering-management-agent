@@ -1,0 +1,38 @@
+{
+  "spec_code": "GB 50021-2001",
+  "spec_name": "岩土工程勘察规范",
+  "category": "勘察测绘",
+  "version": "2001版（2009年局部修订）",
+  "summary": "各类工程建设的岩土工程勘察技术要求，含勘察分级、勘探取样、原位测试、室内试验",
+  "sections": [
+    {
+      "section_num": "3.1",
+      "title": "勘察分级",
+      "summary": "根据工程重要性/场地复杂程度/地基复杂程度分为甲乙丙三级"
+    },
+    {
+      "section_num": "4.1",
+      "title": "勘探点布置",
+      "summary": "初步勘察勘探线间距50~200m，勘探点间距30~150m"
+    },
+    {
+      "section_num": "6.1",
+      "title": "原位测试",
+      "summary": "标准贯入试验/静力触探/旁压试验/十字板剪切试验的选择"
+    }
+  ],
+  "key_requirements": [
+    {
+      "section": "4.1.11",
+      "title": "勘探孔深度",
+      "requirement": "控制性勘探孔深度应超过地基变形计算深度,一般孔深度满足地基承载力要求",
+      "mandatory": true
+    },
+    {
+      "section": "4.1.20",
+      "title": "取样数量",
+      "requirement": "每一主要土层的原状土试样或原位测试数据不应少于6件(组)",
+      "mandatory": true
+    }
+  ]
+}
