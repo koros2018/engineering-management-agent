@@ -70,5 +70,13 @@
     "admin_user_id": "user_65daa73c4f84993f",
     "created_at": "2026-05-20T08:17:34.296816",
     "status": "active"
+  },
+  "tenant_9d6c50854a9e": {
+    "tenant_id": "tenant_9d6c50854a9e",
+    "name": "test_tester的个人空间",
+    "plan": "free",
+    "admin_user_id": "user_73b2496731e053b6",
+    "created_at": "2026-05-20T13:44:44.723755",
+    "status": "active"
   }
 }
