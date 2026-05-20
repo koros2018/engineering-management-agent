@@ -434,10 +434,17 @@ async def list_llm_models():
 
 
 @app.post("/api/v1/llm/test")
-async def test_llm_model(model_id: str = Body(...)):
-    """
-    测试指定模型是否可用
-    """
+async def test_llm_model(request: Request):
+    """测试指定模型是否可用 (接受 JSON {"model": "xxx"} 或 Form model=xxx)"""
+    ct = request.headers.get("content-type", "")
+    if "json" in ct:
+        body = await request.json()
+        model_id = body.get("model", body.get("model_id", ""))
+    else:
+        form = await request.form()
+        model_id = form.get("model", form.get("model_id", ""))
+    if not model_id:
+        raise HTTPException(status_code=400, detail="model parameter required")
     try:
         from blueprint_parser.llm_service import LLMService, OllamaService
         
@@ -608,16 +615,15 @@ async def upload_and_analyze(
     file: UploadFile = File(...),
     user_id: str = Form("guest"),
     project_id: Optional[str] = Form(None),
+    disable_ocr: bool = Form(True),
 ):
     """
-    上传图纸并分析（完整流程）
-
+    上传图纸并分析
     支持格式：DWG, DXF, PDF
     """
     import tempfile
     from pathlib import Path
 
-    # 保存上传文件
     suffix = Path(file.filename).suffix.lower()
     if suffix not in ['.dwg', '.dxf', '.pdf']:
         raise HTTPException(status_code=400, detail="Unsupported file type. Use DWG/DXF/PDF")
@@ -628,32 +634,33 @@ async def upload_and_analyze(
         tmp_path = tmp.name
 
     try:
-        # 执行分析
-        agent = get_tech_rd_agent()
-        task_id = str(uuid.uuid4())
+        from blueprint_parser.core import BlueprintParser
+        parser = BlueprintParser()
+        if suffix == '.pdf' and disable_ocr:
+            parser.pdf_parser.use_ocr = False
 
-        task = Task(
-            task_id=task_id,
-            agent_id="tech_rd",
-            task_type="full_analysis",
-            params={"file_path": tmp_path},
-            context={
-                "user_id": user_id,
-                "project_id": project_id,
-                "task_id": task_id,
-            }
-        )
-
-        result = await agent.run_with_retry(task)
+        result = parser.parse(tmp_path)
 
         return {
-            "task_id": task_id,
-            "filename": file.filename,
-            "agent_id": result.agent_id,
-            "status": result.status,
-            "confidence": result.confidence,
-            "output": result.output,
-            "execution_time": result.execution_time,
+            "success": result.success,
+            "file_path": file.filename,
+            "message": "图纸分析完成",
+            "analysis": {
+                "file_type": result.file_type.value if hasattr(result.file_type, 'value') else str(result.file_type),
+                "drawing_type": "待识别",
+                "layer_count": len(result.layers),
+                "entity_count": len(result.entities),
+                "layers": [
+                    {"name": l.name, "color": l.color, "visible": getattr(l, "visible", True)}
+                    for l in result.layers[:50]
+                ],
+                "entities": [
+                    {"type": getattr(e, "type", "UNKNOWN"), "layer": getattr(e, "layer", "")}
+                    for e in result.entities[:50]
+                ],
+                "metadata": result.metadata,
+            },
+            "error": "; ".join(result.errors) if result.errors else None,
         }
     finally:
         # 清理临时文件
