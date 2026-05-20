@@ -163,18 +163,16 @@
     .usage-bar.warn { background: var(--warning); }
     .usage-bar.full { background: var(--danger); }
 
-    /* ── 一键体验 ── */
-    .tour-panel { margin: 2px 8px; }
-    .tour-step { padding: 8px 10px; font-size: 11px; color: var(--text); background: var(--agent-bubble); border-radius: 6px; margin-bottom: 4px; border-left: 3px solid var(--accent); }
-    .tour-scenario { padding: 8px 10px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.12s; border-radius: 4px; margin-bottom: 2px; font-size: 12px; }
-    .tour-scenario:hover { background: var(--border); }
-    .tour-scenario-desc { font-size: 9px; color: var(--dim); margin-top: 2px; }
-    .upload-dropzone { padding: 12px; margin: 6px 0; border: 2px dashed var(--accent); border-radius: 8px; cursor: pointer; text-align: center; font-size: 12px; color: var(--accent); transition: background 0.15s; }
-    .upload-dropzone:hover { background: rgba(59,130,246,0.08); }
-    .anime-agent-card { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--border); border-radius: 12px; font-size: 11px; margin: 2px; cursor: pointer; transition: all 0.15s; }
-    .anime-agent-card:hover { background: var(--accent); color: #fff; transform: scale(1.05); }
-    .anime-agent-card .emoji { font-size: 20px; animation: bounce 1s infinite; }
-    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+    /* ── 项目全生命周期体验 ── */
+    .tour-panel { margin: 2px 8px; max-height: 420px; overflow-y: auto; }
+    .lifecycle-panel ::-webkit-scrollbar { width: 4px; }
+    .lifecycle-panel ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .lifecycle-item { transition: all 0.15s ease; }
+    .lifecycle-item:hover { border-color: var(--accent) !important; }
+    .lifecycle-item.active { border-color: var(--accent) !important; background: rgba(59,130,246,0.08) !important; }
+    .lifecycle-item.done { opacity: 0.7; }
+    .lifecycle-item.running { border-color: var(--accent) !important; animation: pulse-border 1.5s infinite; }
+    @keyframes pulse-border { 0%,100%{border-color:var(--accent)} 50%{border-color:var(--accent2)} }
 
     .model-select {
       background: var(--agent-bubble); border: 1px solid var(--border);
@@ -345,41 +343,54 @@
         <span v-else class="badge" style="font-size:10px;background:var(--border);padding:3px 8px;border-radius:10px">{{ userRole === 'enterprise' ? '🏢 企业' : userRole === 'pro' ? '💎 专业' : '👤 用户' }}</span>
       </div>
     </div>
-    <div class="sidebar-nav">
-      <!-- 一键体验 -->
-      <div class="nav-section">🚀 快速入口</div>
-      <div :class="['nav-item', { active: showTour }]" @click="startTour" style="color:var(--accent);font-weight:500">
-        <span style="margin-right:6px">✨</span> 一键体验
-        <span v-if="tourStep > 0" style="font-size:10px;color:var(--dim);margin-left:auto">步骤{{ tourStep }}/3</span>
+      <!-- 项目全生命周期体验 -->
+      <div class="nav-section">🚀 快捷入口</div>
+      <div :class="['nav-item', { active: showTour }]" @click="toggleTour" style="color:var(--accent);font-weight:500">
+        <span style="margin-right:6px">✨</span> 全生命周期体验
+        <span v-if="lifecycleStage > 0" style="font-size:10px;color:var(--dim);margin-left:auto">{{ lifecycleStage }}/7</span>
       </div>
-      <div v-if="showTour" class="tour-panel">
-        <div v-if="tourStep === 1" style="padding:8px 10px;font-size:11px;color:var(--text);background:var(--agent-bubble);border-radius:6px;margin:4px 8px">
-          🎯 <b>选择您的任务类型</b><br>
-          <div v-for="(s,si) in tourScenarios" :key="si" style="padding:6px 0;cursor:pointer;border-bottom:1px solid var(--border)" @click="selectScenario(s)">
-            {{ s.icon }} {{ s.name }}
-            <div style="font-size:9px;color:var(--dim);margin-top:1px">{{ s.desc }}</div>
-          </div>
-        </div>
-        <div v-else-if="tourStep === 2" style="padding:8px 10px;font-size:11px;color:var(--text);background:var(--agent-bubble);border-radius:6px;margin:4px 8px">
-          📤 <b>上传您的图纸文件</b><br>
-          <div @click="triggerUpload" style="padding:8px 10px;margin:6px 0;border:1px dashed var(--accent);border-radius:8px;cursor:pointer;text-align:center;font-size:12px;color:var(--accent)">
-            📎 点击上传 DWG/DXF/PDF
-          </div>
-          <div style="font-size:9px;color:var(--dim)">支持格式：DWG、DXF、PDF（最大500MB）</div>
-        </div>
-        <div v-else-if="tourStep === 3" style="padding:8px 10px;font-size:11px;color:var(--text);background:var(--agent-bubble);border-radius:6px;margin:4px 8px">
-          ✨ <b>自动分析与建议</b><br>
-          <div style="padding:4px 0">
-            <div v-for="(s,si) in tourResults" :key="si" style="font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">
-              <span>{{ s.icon }}</span><span>{{ s.label }}</span>
-              <span v-if="s.ready" style="color:var(--green);font-size:10px">✅</span>
-              <span v-else style="color:var(--dim);font-size:10px">⏳</span>
+      <div v-if="showTour" class="tour-panel lifecycle-panel">
+        <!-- 阶段选择 -->
+        <div v-if="lifecycleStage === 0" style="padding:6px 8px">
+          <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">📋 选择项目阶段，体验全流程</div>
+          <div v-for="(st,si) in lifecycleStages" :key="si" @click="startLifecycle(st)" 
+            :class="['lifecycle-item', { active: st.active, done: st.done, running: st.running }]"
+            style="padding:6px 8px;margin:3px 0;border-radius:6px;cursor:pointer;font-size:11px;
+              display:flex;align-items:center;gap:6px;transition:all 0.2s;
+              border:1px solid var(--border);background:var(--agent-bubble)">
+            <span style="font-size:14px">{{ st.icon }}</span>
+            <div style="flex:1">
+              <div style="font-weight:500;color:var(--text)">{{ st.name }}</div>
+              <div style="font-size:9px;color:var(--text-dim)">{{ st.desc }}</div>
             </div>
+            <span v-if="st.done" style="color:var(--accent2);font-size:14px">✅</span>
+            <span v-else-if="st.running" style="color:var(--accent);font-size:12px">⏳</span>
+            <span v-else style="color:var(--text-dim);font-size:14px">{{ st.num }}</span>
           </div>
-          <button @click="finishTour" style="width:100%;margin-top:6px;padding:6px;font-size:11px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer">
-            🚀 开始生成报告
-          </button>
         </div>
+        <!-- 运行中 -->
+        <div v-if="lifecycleStage > 0" style="padding:6px 8px">
+          <div style="font-size:11px;color:var(--accent);margin-bottom:4px">
+            🏗️ {{ currentStage.name }} — 正在为您执行...
+          </div>
+          <div v-for="s in lifecycleStepResults" :key="s.label" style="font-size:10px;padding:3px 0;display:flex;align-items:center;gap:4px">
+            <span>{{ s.icon }}</span><span style="color:var(--text)">{{ s.label }}</span>
+            <span v-if="s.done" style="color:var(--accent2)">✅</span>
+            <span v-else style="color:var(--text-dim)">⏳</span>
+          </div>
+          <div v-if="currentStage.result" style="margin-top:4px;padding:6px;border-radius:4px;background:var(--sidebar);border:1px solid var(--border);font-size:10px;color:var(--text);max-height:150px;overflow-y:auto">
+            <div v-for="(line,i) in currentStage.result.split('\n').filter(Boolean)" :key="i">{{ line }}</div>
+          </div>
+          <div style="display:flex;gap:4px;margin-top:6px">
+            <button v-if="currentStage.done" @click="nextLifecycleStage" style="flex:1;padding:5px;font-size:11px;background:var(--accent2);color:#fff;border:none;border-radius:4px;cursor:pointer">
+              {{ lifecycleStage < 7 ? '▶ 下一阶段' : '✅ 完成全流程' }}
+            </button>
+            <button @click="resetLifecycle" style="padding:5px 8px;font-size:11px;background:var(--agent-bubble);color:var(--text-dim);border:1px solid var(--border);border-radius:4px;cursor:pointer">
+              重选
+            </button>
+          </div>
+        </div>
+      </div>
       </div>
       <!-- Agent 列表（分级展示）-->
       <div class="nav-section">🤖 功能中心</div>
@@ -657,7 +668,7 @@ createApp({
     // 存储到localStorage供后续使用
     try { localStorage.setItem('ema_token', authToken); } catch(e) {}
 
-    const API_BASE = 'http://127.0.0.1:5188';
+    const API_BASE = window.location.protocol === 'https:' ? '' : 'http://127.0.0.1:5188';
     const messages = ref([]);
     const input = ref('');
     const loading = ref(false);
@@ -722,53 +733,86 @@ createApp({
         .catch(() => {});
     }
 
-    // ── 一键体验 ──
+    // ── 项目全生命周期体验 v2.0 ──
     const showTour = ref(false);
-    const tourStep = ref(0);
-    const tourScenarios = ref([
-      { icon: '📋', name: '图纸分析', desc: '上传DWG/DXF，自动识别类型并提取工程量', action: 'analyze' },
-      { icon: '🔍', name: '智能审图', desc: '一键审查消防、结构、电气合规', action: 'review' },
-      { icon: '📄', name: '生成文档', desc: '生成设计说明、技术交底、工程量清单', action: 'docs' },
-      { icon: '💰', name: '工程预算', desc: '自动计算造价，生成预算表', action: 'budget' },
+    const lifecycleStage = ref(0);
+    const lifecycleStages = ref([
+      { num:'①', icon:'📋', name:'可研决策', desc:'投资估算·经济评价·选址分析', id:'feasibility', active:false, done:false, running:false, result:'', agent:'cost_benefit', task:'chat', prompt:'对工程项目进行可行性研究分析,包括投资估算、经济评价和选址建议(100字摘要)' },
+      { num:'②', icon:'📐', name:'立项规划', desc:'项目建议书·用地规划·环评', id:'initiation', active:false, done:false, running:false, result:'', agent:'engineering_delivery', task:'chat', prompt:'生成工程项目立项规划建议,包括项目范围、里程碑节点和资源配置(100字摘要)' },
+      { num:'③', icon:'🏗️', name:'设计制图', desc:'图纸解析·智能审图·设计优化', id:'design', active:false, done:false, running:false, result:'', agent:'tech_rd', task:'chat', prompt:'作为设计工程师,对建筑工程项目进行设计阶段技术分析,包括结构选型、图纸审查要点和设计优化建议(100字摘要)' },
+      { num:'④', icon:'📊', name:'招投标采购', desc:'招标文件·投标报价·合同管理', id:'bidding', active:false, done:false, running:false, result:'', agent:'market_sales', task:'chat', prompt:'生成工程项目招投标方案,包括招标范围、评标办法和投标报价策略(100字摘要)' },
+      { num:'⑤', icon:'🔨', name:'施工实施', desc:'进度管理·质量控制·安全监理', id:'construction', active:false, done:false, running:false, result:'', agent:'engineering_delivery', task:'chat', prompt:'制定工程施工实施方案,包括进度计划、质量控制要点和安全保障措施(100字摘要)' },
+      { num:'⑥', icon:'✅', name:'竣工验收', desc:'验收流程·档案归档·交付移交', id:'acceptance', active:false, done:false, running:false, result:'', agent:'engineering_delivery', task:'chat', prompt:'生成工程竣工验收方案,包括验收流程、资料清单和交付标准(100字摘要)' },
+      { num:'⑦', icon:'🏢', name:'运营维护', desc:'SOP·MOP·EOP·LCC成本分析', id:'operation', active:false, done:false, running:false, result:'', agent:'engineering_delivery', task:'sop', prompt:'生成工程项目全生命周期运维方案,包括SOP/MOP/EOP和LCC分析' },
     ]);
-    const tourResults = ref([
-      { icon: '📊', label: '图纸类型识别', ready: false },
-      { icon: '🔍', label: '合规审查', ready: false },
-      { icon: '📄', label: '文档生成', ready: false },
+    const lifecycleStepResults = ref([
+      { icon:'🔍', label:'分析需求', done:false },
+      { icon:'🤖', label:'协同智能体', done:false },
+      { icon:'📝', label:'生成结果', done:false },
     ]);
+    const currentStage = ref({ name:'', done:false, result:'' });
 
-    function startTour() {
-      showTour.value = !showTour.value;
-      if (showTour.value) tourStep.value = 1;
-    }
+    function toggleTour() { showTour.value = !showTour.value; }
 
-    function selectScenario(scenario) {
-      tourStep.value = 2;
-      const mapping = { analyze: 'tech_rd', review: 'safety_compliance', docs: 'engineering_delivery', budget: 'cost_benefit' };
-      const target = mapping[scenario.action];
-      if (target) {
-        const ag = agents.find(a => a.id === target);
-        if (ag && canAccessAgent(ag)) switchAgent(ag);
+    async function startLifecycle(stage) {
+      lifecycleStages.value.forEach(s => { s.active = (s.id===stage.id); s.running = false; });
+      lifecycleStage.value = stage.num.charCodeAt(1)-9312; // ①→1
+      stage.running = true;
+      lifecycleStepResults.value.forEach(s => s.done = false);
+      currentStage.value = { name: stage.name, done: false, result: '' };
+
+      // Step 1
+      lifecycleStepResults.value[0].done = true;
+      await sleep(400);
+      lifecycleStepResults.value[1].done = true;
+
+      // Step 2: Call Agent
+      try {
+        const ag = agents.find(a => a.id === stage.agent);
+        if (ag) switchAgent(ag);
+        const resp = await fetch(API_BASE + '/api/v1/agent/chat', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ agent_id: stage.agent, message: stage.prompt, task_type: stage.task })
+        });
+        const data = await resp.json();
+        const out = data.output || data;
+        const text = out.response_text || out.response || data.response_text || JSON.stringify(out).slice(0,300);
+        stage.result = text;
+        currentStage.value.result = text;
+        stage.done = true;
+        currentStage.value.done = true;
+        lifecycleStepResults.value[2].done = true;
+        stage.running = false;
+
+        // 同时更新对话区
+        messages.value.push({ role:'agent', content:'🎯 **'+stage.name+'** 阶段完成:\n\n'+text, time:now() });
+        scrollBottom();
+      } catch(e) {
+        stage.result = '⚠️ 网络错误，请重试';
+        stage.running = false;
       }
-      messages.value.push({ role: 'agent', content: '🎯 已选择「' + scenario.name + '」场景。请上传您的图纸文件继续。', time: now() });
     }
 
-    function triggerUpload() {
-      const inp = document.querySelector('input[type=file]');
-      if (inp) {
-        inp.click();
-        inp.addEventListener('change', function handler() {
-          if (inp.files && inp.files[0]) { tourStep.value = 3; inp.removeEventListener('change', handler); }
-        }, { once: true });
+    function nextLifecycleStage() {
+      if (lifecycleStage.value < 7) {
+        const next = lifecycleStages.value[lifecycleStage.value]; // next stage (0-indexed)
+        lifecycleStage.value = 0; showTour.value = false;
+        setTimeout(() => { showTour.value = true; startLifecycle(next); }, 200);
+      } else {
+        resetLifecycle();
+        messages.value.push({ role:'agent', content:'🎉 **全生命周期体验完成！**\n\n✅ 可研决策 → ✅ 立项规划 → ✅ 设计制图 → ✅ 招投标 → ✅ 施工实施 → ✅ 竣工验收 → ✅ 运营维护\n\n您的项目已覆盖从可研到运营的完整闭环。点击任一Agent继续深入探索。', time:now() });
+        scrollBottom();
       }
     }
 
-    function finishTour() {
-      tourResults.value.forEach(r => r.ready = true);
-      showTour.value = false;
-      tourStep.value = 0;
-      messages.value.push({ role: 'agent', content: '✨ 体验完成！您的图纸已准备就绪。点击 📎 上传图纸，或直接输入文字开始使用。', time: now() });
+    function resetLifecycle() {
+      lifecycleStage.value = 0; showTour.value = false;
+      lifecycleStages.value.forEach(s => { s.active=false; s.done=false; s.running=false; s.result=''; });
+      lifecycleStepResults.value.forEach(s => s.done = false);
+      currentStage.value = { name:'', done:false, result:'' };
     }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
     function loadNotifications() {
       fetch(`${API_BASE}/api/v1/notifications?unread_only=true`)
@@ -1075,8 +1119,8 @@ createApp({
       formatSize, switchAgent, onFileSelect, autoGrow, send, onModelChange,
       toggleHistory, loadHistory, searchHistory, viewHistorySession,
       userRole, canAccessAgent, lockedAgents,
-      showTour, tourStep, tourScenarios, tourResults,
-      startTour, selectScenario, triggerUpload, finishTour,
+      showTour, lifecycleStage, lifecycleStages, lifecycleStepResults, currentStage,
+      toggleTour, startLifecycle, nextLifecycleStage, resetLifecycle,
       openSubscribe, openNotifications, doSubscribe, loadNotificationsList, markAllRead, readNotif, formatNotifTime,
       logout,
     };

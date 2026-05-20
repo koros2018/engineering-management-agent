@@ -180,7 +180,7 @@ createApp({setup(){
   if (!token) { window.location.href = '/ui/login.html'; return {}; }
   try { localStorage.setItem('ema_token', token); } catch(e) {}
 
-  const API='http://127.0.0.1:5188';
+  const API=window.location.protocol==='https:'?'':'http://127.0.0.1:5188';
   const adminVerified = ref(false);
   const showAdminGate = ref(true);
   const adminPwInput = ref('');
