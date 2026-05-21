@@ -183,7 +183,7 @@ class EmailNotifier:
             "plan_name": plan_name,
             "expire_date": expire_date,
             "days_left": str(days_left),
-            "renew_url": renew_url or "http://127.0.0.1:5189/ui/index.html#subscribe",
+            "renew_url": renew_url or "http://127.0.0.1:6189/ui/index.html#subscribe",
         })
 
     def send_subscription_expired(self, to_addr: str, tenant_name: str, plan_name: str, expire_date: str, renew_url: str = ""):
@@ -191,7 +191,7 @@ class EmailNotifier:
             "tenant_name": tenant_name,
             "plan_name": plan_name,
             "expire_date": expire_date,
-            "renew_url": renew_url or "http://127.0.0.1:5189/ui/index.html#subscribe",
+            "renew_url": renew_url or "http://127.0.0.1:6189/ui/index.html#subscribe",
         })
 
     def send_security_alert(self, to_addr: str, alert_type: str, detail: str, ip: str = ""):

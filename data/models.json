@@ -1,0 +1,80 @@
+{
+  "default_models": [
+    {
+      "id": "ollama/qwen3.5:9b",
+      "name": "Qwen 3.5 9B",
+      "provider": "ollama",
+      "base_url": "http://127.0.0.1:11434",
+      "api_key": "",
+      "model_name": "qwen3.5:9b",
+      "context_window": 32768,
+      "reasoning": true,
+      "cost_input": 0,
+      "cost_output": 0,
+      "enabled": true,
+      "tags": [
+        "free",
+        "local",
+        "reasoning"
+      ],
+      "description": "本地 Qwen 3.5 9B（免费）"
+    },
+    {
+      "id": "ollama/deepseek-r1:7b",
+      "name": "DeepSeek R1 7B",
+      "provider": "ollama",
+      "base_url": "http://127.0.0.1:11434",
+      "api_key": "",
+      "model_name": "deepseek-r1:7b",
+      "context_window": 128000,
+      "reasoning": true,
+      "cost_input": 0,
+      "cost_output": 0,
+      "enabled": true,
+      "tags": [
+        "free",
+        "local",
+        "reasoning"
+      ],
+      "description": "本地 DeepSeek R1 7B（免费）"
+    },
+    {
+      "id": "ollama/minimax-m2.7:cloud",
+      "name": "MiniMax M2.7 (Cloud)",
+      "provider": "ollama",
+      "base_url": "http://127.0.0.1:11434",
+      "api_key": "",
+      "model_name": "minimax-m2.7:cloud",
+      "context_window": 196608,
+      "reasoning": true,
+      "cost_input": 0,
+      "cost_output": 0,
+      "enabled": true,
+      "tags": [
+        "free",
+        "cloud",
+        "reasoning"
+      ],
+      "description": "MiniMax Cloud (通过 ollama.com 中转，免费额度）"
+    },
+    {
+      "id": "ollama/qwen3.5:cloud",
+      "name": "Qwen 3.5 Cloud",
+      "provider": "ollama",
+      "base_url": "http://127.0.0.1:11434",
+      "api_key": "",
+      "model_name": "qwen3.5:cloud",
+      "context_window": 262144,
+      "reasoning": true,
+      "cost_input": 0,
+      "cost_output": 0,
+      "enabled": true,
+      "tags": [
+        "free",
+        "cloud",
+        "vision"
+      ],
+      "description": "通义千问 Cloud（免费额度）"
+    }
+  ]
+}

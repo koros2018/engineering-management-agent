@@ -18,17 +18,17 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo [INFO] Starting API service (port 5188)...
-start /min python "%SCRIPT_DIR%src\main.py" --port 5188
+echo [INFO] Starting API service (port 6188)...
+start /min python "%SCRIPT_DIR%src\main.py" --port 6188
 
 echo [INFO] Waiting...
 ping -n 4 127.0.0.1 >nul 2>&1
 
 echo.
 echo ====================================
-echo   API: http://127.0.0.1:5188
-echo   Docs: http://127.0.0.1:5188/docs
-echo   UI:   http://127.0.0.1:5189/ui/index.html
+echo   API: http://127.0.0.1:6188
+echo   Docs: http://127.0.0.1:6188/docs
+echo   UI:   http://127.0.0.1:6189/ui/index.html
 echo.
 echo   Running in background. Close window to keep running.
 echo ====================================

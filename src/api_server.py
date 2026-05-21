@@ -2,7 +2,7 @@
 EMA API Server - 工程管理智能体 REST API
 
 入口：python src/api_server.py
-端口：5188（默认）
+端口：6188（默认）
 """
 
 import sys
@@ -20,12 +20,13 @@ if _ENV_FILE.exists():
 import asyncio
 import uuid
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Tuple
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Form, Depends, Body, Request
+from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Form, Depends, Body, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from dataclasses import asdict
 import uvicorn
 
 # Agent框架
@@ -115,10 +116,10 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://127.0.0.1:5189",
-        "http://localhost:5189",
-        "http://127.0.0.1:5188",
-        "http://localhost:5188",
+        "http://127.0.0.1:6189",
+        "http://localhost:6189",
+        "http://127.0.0.1:6188",
+        "http://localhost:6188",
         "http://127.0.0.1:5500",
         "http://localhost:5500",
     ],
@@ -138,7 +139,7 @@ async def startup_event():
         logger.info("Boss账号初始化完成")
     except Exception as e:
         logger.warning(f"Boss账号初始化跳过: {e}")
-    logger.info("EMA API Server 启动完成", extra={"extra_data": {"port": 5188, "docs": "/docs"}})
+    logger.info("EMA API Server 启动完成", extra={"extra_data": {"port": 6188, "docs": "/docs"}})
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -830,7 +831,7 @@ async def run_benchmark(
 
     async def _run():
         return benchmark(
-            base_url="http://127.0.0.1:5188",
+            base_url="http://127.0.0.1:6188",
             endpoint=endpoint,
             concurrent=min(concurrent, 50),
             total=min(total, 500),
@@ -912,6 +913,52 @@ async def check_rate(client_ip: str = "127.0.0.1"):
     return {"success": True, "rate": check_rate_limit(client_ip)}
 
 
+# ── 管理员用户管理 API ─────────────────────────────────────
+
+@app.get("/api/v1/admin/users")
+async def admin_list_users(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
+    """用户列表（仅超级管理员）"""
+    import json
+    from pathlib import Path
+    EMA_DATA_DIR = Path(__file__).parent.parent / "data"
+    f = EMA_DATA_DIR / "users.json"
+    users_data = json.load(open(f)) if f.exists() else {}
+    users = []
+    for uid, u in users_data.items():
+        users.append({
+            "user_id": u.get("user_id"),
+            "username": u.get("username"),
+            "email": u.get("email", ""),
+            "status": u.get("status", "active"),
+            "role": u.get("role", "user"),
+            "created_at": u.get("created_at", ""),
+        })
+    return {"success": True, "users": users, "total": len(users)}
+
+
+@app.get("/api/v1/admin/tenants")
+async def admin_list_tenants(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
+    """租户列表（仅超级管理员）"""
+    import json
+    from pathlib import Path
+    EMA_DATA_DIR = Path(__file__).parent.parent / "data"
+    t_f = EMA_DATA_DIR / "tenants.json"
+    u_f = EMA_DATA_DIR / "tenant_users.json"
+    tenants_data = json.load(open(t_f)) if t_f.exists() else {}
+    tenant_users = json.load(open(u_f)) if u_f.exists() else {}
+    tenants = []
+    for tid, t in tenants_data.items():
+        user_count = sum(1 for tu in tenant_users.values() if tu.get("tenant_id") == tid)
+        tenants.append({
+            "id": tid,
+            "name": t.get("name", ""),
+            "plan": t.get("plan_id", "free"),
+            "user_count": user_count,
+            "status": t.get("status", "active"),
+        })
+    return {"success": True, "tenants": tenants, "total": len(tenants)}
+
+
 # ── 数据看板 API ─────────────────────────────────────────────
 
 @app.get("/api/v1/dashboard")
@@ -947,6 +994,77 @@ async def dashboard_agents():
     """Agent使用热度"""
     from dashboard import get_agent_heatmap
     return {"success": True, "heatmap": get_agent_heatmap()}
+
+
+# ── 大模型配置管理 API ──────────────────────────────────────
+
+class ModelConfigSchema(BaseModel):
+    id: str
+    name: str
+    provider: str
+    base_url: str
+    api_key: str = ""
+    model_name: str
+    context_window: int = 128000
+    reasoning: bool = False
+    cost_input: float = 0.0
+    cost_output: float = 0.0
+    enabled: bool = True
+    tags: List[str] = []
+    description: str = ""
+
+
+@app.get("/api/v1/admin/models")
+async def list_models_api(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
+    """列出所有模型配置（仅超级管理员）"""
+    from model_registry import list_models, check_network
+    models = [asdict(m) for m in list_models()]
+    net = check_network()
+    return {"success": True, "models": models, "network": net}
+
+
+@app.post("/api/v1/admin/models")
+async def add_model_api(cfg: ModelConfigSchema, user: dict = Depends(require_role(Role.SUPER_ADMIN))):
+    """添加模型配置（仅超级管理员）"""
+    from model_registry import add_model, ModelConfig
+    cfg_obj = ModelConfig(**cfg.model_dump())
+    add_model(cfg_obj)
+    return {"success": True, "message": f"模型 {cfg.name} 已添加"}
+
+
+@app.put("/api/v1/admin/models/{model_id}")
+async def update_model_api(model_id: str, cfg: ModelConfigSchema, user: dict = Depends(require_role(Role.SUPER_ADMIN))):
+    """更新模型配置（仅超级管理员）"""
+    from model_registry import add_model, ModelConfig
+    cfg_obj = ModelConfig(**cfg.model_dump())
+    add_model(cfg_obj)
+    return {"success": True, "message": f"模型 {cfg.name} 已更新"}
+
+
+@app.delete("/api/v1/admin/models/{model_id}")
+async def delete_model_api(model_id: str, user: dict = Depends(require_role(Role.SUPER_ADMIN))):
+    """删除模型配置（仅超级管理员）"""
+    from model_registry import remove_model
+    remove_model(model_id)
+    return {"success": True, "message": f"模型 {model_id} 已删除"}
+
+
+@app.get("/api/v1/models/route")
+async def route_model_api(
+    user: dict = Depends(get_optional_user),
+    task_type: str = "chat",
+):
+    """智能路由：返回当前用户应使用的模型"""
+    from model_registry import route_model, check_network
+    role = user.get("role", "free") if user else "free"
+    chosen, reason = route_model(role, task_type)
+    net = check_network()
+    return {
+        "success": True,
+        "model": asdict(chosen),
+        "reason": reason,
+        "network": net,
+    }
 
 
 # ── 主动推送通知 API ──────────────────────────────────────────
@@ -990,6 +1108,43 @@ async def read_notification(
     return {"success": ok}
 
 
+def get_full_stats() -> Dict:
+    """
+    全量统计（一次性返回所有维度）
+    """
+    from log_stats import get_full_stats as _get_full
+    return _get_full()
+
+
+# ── 日志统计 API ──────────────────────────────────────────────
+
+@app.get("/api/v1/logs/stats")
+async def get_log_stats(hours: int = Query(24, ge=1, le=168)):
+    """日志统计（默认24小时，支持1-168小时）"""
+    from log_stats import get_api_stats
+    return {"success": True, **get_api_stats(hours)}
+
+
+@app.get("/api/v1/logs/stats/full")
+async def get_full_log_stats():
+    """全量统计（24h + 7天 + 用户活动 + 错误汇总）"""
+    return {"success": True, **get_full_stats()}
+
+
+@app.get("/api/v1/logs/user-activity")
+async def get_user_activity_stats(hours: int = Query(168, ge=1, le=1680)):
+    """用户活动统计（默认7天）"""
+    from log_stats import get_user_activity
+    return {"success": True, **get_user_activity(hours)}
+
+
+@app.get("/api/v1/logs/errors")
+async def get_error_summary_stats(hours: int = Query(168, ge=1, le=1680)):
+    """错误汇总（默认7天）"""
+    from log_stats import get_error_summary
+    return {"success": True, **get_error_summary(hours)}
+
+
 # ── 性能缓存 API ──────────────────────────────────────────────
 
 @app.get("/api/v1/system/cache-stats")
@@ -1003,7 +1158,7 @@ async def cache_stats():
 # 启动
 # ─────────────────────────────────────────────────────────────────
 
-def run_server(host: str = "0.0.0.0", port: int = 5188, reload: bool = False):
+def run_server(host: str = "0.0.0.0", port: int = 6188, reload: bool = False):
     uvicorn.run(
         "api_server:app",
         host=host,
@@ -1018,7 +1173,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="EMA API Server")
     parser.add_argument("--host", default="0.0.0.0", help="Host")
-    parser.add_argument("--port", type=int, default=5188, help="Port")
+    parser.add_argument("--port", type=int, default=6188, help="Port")
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload")
     args = parser.parse_args()
 

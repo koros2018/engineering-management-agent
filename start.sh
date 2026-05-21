@@ -20,27 +20,27 @@ if ! command -v python3 &> /dev/null; then
 fi
 
 # 检查API服务是否已运行
-if curl -s http://127.0.0.1:5188/health > /dev/null 2>&1; then
-    echo "✅ API 服务已在运行 (端口 5188)"
+if curl -s http://127.0.0.1:6188/health > /dev/null 2>&1; then
+    echo "✅ API 服务已在运行 (端口 6188)"
 else
-    echo "🚀 启动 API 服务 (端口 5188)..."
-    python3 src/main.py --port 5188 &
+    echo "🚀 启动 API 服务 (端口 6188)..."
+    python3 src/main.py --port 6188 &
     API_PID=$!
     echo "   进程 PID: $API_PID"
     sleep 3
 
-    if curl -s http://127.0.0.1:5188/health > /dev/null 2>&1; then
+    if curl -s http://127.0.0.1:6188/health > /dev/null 2>&1; then
         echo "✅ API 服务已就绪"
     else
         echo "⚠️  服务启动中，请稍后刷新页面"
     fi
 fi
 
-# 启动UI静态文件服务（端口5189，从项目根目录serve）
-if curl -s http://127.0.0.1:5189/ui/index.html > /dev/null 2>&1; then
-    echo "✅ UI 服务已在运行 (端口 5189)"
+# 启动UI静态文件服务（端口6189，从项目根目录serve）
+if curl -s http://127.0.0.1:6189/ui/index.html > /dev/null 2>&1; then
+    echo "✅ UI 服务已在运行 (端口 6189)"
 else
-    echo "🚀 启动 UI 文件服务 (端口 5189)..."
+    echo "🚀 启动 UI 文件服务 (端口 6189)..."
     cat > /tmp/ema_ui_serve.py << 'PYEOF'
 import http.server, socketserver, shutil, os, sys
 ROOT = '/mnt/d/OpenClawDataworkspace/Projects/engineering-management-agent'
@@ -61,16 +61,16 @@ PYEOF
     UI_PID=$!
     echo "   进程 PID: $UI_PID"
     sleep 2
-    if curl -s http://127.0.0.1:5189/ > /dev/null 2>&1; then
+    if curl -s http://127.0.0.1:6189/ > /dev/null 2>&1; then
         echo "✅ UI 文件服务已就绪"
     fi
-    echo "   访问地址: http://127.0.0.1:5189/ui/index.html"
+    echo "   访问地址: http://127.0.0.1:6189/ui/index.html"
 fi
 
 # 检测系统并打开浏览器
 echo ""
 echo "🌐 打开前端UI..."
-UI_URL="http://127.0.0.1:5189/ui/index.html"
+UI_URL="http://127.0.0.1:6189/ui/index.html"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     open "$UI_URL"
 elif [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
@@ -93,9 +93,9 @@ echo ""
 echo "═══════════════════════════════════════════"
 echo "✅ 启动完成！"
 echo ""
-echo "📍 前端UI: http://127.0.0.1:5189/ui/index.html"
-echo "📊 API:    http://127.0.0.1:5188"
-echo "📚 文档:   http://127.0.0.1:5188/docs"
+echo "📍 前端UI: http://127.0.0.1:6189/ui/index.html"
+echo "📊 API:    http://127.0.0.1:6188"
+echo "📚 文档:   http://127.0.0.1:6188/docs"
 echo ""
 echo "按 Ctrl+C 停止所有服务"
 echo "═══════════════════════════════════════════"

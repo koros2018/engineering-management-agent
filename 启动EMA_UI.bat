@@ -13,7 +13,7 @@ cd /d "%SCRIPT_DIR%"
 
 echo [INFO] Checking API service...
 
-echo [INFO] Starting UI service (port 5189)...
+echo [INFO] Starting UI service (port 6189)...
 
 REM Write and launch the custom UI server
 (
@@ -31,7 +31,7 @@ echo         if path.startswith('/ui'): rel=path[4:]
 echo         else: rel=path
 echo         if not rel or rel=='/': rel='/index.html'
 echo         return os.path.join(ROOT,'ui',rel.lstrip('/'))
-echo with socketserver.TCPServer(('0.0.0.0', 5189), H) as httpd:
+echo with socketserver.TCPServer(('0.0.0.0', 6189), H) as httpd:
 echo     httpd.serve_forever()
 ) > "%TEMP%\ema_ui_serve.py"
 
@@ -42,10 +42,10 @@ ping -n 3 127.0.0.1 >nul 2>&1
 
 echo.
 echo ====================================
-echo   UI: http://127.0.0.1:5189/ui/index.html
+echo   UI: http://127.0.0.1:6189/ui/index.html
 echo ====================================
 echo.
 
-start http://127.0.0.1:5189/ui/index.html
+start http://127.0.0.1:6189/ui/index.html
 
 pause

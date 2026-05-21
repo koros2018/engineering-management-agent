@@ -74,7 +74,7 @@ def single_request(base_url: str, endpoint: Dict, timeout: int = 30) -> Dict:
 # ── 并发压测 ──────────────────────────────────────────────────
 
 def benchmark(
-    base_url: str = "http://127.0.0.1:5188",
+    base_url: str = "http://127.0.0.1:6188",
     endpoint: str = None,
     concurrent: int = 10,
     total: int = 100,
@@ -190,7 +190,7 @@ def format_report(report: Dict) -> str:
     return "\n".join(lines)
 
 
-def run_health_check(base_url: str = "http://127.0.0.1:5188") -> Dict:
+def run_health_check(base_url: str = "http://127.0.0.1:6188") -> Dict:
     """快速健康检查（单次请求每个端点）"""
     results = {}
     print("🏥 EMA 快速健康检查\n")
@@ -213,7 +213,7 @@ def run_health_check(base_url: str = "http://127.0.0.1:5188") -> Dict:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="EMA 性能压测工具")
-    parser.add_argument("--base-url", default="http://127.0.0.1:5188", help="API 地址")
+    parser.add_argument("--base-url", default="http://127.0.0.1:6188", help="API 地址")
     parser.add_argument("--endpoint", default=None, help="指定端点名称")
     parser.add_argument("--concurrent", type=int, default=10, help="并发数")
     parser.add_argument("--requests", type=int, default=100, help="总请求数")

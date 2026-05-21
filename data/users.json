@@ -15,7 +15,8 @@
     "password_hash": "8a2c21020e1a4aeed32d6e956aec5711ef1fe9fb5859ea9e54698333d982beb3",
     "salt": "e095eb309b165d50575e1aa5fc762930",
     "created_at": "2026-05-19T15:17:33.362778",
-    "status": "active"
+    "status": "active",
+    "role": "super_admin"
   },
   "user_8374b751aea1a176": {
     "user_id": "user_8374b751aea1a176",

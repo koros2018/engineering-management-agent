@@ -80,8 +80,8 @@ def create_order(
         "expires_at": (now + timedelta(hours=2)).isoformat(),
         "paid_at": None,
         # 生产环境：二维码URL / 支付跳转链接
-        "pay_url": f"http://127.0.0.1:5188/api/v1/payment/mock-pay/{order_id}" if payment_method == "wechat" else
-                   f"http://127.0.0.1:5188/api/v1/payment/mock-pay/{order_id}",
+        "pay_url": f"http://127.0.0.1:6188/api/v1/payment/mock-pay/{order_id}" if payment_method == "wechat" else
+                   f"http://127.0.0.1:6188/api/v1/payment/mock-pay/{order_id}",
     }
 
     orders[order_id] = order

@@ -109,7 +109,7 @@ User=$(whoami)
 WorkingDirectory=$SCRIPT_DIR
 Environment=PYTHONPATH=$SCRIPT_DIR/src
 Environment=EMA_ENV=production
-ExecStart=python3 src/main.py --host 0.0.0.0 --port 5188
+ExecStart=python3 src/main.py --host 0.0.0.0 --port 6188
 Restart=always
 RestartSec=5
 
@@ -150,7 +150,7 @@ server {
     }
 
     location /api/ {
-        proxy_pass http://127.0.0.1:5188;
+        proxy_pass http://127.0.0.1:6188;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -160,11 +160,11 @@ server {
     }
 
     location /health {
-        proxy_pass http://127.0.0.1:5188/health;
+        proxy_pass http://127.0.0.1:6188/health;
     }
 
     location /docs {
-        proxy_pass http://127.0.0.1:5188/docs;
+        proxy_pass http://127.0.0.1:6188/docs;
     }
 }
 EOF
@@ -195,23 +195,23 @@ fi
 echo ""
 echo "🚀 启动 EMA 服务..."
 
-PYTHONPATH=src nohup python3 src/main.py --host 0.0.0.0 --port 5188 \
+PYTHONPATH=src nohup python3 src/main.py --host 0.0.0.0 --port 6188 \
     > logs/ema.log 2>&1 &
 EMA_PID=$!
 echo "   PID: $EMA_PID"
 
 sleep 3
 
-if curl -s http://127.0.0.1:5188/health > /dev/null 2>&1; then
-    echo "✅ EMA API 已就绪 (http://127.0.0.1:5188)"
+if curl -s http://127.0.0.1:6188/health > /dev/null 2>&1; then
+    echo "✅ EMA API 已就绪 (http://127.0.0.1:6188)"
 else
     echo "⚠️ API 启动中，请稍后检查"
 fi
 
 # ── UI 服务 ───────────────────────────────────────────────────
 
-if ! curl -s http://127.0.0.1:5189/ui/ > /dev/null 2>&1; then
-    echo "🚀 启动 UI 静态服务 (5189)..."
+if ! curl -s http://127.0.0.1:6189/ui/ > /dev/null 2>&1; then
+    echo "🚀 启动 UI 静态服务 (6189)..."
     nohup python3 - << 'PYEOF' > logs/ui.log 2>&1 &
 import http.server, socketserver, os
 ROOT = os.path.dirname(os.path.abspath('$SCRIPT_DIR'))
@@ -224,7 +224,7 @@ class H(http.server.SimpleHTTPRequestHandler):
         else: rel=path
         if not rel or rel=='/': rel='/index.html'
         return os.path.join(ROOT,'ui',rel.lstrip('/'))
-socketserver.TCPServer(('0.0.0.0', 5189), H).serve_forever()
+socketserver.TCPServer(('0.0.0.0', 6189), H).serve_forever()
 PYEOF
     UI_PID=$!
     sleep 1
@@ -235,13 +235,13 @@ echo ""
 echo "═══════════════════════════════════════════"
 echo "✅ EMA 部署完成！"
 echo ""
-echo "📍 UI:  http://127.0.0.1:5189/ui/index.html"
-echo "📊 API: http://127.0.0.1:5188"
-echo "📚 文档: http://127.0.0.1:5188/docs"
+echo "📍 UI:  http://127.0.0.1:6189/ui/index.html"
+echo "📊 API: http://127.0.0.1:6188"
+echo "📚 文档: http://127.0.0.1:6188/docs"
 echo "📋 日志: logs/ema.log"
 echo ""
 echo "🛠️  运维命令:"
-echo "   查看状态: curl http://127.0.0.1:5188/health"
+echo "   查看状态: curl http://127.0.0.1:6188/health"
 echo "   重启服务: kill $EMA_PID && bash deploy-prod.sh"
 echo "   Docker:  bash deploy-prod.sh --docker"
 echo "   systemd:  sudo systemctl status ema"

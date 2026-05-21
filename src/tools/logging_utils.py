@@ -11,7 +11,7 @@ logging_utils.py - EMA 统一日志系统
 Usage:
     from tools.logging_utils import get_logger
     logger = get_logger(__name__)
-    logger.info("服务启动", extra={"port": 5188})
+    logger.info("服务启动", extra={"port": 6188})
     logger.error("数据库连接失败", exc_info=True, extra={"retry_count": 3})
 """
 

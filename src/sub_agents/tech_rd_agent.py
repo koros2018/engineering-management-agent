@@ -52,7 +52,7 @@ def _call_blueprint_api(file_path: str) -> dict:
     import requests, tempfile, os
 
     # 调用已有的 /upload/analyze 接口
-    url = "http://127.0.0.1:5188/api/v1/upload/analyze"
+    url = "http://127.0.0.1:6188/api/v1/upload/analyze"
     with open(file_path, 'rb') as f:
         files = {'file': (os.path.basename(file_path), f.read())}
         data = {'user_id': 'ema_tech_rd_agent'}
