@@ -24,7 +24,7 @@ COPY . .
 RUN mkdir -p /app/data/chromadb /app/data/sessions /app/data/tenants
 
 # 端口
-EXPOSE 5188
+EXPOSE 6188
 
 # 启动
-CMD ["python3", "src/main.py", "--host", "0.0.0.0", "--port", "5188"]
+CMD ["python3", "src/main.py", "--host", "0.0.0.0", "--port", "6188"]
