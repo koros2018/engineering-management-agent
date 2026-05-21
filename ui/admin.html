@@ -60,6 +60,8 @@ td{padding:8px 12px;border-bottom:1px solid var(--border)}
       <div @click="tab='alerts'" :class="['sb-item',{active:tab==='alerts'}]">🚨 预警中心</div>
       <div @click="tab='reports'" :class="['sb-item',{active:tab==='reports'}]">📝 自动报告</div>
       <div @click="tab='advice'" :class="['sb-item',{active:tab==='advice'}]">💡 决策建议</div>
+      <div @click="tab='logs'" :class="['sb-item',{active:tab==='logs'}]">📈 日志统计</div>
+      <div @click="tab='models'" :class="['sb-item',{active:tab==='models'}]">🤖 模型配置</div>
     </div>
   </div>
   <div class="main" v-if="!showAdminGate">
@@ -155,6 +157,123 @@ td{padding:8px 12px;border-bottom:1px solid var(--border)}
       <div class="card"><div class="card-title">🌍 市场洞察</div><div v-for="i in insights" :key="i" style="padding:6px 0;font-size:12px;color:var(--dim)">• {{ i }}</div></div>
     </template>
 
+    <!-- 日志统计 -->
+    <template v-if="tab==='logs'">
+      <div class="grid">
+        <div class="card">
+          <div class="card-header"><span class="card-title">24小时请求量</span></div>
+          <div class="card-value">{{ logStats.total_requests||0 }}</div>
+          <div class="card-change">错误 {{ logStats.total_errors||0 }} ({{ logStats.error_rate_pct||0 }}%)</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">平均响应</span></div>
+          <div class="card-value">{{ logStats.avg_response_ms||0 }}<span style="font-size:14px">ms</span></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">网络状态</span></div>
+          <div style="font-size:12px">
+            <div style="margin:4px 0">🌐 ollama.com: <span :style="{color: logNetwork.ollama_com?'var(--green)':'var(--red)'}">{{ logNetwork.ollama_com?'✅':'❌' }}</span></div>
+            <div style="margin:4px 0">🤖 NVIDIA API: <span :style="{color: logNetwork.nvidia_api?'var(--green)':'var(--red)'}">{{ logNetwork.nvidia_api?'✅':'❌' }}</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">用户活动(7天)</span></div>
+          <div class="card-value">{{ userActivity.total_users||0 }}</div>
+          <div class="card-change">Top用户 {{ userActivity.top_users?.length||0 }} 人</div>
+        </div>
+        <div class="card" style="grid-column:span 2">
+          <div class="card-header"><span class="card-title">热门端点 TOP15</span></div>
+          <div style="max-height:200px;overflow-y:auto">
+            <div v-for="(e,i) in (logStats.top_endpoints||[])" :key="i" style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px">
+              <span style="color:var(--text)">{{e.path}}</span>
+              <span><span style="color:var(--accent)">{{e.count}}</span>次 <span :style="{color:e.error_rate>5?'var(--red)':'var(--green)'}">{{e.error_rate}}%</span></span>
+            </div>
+            <div v-if="!logStats.top_endpoints?.length" style="color:var(--dim);padding:8px">暂无数据</div>
+          </div>
+        </div>
+        <div class="card" style="grid-column:span 2">
+          <div class="card-header"><span class="card-title">24小时趋势</span></div>
+          <div style="display:flex;gap:2px;align-items:flex-end;height:60px">
+            <div v-for="(h,i) in (logStats.hourly_trend||[]).slice(-24)" :key="i" :style="{flex:1,height:Math.max(4,(h.requests||0)/Math.max(...(logStats.hourly_trend||[]).slice(-24).map(x=>x.requests||1),1)*60)+'px',background:h.errors>0?'var(--yellow)':'var(--accent)',borderRadius:'2px',minHeight:'4px'}" :title="h.hour+'\n'+h.requests+'次请求\n'+h.errors+'个错误'"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-top:4px">
+            <span>{{ (logStats.hourly_trend||[])[0]?.hour||'' }}</span>
+            <span>{{ (logStats.hourly_trend||[]).slice(-1)[0]?.hour||'' }}</span>
+          </div>
+        </div>
+        <div class="card" style="grid-column:span 2">
+          <div class="card-header"><span class="card-title">错误分布</span></div>
+          <div v-for="(e,i) in (logStats.top_errors||[]).slice(0,10)" :key="i" style="padding:4px 0;border-bottom:1px solid var(--border);font-size:11px;display:flex;gap:8px">
+            <span style="color:var(--red);min-width:30px">{{e.count}}x</span>
+            <span style="color:var(--dim);word-break:break-all">{{e.msg}}</span>
+          </div>
+          <div v-if="!logStats.top_errors?.length" style="color:var(--green);padding:8px">✅ 无错误</div>
+        </div>
+      </div>
+    </template>
+
+    <!-- 模型配置 -->
+    <template v-if="tab==='models'">
+      <div class="grid">
+        <div class="card" style="grid-column:span 2">
+          <div class="card-header"><span class="card-title">🤖 模型列表</span><button class="btn btn-primary" @click="showAddModel=true" style="margin-left:auto">➕ 添加模型</button></div>
+          <div style="max-height:300px;overflow-y:auto">
+            <table>
+              <thead><tr><th>模型</th><th>Provider</th><th>状态</th><th>成本评分</th><th>操作</th></tr></thead>
+              <tbody>
+                <tr v-for="m in modelList" :key="m.id">
+                  <td><div style="font-weight:600">{{m.name}}</div><div style="font-size:10px;color:var(--dim)">{{m.id}}</div></td>
+                  <td><span :class="['tag', m.provider]">{{m.provider}}</span></td>
+                  <td><span :class="['tag', m.enabled?'active':'expired']">{{m.enabled?'启用':'禁用'}}</span></td>
+                  <td><span style="font-size:12px">{{ Math.round(m.cost_score||0) }}</span></td>
+                  <td><button class="btn" :class="m.enabled?'btn-danger':'btn-primary'" @click="toggleModel(m)">{{m.enabled?'禁用':'启用'}}</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">路由策略</span></div>
+          <div style="font-size:11px;color:var(--dim)">
+            <div style="margin:6px 0">🎩 Boss/管理员 → 最强模型</div>
+            <div style="margin:6px 0">🏢 Enterprise → 云端优先+本地fallback</div>
+            <div style="margin:6px 0">💎 Pro → 成本+效果平衡</div>
+            <div style="margin:6px 0">👤 Free → 本地优先</div>
+            <div style="margin:6px 0">🌐 网络离线 → 强制本地ollama</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">当前推荐模型</span></div>
+          <div v-if="routeResult" style="font-size:12px">
+            <div style="font-weight:700;font-size:16px;margin-bottom:6px">{{routeResult.model?.name}}</div>
+            <div style="color:var(--dim);margin:2px 0">Provider: <span style="color:var(--accent)">{{routeResult.model?.provider}}</span></div>
+            <div style="color:var(--dim);margin:2px 0">Reason: {{routeResult.reason}}</div>
+          </div>
+          <div v-else style="color:var(--dim);padding:8px">点击刷新获取推荐</div>
+          <button class="btn btn-primary" @click="loadRoute" style="margin-top:8px">🔄 刷新路由</button>
+        </div>
+      </div>
+      <!-- 添加模型弹窗 -->
+      <div v-if="showAddModel" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99;display:flex;align-items:center;justify-content:center">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;width:420px">
+          <div style="font-weight:700;font-size:16px;margin-bottom:16px">➕ 添加模型配置</div>
+          <div style="font-size:12px;display:grid;gap:8px">
+            <div><label>模型ID</label><input v-model="newModel.id" placeholder="如: nvidia/deepseek-v4-pro" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px"></div>
+            <div><label>显示名称</label><input v-model="newModel.name" placeholder="如: DeepSeek V4 Pro" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px"></div>
+            <div><label>Provider</label><select v-model="newModel.provider" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px"><option value="">选择...</option><option value="ollama">ollama</option><option value="nvidia">nvidia</option><option value="fastapi">fastapi</option></select></div>
+            <div><label>Base URL</label><input v-model="newModel.base_url" placeholder="https://..." style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px"></div>
+            <div><label>API Key</label><input v-model="newModel.api_key" type="password" placeholder="sk-..." style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px"></div>
+            <div><label>Model Name</label><input v-model="newModel.model_name" placeholder="deepseek-ai/deepseek-v4-pro" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px"></div>
+            <div><label>描述</label><input v-model="newModel.description" placeholder="可选" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:16px">
+            <button @click="addModel" class="btn btn-primary" style="flex:1">✅ 保存</button>
+            <button @click="showAddModel=false" class="btn" style="background:var(--border);color:var(--text)">取消</button>
+          </div>
+        </div>
+      </div>
+    </template>
+
     <button class="refresh" @click="refreshAll" title="刷新全部">🔄</button>
   </div>
 
@@ -201,9 +320,12 @@ createApp({setup(){
   const tab=ref('cockpit');
   const cockpit=ref({health_score:0,health_grade:'B',alerts:[],metrics:{revenue:{},projects:{},agents:{heatmap:[]},security:{}},quick_actions:[]});
   const tenants=ref([]);const alerts=ref([]);const report=ref({sections:[]});const suggestions=ref([]);const insights=ref([]);
+  const logStats=ref({});const logNetwork=ref({});const userActivity=ref({});
+  const modelList=ref([]);const routeResult=ref(null);const showAddModel=ref(false);
+  const newModel=ref({id:'',name:'',provider:'ollama',base_url:'http://127.0.0.1:11434',api_key:'',model_name:'',description:''});
 
   const pageTitle=computed(()=>{
-    const m={'cockpit':'📊 运营驾驶舱','tenants':'👥 租户管理','alerts':'🚨 预警中心','reports':'📝 自动报告','advice':'💡 决策建议'};
+    const m={'cockpit':'📊 运营驾驶舱','tenants':'👥 租户管理','alerts':'🚨 预警中心','reports':'📝 自动报告','advice':'💡 决策建议','logs':'📈 日志统计','models':'🤖 模型配置'};
     return m[tab.value]||'管家后台';
   });
   const gradeLabel=computed(()=>{
@@ -228,8 +350,23 @@ createApp({setup(){
   async function loadAdvice(){
     try{const r=await fetch(API+'/api/v1/agent/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'决策建议',task_type:'manager',file_path:''})});const d=await r.json();const o=d.output||d;suggestions.value=o?.suggestions||[];insights.value=o?.market_insights||[];}catch(e){}
   }
+  async function loadLogs(){
+    try{const r=await fetch(API+'/api/v1/logs/stats/full',{headers:{'Authorization':'Bearer '+token},timeout:15000});const d=await r.json();logStats.value=d?.api_24h||d||{};userActivity.value=d?.user_activity||{};logNetwork.value=d?.network||(d?.api_24h?._network||{});}catch(e){try{const r2=await fetch(API+'/api/v1/logs/stats',{headers:{'Authorization':'Bearer '+token},timeout:10000});const d2=await r2.json();logStats.value=d2||{};logNetwork.value=d2?.network||{};}catch(e2){}}
+  }
+  async function loadModels(){
+    try{const r=await fetch(API+'/api/v1/admin/models',{headers:{'Authorization':'Bearer '+token},timeout:10000});const d=await r.json();modelList.value=d?.models||[];logNetwork.value=d?.network||{};}catch(e){}
+  }
+  async function loadRoute(){
+    try{const r=await fetch(API+'/api/v1/models/route?task_type=chat',{headers:{'Authorization':'Bearer '+token},timeout:10000});const d=await r.json();routeResult.value=d||null;}catch(e){}
+  }
+  async function addModel(){
+    try{const r=await fetch(API+'/api/v1/admin/models',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(newModel.value),timeout:10000});const d=await r.json();if(d.success){showAddModel.value=false;newModel.value={id:'',name:'',provider:'ollama',base_url:'http://127.0.0.1:11434',api_key:'',model_name:'',description:''};await loadModels();}}catch(e){}
+  }
+  async function toggleModel(m){
+    try{const r=await fetch(API+'/api/v1/admin/models/'+m.id,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({...m,enabled:!m.enabled}),timeout:10000});if(r.ok)await loadModels();}catch(e){}
+  }
 
-  async function refreshAll(){await loadCockpit();if(tab.value==='tenants')await loadTenants();if(tab.value==='alerts')await loadAlerts();if(tab.value==='reports')await genReport();if(tab.value==='advice')await loadAdvice();}
+  async function refreshAll(){await loadCockpit();if(tab.value==='tenants')await loadTenants();if(tab.value==='alerts')await loadAlerts();if(tab.value==='reports')await genReport();if(tab.value==='advice')await loadAdvice();if(tab.value==='logs')await loadLogs();if(tab.value==='models'){await loadModels();await loadRoute();}}
 
   function quickAction(a){
     if(a.id==='view_tenants'){tab.value='tenants';loadTenants();}
@@ -239,7 +376,9 @@ createApp({setup(){
 
   onMounted(async()=>{await loadCockpit();loadTenants();loadAlerts();loadAdvice();});
   function logout(){try{localStorage.removeItem('ema_token');}catch(e){}window.location.href='/ui/login.html';}
-  return{tab,cockpit,tenants,alerts,report,suggestions,insights,pageTitle,gradeLabel,formatNum,refreshAll,quickAction,genReport,
-    adminVerified,showAdminGate,adminPwInput,adminPwError,verifyAdmin,logout};
+  return{tab,cockpit,tenants,alerts,report,suggestions,insights,logStats,logNetwork,userActivity,modelList,routeResult,showAddModel,newModel,
+    pageTitle,gradeLabel,formatNum,refreshAll,quickAction,genReport,
+    adminVerified,showAdminGate,adminPwInput,adminPwError,verifyAdmin,logout,
+    loadLogs,loadModels,loadRoute,addModel,toggleModel};
 }}).mount('#app');
 </script></body></html>
