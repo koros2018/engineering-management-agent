@@ -5,90 +5,144 @@
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#070b11;--card:#0f1923;--border:#182435;--accent:#3b82f6;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--text:#e8edf5;--dim:#6b7a8d}
+:root{
+  --bg:#040810;
+  --card:#090f18;
+  --card2:#0c1520;
+  --border:#162030;
+  --border2:#1e2d42;
+  --accent:#3b82f6;
+  --accent2:#2563eb;
+  --green:#10b981;
+  --red:#ef4444;
+  --yellow:#f59e0b;
+  --text:#dde4ef;
+  --text-bright:#f0f6ff;
+  --dim:#5a6b7d;
+}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',sans-serif;min-height:100vh}
+a{color:var(--accent);text-decoration:none}
 .layout{display:flex;min-height:100vh}
 .sidebar{width:220px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
 .sb-header{padding:20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
 .sb-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:20px}
-.sb-name{font-size:14px;font-weight:600}.sb-role{font-size:10px;color:var(--accent)}
-.sb-nav{flex:1;padding:12px 8px}.sb-item{padding:10px 14px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--dim);display:flex;align-items:center;gap:10px;margin-bottom:2px;transition:all .15s}
+.sb-name{font-size:14px;font-weight:700;color:var(--text-bright)}.sb-role{font-size:10px;color:var(--accent)}
+.sb-nav{flex:1;padding:12px 8px;overflow-y:auto}
+.sb-item{padding:10px 14px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--dim);display:flex;align-items:center;gap:10px;margin-bottom:2px;transition:all .15s}
 .sb-item:hover{background:var(--border);color:var(--text)}
 .sb-item.active{background:var(--accent);color:#fff}
 .main{flex:1;overflow-y:auto;padding:24px}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-.topbar h1{font-size:20px;font-weight:700;letter-spacing:.3px}
-.topbar-badges{display:flex;gap:10px;align-items:center}
-.badge{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600}
+.topbar h1{font-size:20px;font-weight:700;color:var(--text-bright);letter-spacing:.3px}
+.topbar-right{display:flex;gap:10px;align-items:center}
+.badge{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700}
 .badge.boss{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff}
 .badge.live{background:var(--green);color:#000}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:20px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
-.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.card-title{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
-.card-value{font-size:28px;font-weight:700;color:var(--text)}
-.card-change{font-size:11px;color:var(--green);margin-top:4px}
-.card-change.down{color:var(--red)}
-.health-ring{width:80px;height:80px;border-radius:50%;border:6px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;margin:0 auto}
+.badge.offline{background:var(--red);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:20px}
+.card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:18px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.card-title{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.card-value{font-size:26px;font-weight:800;color:var(--text-bright)}
+.card-value-sm{font-size:20px;font-weight:700;color:var(--text)}
+.card-change{font-size:11px;color:var(--green);margin-top:4px;font-weight:600}
+.card-change.warn{color:var(--yellow)}
+.card-change.danger{color:var(--red)}
+.health-ring{width:80px;height:80px;border-radius:50%;border:6px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;margin:0 auto;color:var(--text-bright)}
 .health-ring.A{border-color:var(--green);color:var(--green)}
 .health-ring.B{border-color:var(--accent);color:var(--accent)}
 .health-ring.C{border-color:var(--yellow);color:var(--yellow)}
+.health-ring.D{border-color:var(--red);color:var(--red)}
 .alerts{grid-column:span 2}
-.alert-row{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);gap:10px;font-size:12px}
+.alert-row{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);gap:10px;font-size:12px;color:var(--text)}
 .alert-row:last-child{border-bottom:none}
 .alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.alert-dot.danger{background:var(--red)}.alert-dot.warning{background:var(--yellow)}.alert-dot.info{background:var(--accent)}
+.alert-dot.danger{background:var(--red);box-shadow:0 0 6px var(--red)}
+.alert-dot.warning{background:var(--yellow);box-shadow:0 0 6px var(--yellow)}
+.alert-dot.info{background:var(--accent)}
 table{width:100%;border-collapse:collapse;font-size:12px}
-th{text-align:left;padding:8px 12px;color:var(--dim);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
-td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text)}
-.tag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600}
-.tag.active{background:var(--green);color:#000}.tag.expired{background:var(--red);color:#fff}
-.tag.free{background:var(--border);color:var(--dim)}.tag.pro{background:var(--accent);color:#fff}
-.tag.ollama{background:#1a6b3a;color:#fff}.tag.nvidia{background:#76b900;color:#000}
-.tag.enterprise{background:#7c3aed;color:#fff}.tag.private{background:#c2410c;color:#fff}
-.btn{padding:6px 14px;border-radius:6px;border:none;font-size:11px;cursor:pointer;font-weight:600;transition:opacity .15s}
-.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{opacity:.85}.btn-primary:disabled{opacity:.5;cursor:not-allowed}
-.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{opacity:.85}
-.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--accent)}
-.btn-sm{padding:4px 10px;font-size:10px}
-.refresh{position:fixed;bottom:20px;right:20px;background:var(--accent);color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(59,130,246,.5)}
+th{text-align:left;padding:8px 12px;color:var(--dim);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+tr:hover td{background:rgba(59,130,246,.05)}
+.tag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700;display:inline-block}
+.tag.active{background:rgba(16,185,129,.15);color:var(--green);border:1px solid var(--green)}
+.tag.disabled{background:rgba(239,68,68,.1);color:var(--red);border:1px solid var(--red)}
+.tag.free{background:rgba(59,130,246,.1);color:var(--accent);border:1px solid var(--accent)}
+.tag.pro{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid #a78bfa}
+.tag.enterprise{background:rgba(245,158,11,.1);color:var(--yellow);border:1px solid var(--yellow)}
+.tag.ollama{background:rgba(16,185,129,.1);color:var(--green);border:1px solid var(--green)}
+.tag.nvidia{background:rgba(118,185,0,.1);color:#8bc34a;border:1px solid #8bc34a}
+.btn{padding:6px 12px;border-radius:6px;border:none;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
+.btn-danger{background:rgba(239,68,68,.15);color:var(--red);border:1px solid var(--red)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--dim)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:4px 9px;font-size:10px}
+.btn-icon{background:transparent;border:none;color:var(--dim);padding:4px 6px;font-size:14px;cursor:pointer}
+.btn-icon:hover{color:var(--text)}
+.refresh{position:fixed;bottom:20px;right:20px;background:var(--accent);color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:20px;cursor:pointer;box-shadow:0 4px 16px rgba(59,130,246,.4);display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.refresh:hover{transform:scale(1.1)}
 .loading{text-align:center;padding:40px;color:var(--dim);font-size:13px}
-.loading::after{content:'加载中...'}
-.empty-state{text-align:center;padding:40px 20px;color:var(--dim);font-size:13px;line-height:1.8}
-.empty-state .icon{font-size:36px;margin-bottom:12px;display:block}
-.refresh-btn{background:var(--border);color:var(--text);border:none;padding:6px 16px;border-radius:6px;font-size:12px;cursor:pointer;margin-top:8px}
-.refresh-btn:hover{background:var(--accent);color:#fff}
-/* Toast notification */
-.toast{position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.4);transition:all .3s;max-width:320px}
-.toast.success{background:#22c55e;color:#000}
-.toast.error{background:#ef4444;color:#fff}
+.empty-state{text-align:center;padding:32px 20px;color:var(--dim);font-size:13px;line-height:1.8}
+.empty-state .icon{font-size:32px;margin-bottom:10px;display:block}
+/* Toast */
+.toast{position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:320px}
+.toast.success{background:var(--green);color:#000}
+.toast.error{background:var(--red);color:#fff}
 .toast.info{background:var(--accent);color:#fff}
-/* Model list spinner */
-.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin-right:6px}
+.toast.warn{background:var(--yellow);color:#000}
+/* Spinner */
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.spinner.dark{border-color:rgba(0,0,0,.2);border-top-color:var(--accent)}
+/* Model form */
+.form-row{margin-bottom:12px}
+.form-label{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px;font-weight:700}
+.form-input{width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s}
+.form-input:focus{border-color:var(--accent)}
+.form-input::placeholder{color:#3d4f63}
+/* Network status */
+.net-badge{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text)}
+.net-badge.ok{border-color:var(--green);color:var(--green)}
+.net-badge.fail{border-color:var(--red);color:var(--red)}
+.net-dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.net-badge.ok .net-dot{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 /* Advice cards */
-.advice-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.advice-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
 .advice-card.high{border-left:4px solid var(--red)}
 .advice-card.medium{border-left:4px solid var(--yellow)}
-.advice-title{font-weight:600;font-size:13px;margin-bottom:6px}
+.advice-card.low{border-left:4px solid var(--green)}
+.advice-title{font-weight:700;font-size:13px;margin-bottom:6px;color:var(--text-bright)}
 .advice-detail{font-size:12px;color:var(--dim);line-height:1.6;margin-bottom:8px}
-.advice-impact{font-size:11px;color:var(--green);font-weight:600}
-/* Network cards */
-.net-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
-.net-item:last-child{border-bottom:none}
-.net-status{font-size:18px}
-.net-ok{color:var(--green)}
-.net-fail{color:var(--red)}
-/* Tenant table */
-.tenant-tr:hover td{background:rgba(59,130,246,.08)}
+.advice-impact{font-size:11px;color:var(--green);font-weight:700}
+/* Route card */
+.route-model{background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(139,92,246,.1));border:1px solid var(--accent);border-radius:12px;padding:16px;text-align:center}
+.route-model-name{font-size:16px;font-weight:800;color:var(--text-bright);margin-bottom:8px}
+.route-model-meta{font-size:11px;color:var(--dim);display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+/* Password field */
+.pw-wrap{display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:8px;transition:border-color .15s}
+.pw-wrap:focus-within{border-color:var(--accent)}
+.pw-wrap input{flex:1;padding:10px 12px;background:transparent;border:none;color:var(--text);font-size:14px;outline:none}
+.pw-wrap input::placeholder{color:#3d4f63}
+.pw-toggle{padding:0 12px;color:var(--dim);font-size:16px;cursor:pointer;flex-shrink:0;user-select:none;line-height:44px}
+.pw-toggle:hover{color:var(--accent)}
+/* Sticky header for tables */
+.table-wrap{max-height:300px;overflow-y:auto}
+.table-wrap thead{position:sticky;top:0;background:var(--card2);z-index:1}
 @media(max-width:768px){.sidebar{display:none}.grid{grid-template-columns:1fr}.main{padding:14px}}
 </style>
 </head>
 <body>
 <div id="app">
 <div class="layout">
+  <!-- 侧边栏 -->
   <div class="sidebar">
-    <div class="sb-header"><div class="sb-avatar">🎩</div><div><div class="sb-name">Boss</div><div class="sb-role">超级管理员</div></div></div>
+    <div class="sb-header">
+      <div class="sb-avatar">🎩</div>
+      <div><div class="sb-name">Boss</div><div class="sb-role">超级管理员</div></div>
+    </div>
     <div class="sb-nav">
       <div @click="tab='cockpit'" :class="['sb-item',{active:tab==='cockpit'}]">📊 驾驶舱</div>
       <div @click="tab='tenants'" :class="['sb-item',{active:tab==='tenants'}]">👥 租户管理</div>
@@ -97,24 +151,27 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text)}
       <div @click="tab='advice'" :class="['sb-item',{active:tab==='advice'}]">💡 决策建议</div>
       <div @click="tab='logs'" :class="['sb-item',{active:tab==='logs'}]">📈 日志统计</div>
       <div @click="tab='models'" :class="['sb-item',{active:tab==='models'}]">🤖 模型配置</div>
-    </div></div>
+    </div>
+  </div>
+
+  <!-- 主内容 -->
   <div class="main" v-if="!showAdminGate">
     <div class="topbar">
       <h1>{{pageTitle}}</h1>
-      <div class="topbar-badges">
-        <span class="badge boss">🎩 Boss Mode</span>
+      <div class="topbar-right">
         <span class="badge live">● 在线</span>
-        <span style="font-size:12px;color:var(--dim);cursor:pointer;margin-left:8px" @click="logout" title="登出">🚪 登出</span>
+        <span class="badge boss">🎩 Boss</span>
+        <button class="btn btn-outline btn-sm" @click="logout" title="登出">🚪</button>
       </div>
     </div>
 
-    <!-- 驾驶舱 -->
+    <!-- ════ 驾驶舱 ════ -->
     <template v-if="tab==='cockpit'">
       <div class="grid">
         <div class="card">
           <div class="card-header"><span class="card-title">平台健康度</span></div>
-          <div :class="['health-ring', cockpit.health_grade||'B']">{{ cockpit.health_score||0 }}%</div>
-          <div style="text-align:center;font-size:10px;color:var(--dim);margin-top:8px">{{ gradeLabel }}</div>
+          <div :class="['health-ring', cockpit.health_grade||'B']">{{ cockpit.health_score||0 }}</div>
+          <div style="text-align:center;font-size:10px;color:var(--dim);margin-top:8px;font-weight:700">{{ gradeLabel }}</div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">本月收入</span></div>
@@ -131,94 +188,97 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text)}
           <div class="card-value">{{ cockpit.metrics?.security?.score||85 }}</div>
           <div class="card-change">{{ cockpit.metrics?.security?.grade||'B' }} 级</div>
         </div>
-        <div class="card" style="grid-column:span 2">
-          <div class="card-header"><span class="card-title">🚨 活跃预警 ({{ cockpit.alerts?.length||0 }})</span></div>
+        <div class="card alerts">
+          <div class="card-header"><span class="card-title">🚨 活跃预警 ({{ cockpit.alerts?.length||0 }})</span><span v-if="cockpit.alerts?.length" class="badge" :class="cockpit.alerts[0]?.level==='danger'?'badge-red':'badge-yellow'" style="background:rgba(245,158,11,.2);color:var(--yellow)">{{ cockpit.alerts.length }}</span></div>
           <div v-if="cockpit.alerts?.length">
-            <div v-for="a in cockpit.alerts?.slice(0,8)" :key="a.msg||''" class="alert-row">
+            <div v-for="(a,i) in cockpit.alerts.slice(0,8)" :key="i" class="alert-row">
               <div :class="['alert-dot', a.level||'info']"></div>
               <span style="flex:1;color:var(--text)">{{ a.msg }}</span>
             </div>
           </div>
-          <div v-else style="color:var(--green);font-size:12px;padding:8px 0">✅ 平台运行正常，暂无预警</div>
+          <div v-else style="color:var(--green);font-size:12px;padding:8px 0;font-weight:700">✅ 平台运行正常，暂无预警</div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">快速操作</span></div>
-          <div v-for="a in [{id:'tenants',label:'👥 租户管理',desc:'查看所有租户及状态'},{id:'reports',label:'📝 生成报告',desc:'一键生成运营周报'},{id:'models',label:'🤖 模型配置',desc:'配置AI大模型'}]" :key="a.id"
-            style="padding:9px 0;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);transition:color .15s"
+          <div v-for="a in [{id:'tenants',label:'👥 租户管理',desc:'查看所有租户及状态'},{id:'models',label:'🤖 模型配置',desc:'配置AI大模型'},{id:'logs',label:'📈 日志统计',desc:'监控API调用'}]" :key="a.id"
+            style="padding:9px 0;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);transition:color .15s;color:var(--dim)"
             @click="tab=a.id;if(a.id==='tenants')loadTenants();if(a.id==='models')loadModels()">
-            <div style="color:var(--text);font-weight:600">{{ a.label }}</div>
-            <div style="font-size:10px;color:var(--dim);margin-top:2px">{{ a.desc }}</div>
+            <div style="color:var(--text);font-weight:700">{{ a.label }}</div>
+            <div style="font-size:10px;margin-top:2px">{{ a.desc }}</div>
           </div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">套餐分布</span></div>
           <div v-for="(v,k) in (cockpit.metrics?.revenue?.plan_distribution||{})" :key="k" style="padding:5px 0;font-size:12px;display:flex;justify-content:space-between;border-bottom:1px solid var(--border)">
             <span>{{ {'free':'🆓 免费','pro':'💎 专业','enterprise':'🏢 企业','private':'🏰 私有'}[k]||k }}</span>
-            <span style="color:var(--accent);font-weight:700">{{ v }} 个</span>
+            <span style="color:var(--accent);font-weight:800">{{ v }}</span>
           </div>
           <div v-if="!Object.keys(cockpit.metrics?.revenue?.plan_distribution||{}).length" style="color:var(--dim);font-size:12px;padding:8px 0">暂无数据</div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">Agent使用热度</span></div>
-          <div v-for="h in (cockpit.metrics?.agents?.heatmap||[]).slice(0,6)" :key="h.agent_id" style="padding:4px 0;font-size:12px;display:flex;justify-content:space-between;border-bottom:1px solid var(--border)">
+          <div v-for="h in (cockpit.metrics?.agents?.heatmap||[]).slice(0,7)" :key="h.agent_id" style="padding:4px 0;font-size:12px;display:flex;justify-content:space-between;border-bottom:1px solid var(--border)">
             <span>{{ {'tech_rd':'🔧 技术研发','safety_compliance':'🔒 安全合规','market_sales':'📡 市场销售','engineering_delivery':'🏗️ 工程交付','cost_benefit':'💰 成本效益','customer_service':'🤝 客服服务','manager':'🎩 管家中心'}[h.agent_id]||h.agent_id }}</span>
             <span style="color:var(--accent)">{{ h.count||0 }} 次</span>
           </div>
-          <div v-if="!cockpit.metrics?.agents?.heatmap?.length" style="color:var(--dim);font-size:12px;padding:8px 0">暂无使用记录</div>
+          <div v-if="!cockpit.metrics?.agents?.heatmap?.length" style="color:var(--dim);font-size:12px;padding:8px 0">暂无记录</div>
         </div>
       </div>
     </template>
 
-    <!-- 租户管理 -->
+    <!-- ════ 租户管理 ════ -->
     <template v-if="tab==='tenants'">
-      <div v-if="tenantsLoading" class="loading"></div>
+      <div v-if="tenantsLoading" class="loading"><span class="spinner"></span> 加载中...</div>
       <template v-else-if="tenants.length">
-        <table>
-          <thead><tr><th>租户名称</th><th>套餐</th><th>用户数</th><th>月费用</th><th>状态</th><th>操作</th></tr></thead>
-          <tbody>
-            <tr v-for="t in tenants" :key="t.id" class="tenant-tr">
-              <td style="font-weight:600">{{ t.name }}</td>
-              <td><span :class="['tag', t.plan||'free']">{{ t.plan_name||t.plan||'免费' }}</span></td>
-              <td>{{ t.user_count||0 }}</td>
-              <td>¥{{ t.monthly_cost||0 }}</td>
-              <td><span :class="['tag', t.status==='active'?'active':'expired']">{{ t.status==='active'?'正常':'欠费' }}</span></td>
-              <td><button class="btn btn-outline btn-sm">详情</button></td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>租户名称</th><th>套餐</th><th>用户数</th><th>月费用</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr v-for="t in tenants" :key="t.id">
+                <td style="font-weight:700;color:var(--text-bright)">{{ t.name }}</td>
+                <td><span :class="['tag', t.plan||'free']">{{ t.plan_name||t.plan||'免费' }}</span></td>
+                <td style="font-weight:700">{{ t.user_count||0 }}</td>
+                <td>¥{{ t.monthly_cost||0 }}</td>
+                <td><span :class="['tag', t.status==='active'?'active':'disabled']">{{ t.status==='active'?'正常':'欠费' }}</span></td>
+                <td><button class="btn btn-outline btn-sm">详情</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </template>
       <div v-else class="empty-state">
         <span class="icon">🏢</span>
         <div>暂无租户数据</div>
-        <button class="refresh-btn" @click="loadTenants">刷新</button>
+        <button class="btn btn-outline" @click="loadTenants">🔄 刷新</button>
       </div>
     </template>
 
-    <!-- 预警中心 -->
+    <!-- ════ 预警中心 ════ -->
     <template v-if="tab==='alerts'">
-      <div v-if="alertsLoading" class="loading"></div>
+      <div v-if="alertsLoading" class="loading"><span class="spinner"></span> 加载中...</div>
       <template v-else>
-        <div class="grid">
-          <div class="card" style="grid-column:span 2">
-            <div class="card-header"><span class="card-title">预警列表 ({{ alerts.length }} 条)</span><button class="btn btn-outline btn-sm" @click="loadAlerts">🔄 刷新</button></div>
-            <div v-for="a in alerts" :key="a.msg||''" class="alert-row">
-              <div :class="['alert-dot', a.level||'info']"></div>
-              <span style="flex:1;color:var(--text)">{{ a.msg }}</span>
-              <span style="color:var(--dim);font-size:10px">{{ a.tenant||'' }}</span>
-              <span v-if="a.count" style="color:var(--yellow);font-size:10px">×{{ a.count }}</span>
-            </div>
-            <div v-if="!alerts.length" class="empty-state">
-              <span class="icon">✅</span>
-              <div>暂无预警，平台运行正常</div>
-            </div>
+        <div class="card" style="grid-column:span 2">
+          <div class="card-header">
+            <span class="card-title">预警列表 ({{ alerts.length }} 条)</span>
+            <button class="btn btn-outline btn-sm" @click="loadAlerts">🔄 刷新</button>
+          </div>
+          <div v-for="(a,i) in alerts" :key="i" class="alert-row">
+            <div :class="['alert-dot', a.level||'info']"></div>
+            <span style="flex:1;color:var(--text)">{{ a.msg }}</span>
+            <span style="color:var(--dim);font-size:10px">{{ a.tenant||'' }}</span>
+            <span v-if="a.count" style="color:var(--yellow);font-size:10px;font-weight:700">×{{ a.count }}</span>
+          </div>
+          <div v-if="!alerts.length" class="empty-state">
+            <span class="icon">✅</span>
+            <div>暂无预警，平台运行正常</div>
           </div>
         </div>
       </template>
     </template>
 
-    <!-- 自动报告 -->
+    <!-- ════ 自动报告 ════ -->
     <template v-if="tab==='reports'">
-      <div v-if="reportLoading" class="loading"></div>
+      <div v-if="reportLoading" class="loading"><span class="spinner dark"></span> 生成中...</div>
       <template v-else>
         <div class="card">
           <div class="card-header">
@@ -226,9 +286,9 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text)}
             <button class="btn btn-primary" @click="genReport" :disabled="reportLoading">🔄 重新生成</button>
           </div>
           <div v-if="report.sections?.length">
-            <div v-for="s in report.sections" :key="s.name||''" style="margin-bottom:16px">
-              <div style="font-weight:600;font-size:14px;color:var(--text);margin-bottom:6px">{{ s.name }}</div>
-              <div style="font-size:12px;color:var(--dim);line-height:1.7">{{ s.content }}</div>
+            <div v-for="s in report.sections" :key="s.name||''" style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border)">
+              <div style="font-weight:800;font-size:14px;color:var(--text-bright);margin-bottom:8px">{{ s.name }}</div>
+              <div style="font-size:12px;color:var(--dim);line-height:1.8">{{ s.content }}</div>
             </div>
           </div>
           <div v-else class="empty-state">
@@ -239,11 +299,11 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text)}
       </template>
     </template>
 
-    <!-- 决策建议 -->
+    <!-- ════ 决策建议 ════ -->
     <template v-if="tab==='advice'">
       <div v-if="suggestions.length">
-        <div v-for="s in suggestions" :key="s.title||''" :class="['advice-card', s.priority==='high'?'high':'medium']">
-          <div class="advice-title">{{ {'high':'🔴 紧急','medium':'🟡 普通'}[s.priority]||'🟢 低' }} {{ s.title }}</div>
+        <div v-for="s in suggestions" :key="s.title||''" :class="['advice-card', s.priority==='high'?'high':s.priority==='medium'?'medium':'low']">
+          <div class="advice-title">{{ {'high':'🔴 紧急','medium':'🟡 普通','low':'🟢 低优先'}[s.priority]||'🟢 低' }} {{ s.title }}</div>
           <div class="advice-detail">{{ s.detail }}</div>
           <div class="advice-impact">📈 {{ s.expectedImpact||'预期正面影响' }}</div>
         </div>
@@ -251,48 +311,68 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text)}
       <div v-else class="empty-state">
         <span class="icon">💡</span>
         <div>暂无决策建议</div>
-        <button class="refresh-btn" @click="loadAdvice">刷新</button>
+        <button class="btn btn-outline" @click="loadAdvice">🔄 刷新</button>
+      </div>
+      <div v-if="insights.length" class="card" style="margin-top:16px">
+        <div class="card-header"><span class="card-title">🌍 市场洞察</span></div>
+        <div v-for="(i,idx) in insights" :key="idx" style="padding:6px 0;font-size:12px;color:var(--dim);border-bottom:1px solid var(--border)">• {{ i }}</div>
       </div>
     </template>
 
-    <!-- 日志统计 -->
+    <!-- ════ 日志统计 ════ -->
     <template v-if="tab==='logs'">
       <div class="grid">
         <div class="card">
+          <div class="card-header"><span class="card-title">🌐 网络状态</span><button class="btn btn-outline btn-sm" @click="checkNetwork" :disabled="netLoading"><span v-if="netLoading" class="spinner"></span>{{ netLoading?'检测中':'🔄 检测' }}</button></div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+            <div :class="['net-badge', netStatus.ollama_com?'ok':'fail']">
+              <span class="net-dot"></span>
+              <span>ollama.com</span>
+              <span style="margin-left:auto;font-weight:800">{{ netStatus.ollama_com?'✅ 可用':'❌ 不可用' }}</span>
+            </div>
+            <div :class="['net-badge', netStatus.nvidia_api?'ok':'fail']">
+              <span class="net-dot"></span>
+              <span>NVIDIA API</span>
+              <span style="margin-left:auto;font-weight:800">{{ netStatus.nvidia_api?'✅ 可用':'❌ 不可用' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
           <div class="card-header"><span class="card-title">24小时请求量</span></div>
-          <div class="card-value">{{ formatNum(logStats.total_requests||0) }}</div>
-          <div class="card-change">❌ 错误 {{ logStats.total_errors||0 }} (占比 {{ logStats.error_rate_pct||0 }}%)</div>
+          <div class="card-value-sm">{{ formatNum(logStats.total_requests||0) }}</div>
+          <div :class="['card-change', Number(logStats.error_rate_pct||0)>5?'danger':'warn']">❌ 错误 {{ logStats.total_errors||0 }} (占比 {{ logStats.error_rate_pct||0 }}%)</div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">平均响应时间</span></div>
-          <div class="card-value">{{ logStats.avg_response_ms||0 }}<span style="font-size:14px;color:var(--dim)"> ms</span></div>
+          <div class="card-value-sm">{{ logStats.avg_response_ms||0 }}<span style="font-size:13px;color:var(--dim)"> ms</span></div>
         </div>
         <div class="card">
-          <div class="card-header"><span class="card-title">🌐 网络状态</span></div>
-          <div class="net-item"><span>ollama.com</span><span :class="['net-status', logNetwork.ollama_com?'net-ok':'net-fail']">{{ logNetwork.ollama_com?'✅':'❌' }}</span></div>
-          <div class="net-item"><span>NVIDIA API</span><span :class="['net-status', logNetwork.nvidia_api?'net-ok':'net-fail']">{{ logNetwork.nvidia_api?'✅':'❌' }}</span></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">用户活动(7天)</span></div>
-          <div class="card-value">{{ userActivity.total_users||0 }}</div>
-          <div class="card-change">📊 Top {{ userActivity.top_users?.length||0 }} 名活跃用户</div>
+          <div class="card-header"><span class="card-title">活跃用户(7天)</span></div>
+          <div class="card-value-sm">{{ userActivity.total_users||0 }}</div>
+          <div class="card-change">📊 Top {{ userActivity.top_users?.length||0 }} 名</div>
         </div>
         <div class="card" style="grid-column:span 2">
           <div class="card-header"><span class="card-title">热门端点 TOP15</span><button class="btn btn-outline btn-sm" @click="loadLogs">🔄</button></div>
-          <div style="max-height:220px;overflow-y:auto">
-            <div v-for="(e,i) in (logStats.top_endpoints||[])" :key="i" style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
-              <span style="color:var(--text);font-family:monospace;font-size:11px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{e.path}}</span>
-              <span><span style="color:var(--accent)">{{e.count}}</span>次 <span :style="{color:Number(e.error_rate)>5?'var(--red)':'var(--green)'}">{{e.error_rate}}%</span></span>
-            </div>
-            <div v-if="!logStats.top_endpoints?.length" style="color:var(--dim);padding:12px;font-size:12px;text-align:center">暂无端点数据</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>端点</th><th>调用</th><th>错误率</th></tr></thead>
+              <tbody>
+                <tr v-for="(e,i) in (logStats.top_endpoints||[])" :key="i">
+                  <td style="font-family:monospace;font-size:11px;color:var(--text);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{e.path}}</td>
+                  <td style="font-weight:800;color:var(--accent)">{{e.count}}</td>
+                  <td><span :style="{color:Number(e.error_rate)>5?'var(--red)':'var(--green)',fontWeight:'700'}">{{e.error_rate}}%</span></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+          <div v-if="!logStats.top_endpoints?.length" style="color:var(--dim);padding:12px;font-size:12px;text-align:center">暂无端点数据</div>
         </div>
         <div class="card" style="grid-column:span 2">
           <div class="card-header"><span class="card-title">24小时趋势</span></div>
           <div style="display:flex;gap:2px;align-items:flex-end;height:70px">
             <div v-for="(h,i) in (logStats.hourly_trend||[]).slice(-24)" :key="i"
               :style="{flex:1,height:Math.max(4,(h.requests||0)/Math.max(...(logStats.hourly_trend||[]).slice(-24).map(x=>x.requests||1),1)*60)+'px',background:h.errors>0?'var(--yellow)':'var(--accent)',borderRadius:'3px',minHeight:'4px',cursor:'pointer'}"
-              :title="(h.hour||'')+'\n'+h.requests+'次\n'+h.errors+'错误'"></div>
+              :title="(h.hour||'')+'\n'+(h.requests||0)+'次\n'+(h.errors||0)+'错误'"></div>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-top:6px">
             <span>{{ (logStats.hourly_trend||[])[0]?.hour||'' }}</span>
@@ -302,115 +382,151 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text)}
         <div class="card" style="grid-column:span 2">
           <div class="card-header"><span class="card-title">错误分布</span></div>
           <div v-for="(e,i) in (logStats.top_errors||[]).slice(0,10)" :key="i" style="padding:5px 0;border-bottom:1px solid var(--border);font-size:11px;display:flex;gap:10px">
-            <span style="color:var(--red);min-width:30px;font-weight:600">{{e.count}}x</span>
+            <span style="color:var(--red);font-weight:800;min-width:32px">{{e.count}}x</span>
             <span style="color:var(--dim);word-break:break-all;font-size:11px">{{e.msg}}</span>
           </div>
-          <div v-if="!logStats.top_errors?.length" style="color:var(--green);padding:10px;font-size:12px">✅ 无错误</div>
+          <div v-if="!logStats.top_errors?.length" style="color:var(--green);padding:10px;font-size:12px;font-weight:700">✅ 无错误</div>
         </div>
       </div>
     </template>
 
-    <!-- 模型配置 -->
+    <!-- ════ 模型配置 ════ -->
     <template v-if="tab==='models'">
       <div class="grid">
         <div class="card" style="grid-column:span 2">
           <div class="card-header">
             <span class="card-title">🤖 模型列表 ({{ modelList.length }})</span>
-            <button class="btn btn-primary" @click="showAddModel=true" style="margin-left:auto">➕ 添加模型</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" @click="loadModels">🔄 刷新</button>
+              <button class="btn btn-primary" @click="openAddModel">➕ 添加模型</button>
+            </div>
           </div>
-          <div style="max-height:320px;overflow-y:auto">
+          <div class="table-wrap">
             <table>
               <thead><tr><th>模型</th><th>Provider</th><th>状态</th><th>成本评分</th><th>操作</th></tr></thead>
               <tbody>
                 <tr v-for="m in modelList" :key="m.id">
-                  <td><div style="font-weight:600;color:var(--text)">{{m.name}}</div><div style="font-size:10px;color:var(--dim)">{{m.id}}</div></td>
-                  <td><span :class="['tag', m.provider]">{{m.provider}}</span></td>
-                  <td><span :class="['tag', m.enabled?'active':'expired']">{{m.enabled?'启用':'禁用'}}</span></td>
-                  <td><span style="font-size:12px;font-weight:700;color:var(--accent)">{{ Math.round(m.cost_score||0) }}</span></td>
                   <td>
-                    <button v-if="modelToggling !== m.id" class="btn" :class="m.enabled?'btn-danger':'btn-primary'" @click="toggleModel(m)" :disabled="modelToggling !== null && modelToggling !== m.id">
-                      {{m.enabled?'禁用':'启用'}}
-                    </button>
-                    <span v-else class="spinner" style="color:var(--dim);font-size:11px">处理中</span>
+                    <div style="font-weight:700;color:var(--text-bright)">{{m.name}}</div>
+                    <div style="font-size:10px;color:var(--dim);font-family:monospace;margin-top:2px">{{m.id}}</div>
+                    <div v-if="m.description" style="font-size:10px;color:var(--dim);margin-top:2px">{{m.description}}</div>
+                  </td>
+                  <td><span :class="['tag', m.provider]">{{m.provider}}</span></td>
+                  <td><span :class="['tag', m.enabled?'active':'disabled']">{{m.enabled?'✅ 启用':'⛔ 禁用'}}</span></td>
+                  <td><span style="font-size:14px;font-weight:800;color:var(--accent)">{{ Math.round(m.cost_score||0) }}</span></td>
+                  <td>
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <button v-if="modelToggling !== m.id" class="btn btn-sm" :class="m.enabled?'btn-danger':'btn-primary'" @click="toggleModel(m)">{{m.enabled?'禁用':'启用'}}</button>
+                      <span v-else class="spinner"></span>
+                      <button class="btn-icon" title="编辑" @click="openEditModel(m)">✏️</button>
+                      <button class="btn-icon" title="删除" @click="deleteModel(m)" style="color:var(--red)">🗑️</button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">路由策略</span></div>
-          <div style="font-size:11px;color:var(--dim);line-height:2">
-            <div>🎩 Boss/管理员 → 最强模型</div>
-            <div>🏢 Enterprise → 云端优先+本地fallback</div>
-            <div>💎 Pro → 成本+效果平衡</div>
-            <div>👤 Free → 本地优先</div>
-            <div>🌐 网络离线 → 强制本地ollama</div>
+          <div v-if="!modelList.length" class="empty-state">
+            <span class="icon">🤖</span>
+            <div>暂无模型配置，点击「添加模型」开始配置</div>
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><span class="card-title">当前推荐模型</span></div>
-          <div v-if="routeResult?.model" style="font-size:12px">
-            <div style="font-weight:700;font-size:16px;color:var(--accent);margin-bottom:8px">{{routeResult.model.name}}</div>
-            <div class="net-item"><span>Provider</span><span style="color:var(--accent)">{{routeResult.model.provider}}</span></div>
-            <div class="net-item"><span>路由原因</span><span style="color:var(--text)">{{routeResult.reason}}</span></div>
-            <div class="net-item"><span>上下文窗口</span><span>{{routeResult.model.context_window?.toLocaleString()}}</span></div>
+          <div class="card-header"><span class="card-title">📡 路由策略</span></div>
+          <div style="font-size:12px;color:var(--dim);line-height:2.2">
+            <div>🎩 <strong style="color:var(--text-bright)">Boss</strong> → 最强模型</div>
+            <div>🏢 <strong style="color:var(--text-bright)">Enterprise</strong> → 云端旗舰优先</div>
+            <div>💎 <strong style="color:var(--text-bright)">Pro</strong> → 成本+效果平衡</div>
+            <div>👤 <strong style="color:var(--text-bright)">Free</strong> → 本地优先</div>
+            <div>🌐 <strong style="color:var(--text-bright)">网络离线</strong> → 强制本地ollama</div>
           </div>
-          <div v-else style="color:var(--dim);padding:12px;font-size:12px">点击刷新获取推荐</div>
-          <button class="btn btn-primary" @click="loadRoute" style="margin-top:10px" :disabled="routeLoading">
-            <span v-if="routeLoading" class="spinner"></span>{{ routeLoading ? '刷新中' : '🔄 刷新路由' }}
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">✨ 当前推荐模型</span></div>
+          <div v-if="routeResult?.model" class="route-model">
+            <div class="route-model-name">{{routeResult.model.name}}</div>
+            <div class="route-model-meta">
+              <span>{{routeResult.model.provider}}</span>
+              <span>上下文 {{(routeResult.model.context_window||0).toLocaleString()}}</span>
+            </div>
+            <div style="margin-top:10px;font-size:11px;color:var(--dim)">路由原因：{{routeResult.reason}}</div>
+          </div>
+          <div v-else style="color:var(--dim);padding:12px;font-size:12px;text-align:center">点击刷新获取推荐</div>
+          <button class="btn btn-primary" @click="loadRoute" style="margin-top:12px;width:100%" :disabled="routeLoading">
+            <span v-if="routeLoading" class="spinner"></span>{{ routeLoading?'刷新中':'🔄 刷新路由' }}
           </button>
-        </div>
-      </div>
-      <!-- 添加模型弹窗 -->
-      <div v-if="showAddModel" style="position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99;display:flex;align-items:center;justify-content:center">
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;width:460px;box-shadow:0 16px 48px rgba(0,0,0,.5)">
-          <div style="font-weight:700;font-size:17px;margin-bottom:20px;color:var(--text)">➕ 添加模型配置</div>
-          <div style="font-size:12px;display:grid;gap:10px">
-            <div><label style="color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">模型ID *</label>
-              <input v-model="newModel.id" placeholder="如: nvidia/deepseek-v4-pro" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none" @focus="e=>e.target.style.borderColor='var(--accent)'" @blur="e=>e.target.style.borderColor='var(--border)'"></div>
-            <div><label style="color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">显示名称 *</label>
-              <input v-model="newModel.name" placeholder="如: DeepSeek V4 Pro" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none" @focus="e=>e.target.style.borderColor='var(--accent)'" @blur="e=>e.target.style.borderColor='var(--border)'"></div>
-            <div><label style="color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Provider</label>
-              <select v-model="newModel.provider" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none">
-                <option value="ollama">ollama (本地)</option>
-                <option value="nvidia">nvidia (云端)</option>
-                <option value="fastapi">fastapi (自定义)</option>
-              </select></div>
-            <div><label style="color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Base URL</label>
-              <input v-model="newModel.base_url" placeholder="https://..." style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none" @focus="e=>e.target.style.borderColor='var(--accent)'" @blur="e=>e.target.style.borderColor='var(--border)'"></div>
-            <div><label style="color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">API Key</label>
-              <input v-model="newModel.api_key" type="password" placeholder="sk-..." style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none"></div>
-            <div><label style="color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Model Name</label>
-              <input v-model="newModel.model_name" placeholder="deepseek-ai/deepseek-v4-pro" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none" @focus="e=>e.target.style.borderColor='var(--accent)'" @blur="e=>e.target.style.borderColor='var(--border)'"></div>
-            <div><label style="color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">描述 (可选)</label>
-              <input v-model="newModel.description" placeholder="简短描述模型用途" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none" @focus="e=>e.target.style.borderColor='var(--accent)'" @blur="e=>e.target.style.borderColor='var(--border)'"></div>
-          </div>
-          <div style="display:flex;gap:10px;margin-top:20px">
-            <button @click="addModel" class="btn btn-primary" style="flex:1" :disabled="addModelLoading">
-              <span v-if="addModelLoading" class="spinner"></span>{{ addModelLoading ? '保存中...' : '✅ 保存' }}
-            </button>
-            <button @click="showAddModel=false" class="btn" style="background:var(--border);color:var(--text)">取消</button>
-          </div>
         </div>
       </div>
     </template>
 
-    <button class="refresh" @click="refreshAll" title="刷新全部">🔄</button>
+    <!-- 全局刷新按钮 -->
+    <button class="refresh" @click="refreshAll" title="刷新全部数据">🔄</button>
   </div>
 
-  <!-- Toast -->
-  <div v-if="toast.show" :class="['toast', toast.type]" style="top:24px;right:24px">{{ toast.msg }}</div>
+  <!-- Toast 通知 -->
+  <div v-if="toast.show" :class="['toast', toast.type]">{{ toast.msg }}</div>
 
   <!-- 管理后台密码弹窗 -->
-  <div v-if="showAdminGate" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center">
-    <div style="background:#141b23;border:1px solid #1e2a3a;border-radius:16px;padding:36px 32px;width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+  <div v-if="showAdminGate" style="position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:999;display:flex;align-items:center;justify-content:center">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:36px 32px;width:400px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)">
       <div style="font-size:48px;margin-bottom:12px">👑</div>
-      <div style="font-size:18px;font-weight:700;color:#e2e8f0;margin-bottom:4px">Boss 管理后台</div>
-      <div style="font-size:12px;color:#64748b;margin-bottom:20px">请输入管理后台密码以继续</div>
-      <input v-model="adminPwInput" type="password" placeholder="后台密码" style="width:100%;padding:12px;background:#0d1117;border:1px solid #1e2a3a;border-radius:8px;font-size:14px;color:#e2e8f0;outline:none;margin-bottom:12px" @keydown.enter="verifyAdmin">
-      <div v-if="adminPwError" style="font-size:12px;color:#ef4444;margin-bottom:8px">{{adminPwError}}</div>
-      <button @click="verifyAdmin" style="width:100%;padding:12px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">🔓 验证进入</button>
+      <div style="font-size:18px;font-weight:800;color:var(--text-bright);margin-bottom:4px">Boss 管理后台</div>
+      <div style="font-size:12px;color:var(--dim);margin-bottom:24px">请输入管理后台密码以继续</div>
+      <div class="pw-wrap" style="margin-bottom:12px">
+        <input v-model="adminPwInput" :type="showAdminPw?'text':'password'" placeholder="后台密码" style="padding:12px" @keydown.enter="verifyAdmin">
+        <span class="pw-toggle" @click="showAdminPw=!showAdminPw">{{ showAdminPw?'🙈':'👁' }}</span>
+      </div>
+      <div v-if="adminPwError" style="font-size:12px;color:var(--red);margin-bottom:8px;text-align:left">{{adminPwError}}</div>
+      <button @click="verifyAdmin" style="width:100%;padding:12px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">🔓 验证进入</button>
+    </div>
+  </div>
+
+  <!-- 模型编辑弹窗 -->
+  <div v-if="showModelForm" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:99;display:flex;align-items:center;justify-content:center">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;width:480px;box-shadow:0 16px 48px rgba(0,0,0,.5)">
+      <div style="font-weight:800;font-size:17px;color:var(--text-bright);margin-bottom:20px">{{ editingModel?'✏️ 编辑模型':'➕ 添加模型配置' }}</div>
+      <div class="form-row">
+        <label class="form-label">模型ID * <span style="color:var(--dim);font-weight:400">(唯一标识)</span></label>
+        <input v-model="modelForm.id" class="form-input" placeholder="如: nvidia/deepseek-v4-pro" :disabled="!!editingModel">
+      </div>
+      <div class="form-row">
+        <label class="form-label">显示名称 *</label>
+        <input v-model="modelForm.name" class="form-input" placeholder="如: DeepSeek V4 Pro">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Provider</label>
+        <select v-model="modelForm.provider" class="form-input">
+          <option value="ollama">ollama (本地)</option>
+          <option value="nvidia">nvidia (云端)</option>
+          <option value="fastapi">fastapi (自定义)</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Base URL</label>
+        <input v-model="modelForm.base_url" class="form-input" placeholder="https://...">
+      </div>
+      <div class="form-row">
+        <label class="form-label">API Key</label>
+        <div class="pw-wrap">
+          <input v-model="modelForm.api_key" :type="showApiKey?'text':'password'" placeholder="sk-...或nvapi-...">
+          <span class="pw-toggle" @click="showApiKey=!showApiKey">{{ showApiKey?'🙈':'👁' }}</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Model Name (实际模型名) *</label>
+        <input v-model="modelForm.model_name" class="form-input" placeholder="deepseek-ai/deepseek-v4-pro">
+      </div>
+      <div class="form-row">
+        <label class="form-label">描述 (可选)</label>
+        <input v-model="modelForm.description" class="form-input" placeholder="简短描述模型用途">
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button @click="saveModel" class="btn btn-primary" style="flex:1" :disabled="modelFormLoading">
+          <span v-if="modelFormLoading" class="spinner"></span>{{ modelFormLoading?'保存中...':'✅ 保存' }}
+        </button>
+        <button @click="closeModelForm" class="btn btn-outline" style="flex:1">取消</button>
+      </div>
+      <div v-if="modelFormError" style="font-size:12px;color:var(--red);margin-top:8px;text-align:center">{{modelFormError}}</div>
     </div>
   </div>
 </div>
@@ -418,7 +534,7 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text)}
 <script>
 const {createApp, ref, computed, onMounted} = Vue;
 createApp({setup(){
-  // Auth guard
+  // Auth
   let token = new URLSearchParams(window.location.search).get('token');
   if (!token) { try { token = localStorage.getItem('ema_token'); } catch(e) {} }
   if (!token) { window.location.href = '/ui/login.html'; return {}; }
@@ -426,17 +542,19 @@ createApp({setup(){
 
   const API='http://127.0.0.1:6188';
 
-  // Toast notification system
-  const toast = ref({ show: false, msg: '', type: 'info', timer: null });
-  function showToast(msg, type='info', duration=3000) {
-    if (toast.value.timer) clearTimeout(toast.value.timer);
-    toast.value = { show: true, msg, type, timer: setTimeout(() => { toast.value.show = false; }, duration) };
+  // Toast 系统
+  const toast = ref({show:false,msg:'',type:'info',timer:null});
+  function showToast(msg, type='info', duration=3500){
+    if(toast.value.timer) clearTimeout(toast.value.timer);
+    toast.value = {show:true, msg, type, timer:setTimeout(()=>{toast.value.show=false},duration)};
   }
 
+  // Admin gate
   const adminVerified = ref(false);
   const showAdminGate = ref(true);
   const adminPwInput = ref('');
   const adminPwError = ref('');
+  const showAdminPw = ref(false);
 
   async function verifyAdmin(){
     try{
@@ -451,24 +569,30 @@ createApp({setup(){
     }catch(e){ adminPwError.value='验证失败，请重试'; }
   }
 
-  const tab=ref('cockpit');
-  const cockpit=ref({health_score:0,health_grade:'B',alerts:[],metrics:{revenue:{},projects:{},agents:{}}});
-  const tenants=ref([]); const tenantsLoading = ref(false);
-  const alerts=ref([]); const alertsLoading = ref(false);
-  const report=ref({sections:[]}); const reportLoading = ref(false);
-  const suggestions=ref([]); const insights=ref([]);
-  const logStats=ref({}); const logNetwork=ref({}); const userActivity=ref({});
-  const modelList=ref([]); const routeResult=ref(null); const showAddModel=ref(false);
-  const modelToggling = ref(null);
-  const addModelLoading = ref(false);
-  const routeLoading = ref(false);
-  const newModel=ref({id:'',name:'',provider:'ollama',base_url:'http://127.0.0.1:11434',api_key:'',model_name:'',description:''});
+  const tab = ref('cockpit');
+  const cockpit = ref({health_score:0,health_grade:'B',alerts:[],metrics:{revenue:{},projects:{},agents:{}}});
+  const tenants = ref([]); const tenantsLoading = ref(false);
+  const alerts = ref([]); const alertsLoading = ref(false);
+  const report = ref({sections:[]}); const reportLoading = ref(false);
+  const suggestions = ref([]); const insights = ref([]);
+  const logStats = ref({}); const userActivity = ref({});
+  const netStatus = ref({ollama_com:false,nvidia_api:false});
+  const netLoading = ref(false);
 
-  const pageTitle=computed(()=>{
+  // 模型相关
+  const modelList = ref([]); const routeResult = ref(null);
+  const showModelForm = ref(false); const editingModel = ref(null);
+  const modelForm = ref({id:'',name:'',provider:'ollama',base_url:'http://127.0.0.1:11434',api_key:'',model_name:'',description:''});
+  const modelFormLoading = ref(false); const modelFormError = ref('');
+  const modelToggling = ref(null);
+  const routeLoading = ref(false);
+  const showApiKey = ref(false);
+
+  const pageTitle = computed(()=>{
     const m={'cockpit':'📊 运营驾驶舱','tenants':'👥 租户管理','alerts':'🚨 预警中心','reports':'📝 自动报告','advice':'💡 决策建议','logs':'📈 日志统计','models':'🤖 模型配置'};
     return m[tab.value]||'管家后台';
   });
-  const gradeLabel=computed(()=>{
+  const gradeLabel = computed(()=>{
     const g=cockpit.value.health_grade||'B';
     const m={A:'卓越 - 一切正常',B:'健康 - 有小幅改善空间',C:'关注 - 需要检查',D:'警告 - 立即处理'};
     return m[g]||'';
@@ -476,29 +600,116 @@ createApp({setup(){
 
   function formatNum(n){return n?Number(n).toLocaleString():'0'}
 
+  // 网络检测
+  async function checkNetwork(){
+    netLoading.value = true;
+    try{
+      const r=await fetch(API+'/api/v1/models/route?task_type=chat',{headers:{'Authorization':'Bearer '+token},timeout:15000});
+      const d=await r.json();
+      netStatus.value = d?.network||{ollama_com:false,nvidia_api:false};
+      showToast('网络状态已刷新','info');
+    }catch(e){
+      netStatus.value = {ollama_com:false,nvidia_api:false};
+      showToast('网络检测失败','error');
+    }
+    netLoading.value = false;
+  }
+
+  // 模型操作
+  function openAddModel(){
+    editingModel.value = null;
+    modelForm.value = {id:'',name:'',provider:'ollama',base_url:'http://127.0.0.1:11434',api_key:'',model_name:'',description:''};
+    modelFormError.value = '';
+    showApiKey.value = false;
+    showModelForm.value = true;
+  }
+  function openEditModel(m){
+    editingModel.value = m;
+    modelForm.value = {...m};
+    modelFormError.value = '';
+    showApiKey.value = false;
+    showModelForm.value = true;
+  }
+  function closeModelForm(){ showModelForm.value = false; editingModel.value = null; }
+
+  async function saveModel(){
+    const f = modelForm.value;
+    if(!f.id||!f.name||!f.model_name){ modelFormError.value='请填写必填项（模型ID、名称、Model Name）'; return; }
+    modelFormLoading.value = true;
+    modelFormError.value = '';
+    try{
+      const url = editingModel.value ? API+'/api/v1/admin/models/'+encodeURIComponent(f.id) : API+'/api/v1/admin/models';
+      const method = editingModel.value ? 'PUT' : 'POST';
+      const r = await fetch(url,{
+        method,
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body:JSON.stringify(f),timeout:15000
+      });
+      const d = await r.json();
+      if(d.success||r.ok){
+        showToast(editingModel.value?'模型已更新':'模型添加成功！','success');
+        closeModelForm();
+        await loadModels();
+      }else{ modelFormError.value = d.detail||JSON.stringify(d); }
+    }catch(e){ modelFormError.value = e.message; }
+    modelFormLoading.value = false;
+  }
+
+  async function deleteModel(m){
+    if(!confirm('确认删除模型「'+m.name+'」？此操作不可撤销。')) return;
+    try{
+      const r=await fetch(API+'/api/v1/admin/models/'+encodeURIComponent(m.id),{
+        method:'DELETE',headers:{'Authorization':'Bearer '+token},timeout:10000
+      });
+      const d=await r.json();
+      if(d.success||r.ok){ showToast('模型「'+m.name+'」已删除','success'); await loadModels(); }
+      else{ showToast('删除失败：'+(d.detail||'未知错误'),'error'); }
+    }catch(e){ showToast('删除失败：'+e.message,'error'); }
+  }
+
+  async function toggleModel(m){
+    modelToggling.value = m.id;
+    try{
+      const r=await fetch(API+'/api/v1/admin/models/'+encodeURIComponent(m.id),{
+        method:'PUT',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body:JSON.stringify({...m,enabled:!m.enabled}),timeout:10000
+      });
+      if(r.ok){ await loadModels(); showToast('模型「'+m.name+'」已'+(m.enabled?'禁用':'启用'),'success'); }
+      else{ showToast('操作失败','error'); }
+    }catch(e){ showToast('操作失败：'+e.message,'error'); }
+    modelToggling.value = null;
+  }
+
+  async function loadModels(){
+    try{
+      const r=await fetch(API+'/api/v1/admin/models',{headers:{'Authorization':'Bearer '+token},timeout:10000});
+      const d=await r.json();
+      modelList.value = d?.models||[];
+      netStatus.value = d?.network||{};
+    }catch(e){}
+  }
+
+  async function loadRoute(){
+    routeLoading.value = true;
+    try{
+      const r=await fetch(API+'/api/v1/models/route?task_type=chat',{headers:{'Authorization':'Bearer '+token},timeout:10000});
+      const d=await r.json();
+      routeResult.value = d||null;
+    }catch(e){}
+    routeLoading.value = false;
+  }
+
   async function loadCockpit(){
     try{
-      const r=await fetch(API+'/api/v1/agent/chat',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-        body:JSON.stringify({message:'查看驾驶舱',task_type:'manager',file_path:''})
-      });
+      const r=await fetch(API+'/api/v1/agent/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({message:'查看驾驶舱',task_type:'manager',file_path:''})});
       const d=await r.json();
       const o=d.output||d;
       cockpit.value=o?.cockpit||o||cockpit.value;
     }catch(e){
-      // Fallback mock data
       cockpit.value={
         health_score:92,health_grade:'A',alerts:[],
-        metrics:{
-          revenue:{total_revenue:126800,revenue_this_month:21800,active_subscribers:7,plan_distribution:{free:15,pro:4,enterprise:2,private:1}},
-          projects:{tenants:22},
-          agents:{heatmap:[
-            {agent_id:'tech_rd',count:48},{agent_id:'safety_compliance',count:31},{agent_id:'manager',count:27},
-            {agent_id:'engineering_delivery',count:19},{agent_id:'market_sales',count:12},{agent_id:'cost_benefit',count:8},{agent_id:'customer_service',count:5}
-          ]},
-          security:{score:94,grade:'A'}
-        }
+        metrics:{revenue:{total_revenue:126800,revenue_this_month:21800,active_subscribers:7,plan_distribution:{free:15,pro:4,enterprise:2,private:1}},projects:{tenants:22},agents:{heatmap:[{agent_id:'tech_rd',count:48},{agent_id:'safety_compliance',count:31},{agent_id:'manager',count:27},{agent_id:'engineering_delivery',count:19},{agent_id:'market_sales',count:12},{agent_id:'cost_benefit',count:8},{agent_id:'customer_service',count:5}],},security:{score:94,grade:'A'}}
       };
     }
   }
@@ -507,11 +718,8 @@ createApp({setup(){
     tenantsLoading.value = true;
     try{
       const r=await fetch(API+'/api/v1/admin/tenants',{headers:{'Authorization':'Bearer '+token},timeout:10000});
-      if(r.ok){
-        const d=await r.json();
-        tenants.value=d?.tenants||d||[];
-      }else{
-        // Fallback mock
+      if(r.ok){const d=await r.json();tenants.value=d?.tenants||d||[];}
+      else{
         tenants.value=[
           {id:'t1',name:'上海勘察设计院',plan:'enterprise',plan_name:'🏢 企业版',user_count:24,monthly_cost:3800,status:'active'},
           {id:'t2',name:'深圳建科公司',plan:'pro',plan_name:'💎 专业版',user_count:8,monthly_cost:1280,status:'active'},
@@ -535,20 +743,15 @@ createApp({setup(){
   async function loadAlerts(){
     alertsLoading.value = true;
     try{
-      const r=await fetch(API+'/api/v1/agent/chat',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-        body:JSON.stringify({message:'检查预警',task_type:'manager',file_path:''})
-      });
+      const r=await fetch(API+'/api/v1/agent/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({message:'检查预警',task_type:'manager',file_path:''})});
       const d=await r.json();
       const o=d.output||d;
-      const ac=o?.alert_center||o||{};
-      alerts.value=ac.alerts||[];
+      alerts.value=(o?.alert_center||o||{}).alerts||[];
     }catch(e){
       alerts.value=[
         {level:'warning',msg:'租户"测试用户A"免费套餐用量已达80%',count:3},
         {level:'info',msg:'本月新增2个企业版租户，转化率提升15%',count:1},
-        {level:'warning',msg:'Agent使用分布不均，customer_service使用率偏低',count:2},
+        {level:'warning',msg:'customer_service Agent 使用率偏低',count:2},
       ];
     }
     alertsLoading.value = false;
@@ -557,24 +760,17 @@ createApp({setup(){
   async function genReport(){
     reportLoading.value = true;
     try{
-      const r=await fetch(API+'/api/v1/agent/chat',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-        body:JSON.stringify({message:'生成周报',task_type:'manager',file_path:''})
-      });
+      const r=await fetch(API+'/api/v1/agent/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({message:'生成周报',task_type:'manager',file_path:''})});
       const d=await r.json();
-      const o=d.output||d;
-      report.value=o?.report||{sections:[]};
+      report.value=(d.output||d)?.report||{sections:[]};
     }catch(e){
-      report.value={
-        sections:[
-          {name:'📊 本周运营概览',content:'本周平台总收入 ¥8,200，较上周增长 12%。新增注册用户 23 人，转化付费租户 2 个。系统健康度维持 A 级，无安全事故。'},
-          {name:'🔧 技术研发',content:'TechRdAgent 处理图纸分析 48 次，PDF 解析 15 次，DWG 解析 12 次。AI 改图功能使用 7 次，优化建议生成 31 次。'},
-          {name:'📡 市场销售',content:'新增企业客户 2 个（上海勘察设计院、深圳建科公司），正在跟进意向客户 5 个。本周免费转付费转化率 18%。'},
-          {name:'🔒 安全合规',content:'完成本周安全巡检，无高危漏洞。API 调用错误率 0.3%，低于 1% 目标值。用户隐私数据加密率 100%。'},
-          {name:'💡 优化建议',content:'建议在 6 月推出"图纸分析季"促销活动，针对设计院定向推送；customer_service Agent 使用率偏低，建议增加快捷入口。'},
-        ]
-      };
+      report.value={sections:[
+        {name:'📊 本周运营概览',content:'本周平台总收入 ¥8,200，较上周增长 12%。新增注册用户 23 人，转化付费租户 2 个。系统健康度维持 A 级，无安全事故。'},
+        {name:'🔧 技术研发',content:'TechRdAgent 处理图纸分析 48 次，PDF 解析 15 次，DWG 解析 12 次。AI 改图功能使用 7 次，优化建议生成 31 次。'},
+        {name:'📡 市场销售',content:'新增企业客户 2 个（上海勘察设计院、深圳建科公司），正在跟进意向客户 5 个。本周免费转付费转化率 18%。'},
+        {name:'🔒 安全合规',content:'完成本周安全巡检，无高危漏洞。API 调用错误率 0.3%，低于 1% 目标值。用户隐私数据加密率 100%。'},
+        {name:'💡 优化建议',content:'建议在 6 月推出"图纸分析季"促销活动；customer_service Agent 使用率偏低，建议增加快捷入口。'},
+      ]};
     }
     reportLoading.value = false;
     showToast('报告已生成','success');
@@ -582,11 +778,7 @@ createApp({setup(){
 
   async function loadAdvice(){
     try{
-      const r=await fetch(API+'/api/v1/agent/chat',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-        body:JSON.stringify({message:'决策建议',task_type:'manager',file_path:''})
-      });
+      const r=await fetch(API+'/api/v1/agent/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({message:'决策建议',task_type:'manager',file_path:''})});
       const d=await r.json();
       const o=d.output||d;
       suggestions.value=o?.suggestions||[];
@@ -599,8 +791,7 @@ createApp({setup(){
       ];
       insights.value=[
         '工程管理软件市场年增速 23%，BIM + AI 是核心方向',
-        '一线城市设计院信息化程度高，决策链长（约3-6个月）；二三线城市需求旺盛，转化快',
-        '竞品动态：Autodesk AI 功能定价偏高，本产品有价格优势',
+        '一线城市设计院决策链长（3-6个月）；二三线城市需求旺盛，转化快',
         '政策利好：建筑业数字化转型补贴政策（上海/深圳）最高达项目费用 30%',
       ];
     }
@@ -613,103 +804,23 @@ createApp({setup(){
       if(d?.success){
         logStats.value=d?.api_24h||{};
         userActivity.value=d?.user_activity||{};
-        logNetwork.value=d?.network||(d?.api_24h?._network||{});
+        netStatus.value=d?.network||(d?.api_24h?._network||{});
       }
     }catch(e){
       try{
         const r2=await fetch(API+'/api/v1/logs/stats',{headers:{'Authorization':'Bearer '+token},timeout:10000});
         const d2=await r2.json();
-        logStats.value=d2||{};logNetwork.value=d2?.network||{};
+        logStats.value=d2||{};netStatus.value=d2?.network||{};
       }catch(e2){
-        // Fallback mock
-        logStats.value={
-          total_requests:3847,total_errors:12,error_rate_pct:0.31,avg_response_ms:142,
-          top_endpoints:[
-            {path:'/api/v1/main/chat',count:1247,error_rate:0.4},
-            {path:'/api/v1/upload/analyze',count:834,error_rate:0.2},
-            {path:'/api/v1/agent/chat',count:521,error_rate:0.6},
-            {path:'/api/v1/generate/sop',count:312,error_rate:0.1},
-            {path:'/api/v1/admin/models',count:298,error_rate:0.0},
-          ],
-          top_errors:[
-            {msg:'DWG解析失败：图层名称编码错误',count:4},
-            {msg:'PDF OCR 识别超时',count:3},
-            {msg:'JWT token 过期',count:2},
-          ],
-          hourly_trend:Array.from({length:24},(_,i)=>({hour:`${String(8+i).padStart(2,'0')}:00`,requests:Math.floor(Math.random()*200+50),errors:Math.floor(Math.random()*5)}))
-        };
-        logNetwork.value={ollama_com:true,nvidia_api:true};
+        logStats.value={total_requests:3847,total_errors:12,error_rate_pct:0.31,avg_response_ms:142,top_endpoints:[
+          {path:'/api/v1/main/chat',count:1247,error_rate:0.4},{path:'/api/v1/upload/analyze',count:834,error_rate:0.2},
+          {path:'/api/v1/agent/chat',count:521,error_rate:0.6},{path:'/api/v1/generate/sop',count:312,error_rate:0.1},
+          {path:'/api/v1/admin/models',count:298,error_rate:0.0},
+        ],top_errors:[{msg:'DWG解析失败：图层名称编码错误',count:4},{msg:'PDF OCR 识别超时',count:3},{msg:'JWT token 过期',count:2}],hourly_trend:Array.from({length:24},(_,i)=>({hour:\`\${String(8+i).padStart(2,'0')}:00\`,requests:Math.floor(Math.random()*200+50),errors:Math.floor(Math.random()*5)}))};
+        netStatus.value={ollama_com:true,nvidia_api:true};
         userActivity.value={total_users:38,top_users:[{user:'boss_ke',count:156},{user:'test_user',count:89}]};
       }
     }
-  }
-
-  async function loadModels(){
-    try{
-      const r=await fetch(API+'/api/v1/admin/models',{headers:{'Authorization':'Bearer '+token},timeout:10000});
-      const d=await r.json();
-      modelList.value=d?.models||[];
-      logNetwork.value=d?.network||{};
-    }catch(e){}
-  }
-
-  async function loadRoute(){
-    routeLoading.value = true;
-    try{
-      const r=await fetch(API+'/api/v1/models/route?task_type=chat',{headers:{'Authorization':'Bearer '+token},timeout:10000});
-      const d=await r.json();
-      routeResult.value=d||null;
-    }catch(e){}
-    routeLoading.value = false;
-  }
-
-  async function addModel(){
-    if(!newModel.value.id || !newModel.value.name || !newModel.value.model_name){
-      showToast('请填写必填项（模型ID、名称、Model Name）','error');
-      return;
-    }
-    addModelLoading.value = true;
-    try{
-      const r=await fetch(API+'/api/v1/admin/models',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-        body:JSON.stringify(newModel.value),
-        timeout:10000
-      });
-      const d=await r.json();
-      if(d.success || r.ok){
-        showToast('模型添加成功！','success');
-        showAddModel.value=false;
-        newModel.value={id:'',name:'',provider:'ollama',base_url:'http://127.0.0.1:11434',api_key:'',model_name:'',description:''};
-        await loadModels();
-      }else{
-        showToast('添加失败：'+(d.detail||JSON.stringify(d)),'error');
-      }
-    }catch(e){
-      showToast('添加失败：'+e.message,'error');
-    }
-    addModelLoading.value = false;
-  }
-
-  async function toggleModel(m){
-    modelToggling.value = m.id;
-    try{
-      const r=await fetch(API+'/api/v1/admin/models/'+encodeURIComponent(m.id),{
-        method:'PUT',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-        body:JSON.stringify({...m,enabled:!m.enabled}),
-        timeout:10000
-      });
-      if(r.ok){
-        await loadModels();
-        showToast(`模型 ${m.name} 已${m.enabled?'禁用':'启用'}`,'success');
-      }else{
-        showToast('操作失败','error');
-      }
-    }catch(e){
-      showToast('操作失败：'+e.message,'error');
-    }
-    modelToggling.value = null;
   }
 
   async function refreshAll(){
@@ -719,23 +830,24 @@ createApp({setup(){
     if(tab.value==='alerts')await loadAlerts();
     if(tab.value==='reports')await genReport();
     if(tab.value==='advice')await loadAdvice();
-    if(tab.value==='logs')await loadLogs();
+    if(tab.value==='logs'){await loadLogs();await checkNetwork();}
     if(tab.value==='models'){await loadModels();await loadRoute();}
     showToast('数据已刷新','success');
   }
 
-  onMounted(async()=>{
-    await loadCockpit();
-  });
+  onMounted(async()=>{ await loadCockpit(); });
 
   function logout(){try{localStorage.removeItem('ema_token');}catch(e){}window.location.href='/ui/login.html';}
 
   return{
-    tab,cockpit,tenants,alerts,report,suggestions,insights,logStats,logNetwork,userActivity,modelList,routeResult,
-    showAddModel,newModel,showAdminGate,adminVerified,adminPwInput,adminPwError,verifyAdmin,logout,
+    tab,cockpit,tenants,alerts,report,suggestions,insights,logStats,userActivity,netStatus,netLoading,
+    modelList,routeResult,showModelForm,editingModel,modelForm,modelFormLoading,modelFormError,modelToggling,routeLoading,showApiKey,
+    showAdminGate,adminVerified,adminPwInput,adminPwError,showAdminPw,verifyAdmin,logout,
     pageTitle,gradeLabel,formatNum,refreshAll,genReport,
-    tenantsLoading,alertsLoading,reportLoading,modelToggling,addModelLoading,routeLoading,
-    loadTenants,loadAlerts,loadAdvice,loadLogs,loadModels,loadRoute,addModel,toggleModel,toast,
+    tenantsLoading,alertsLoading,reportLoading,
+    loadTenants,loadAlerts,loadAdvice,loadLogs,loadModels,loadRoute,checkNetwork,
+    openAddModel,openEditModel,closeModelForm,saveModel,deleteModel,toggleModel,
+    toast,
   };
 }}).mount('#app');
 </script></body></html>

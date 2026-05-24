@@ -13,36 +13,38 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --bg: #0d1117;
-      --sidebar: #161b22;
-      --border: #30363d;
-      --accent: #58a6ff;
-      --accent2: #238636;
-      --text: #e6edf3;
-      --text-dim: #7d8590;
-      --danger: #f85149;
-      --warning: #d29922;
-      --user-bubble: #1f6feb;
-      --agent-bubble: #21262d;
-      --tech: #a371f7;
-      --safety: #f85149;
-      --market: #d29922;
-      --delivery: #3fb950;
-      --cost: #58a6ff;
+      --bg: #040810;
+      --sidebar: #081018;
+      --border: #152030;
+      --accent: #3b82f6;
+      --accent2: #1d4ed8;
+      --text: #dde8f5;
+      --text-bright: #f0f7ff;
+      --text-dim: #5a7090;
+      --danger: #f87171;
+      --warning: #fbbf24;
+      --user-bubble: #1e3a5f;
+      --agent-bubble: #0b1520;
+      --tech: #c084fc;
+      --safety: #f87171;
+      --market: #fbbf24;
+      --delivery: #4ade80;
+      --cost: #60a5fa;
     }
     /* 亮色模式 */
     @media (prefers-color-scheme: light) {
       :root:not(.force-dark) {
-        --bg: #ffffff;
-        --sidebar: #f6f8fa;
-        --border: #d0d7de;
-        --accent: #0969da;
-        --accent2: #218bff;
-        --text: #24292f;
-        --text-dim: #57606a;
-        --danger: #cf222e;
-        --warning: #9a6700;
-        --agent-bubble: #f6f8fa;
+        --bg: #f5f8ff;
+        --sidebar: #eef2f9;
+        --border: #c8d5e8;
+        --accent: #2563eb;
+        --accent2: #1d4ed8;
+        --text: #0f1c2e;
+        --text-bright: #000000;
+        --text-dim: #5a6b80;
+        --danger: #dc2626;
+        --warning: #b45309;
+        --agent-bubble: #eef2f9;
       }
     }
     /* 动画 */
@@ -177,11 +179,12 @@
     @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
 
     .model-select {
-      background: #1c2128; border: 1px solid #30363d;
-      color: #e6edf3; font-size: 12px; border-radius: 6px; padding: 4px 10px;
-      cursor: pointer; outline: none; margin-left: 8px; font-weight: 500;
+      background: #081018; border: 1px solid #152030;
+      color: #dde8f5; font-size: 12px; border-radius: 6px; padding: 4px 10px;
+      cursor: pointer; outline: none; margin-left: 8px; font-weight: 600;
     }
-    .model-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(88,166,255,.15); }
+    .model-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,.2); }
+    .model-select option { background: #081018; color: #dde8f5; }
 
     /* ── 聊天区 ── */
     .chat-area { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; }
@@ -658,6 +661,7 @@ createApp({
     try { localStorage.setItem('ema_token', authToken); } catch(e) {}
 
     const API_BASE = window.location.protocol === 'https:' ? '' : 'http://127.0.0.1:6188';
+    const authHeaders = () => ({ 'Authorization': 'Bearer ' + authToken });
     const messages = ref([]);
     const input = ref('');
     const loading = ref(false);
@@ -888,15 +892,44 @@ createApp({
     }
 
     function loadModels() {
-      fetch(`${API_BASE}/api/v1/llm/models`)
+      // 调用路由接口获取当前用户可用的模型（按订阅过滤）
+      fetch(`${API_BASE}/api/v1/models/route?task_type=chat`, { headers: authHeaders(), timeout: 10000 })
         .then(r => r.json())
         .then(d => {
-          if (d.models && d.models.length > 0) {
-            availableModels.value = d.models;
-            selectedModel.value = d.default_chain?.[0] || d.models[0]?.name || '';
+          if (d.model) {
+            // 路由返回当前推荐模型，构造下拉列表
+            const plan = planId.value;
+            const role = userRole.value;
+            // 根据角色决定显示哪些模型
+            const all = (d.available_models || []).length ? d.available_models : [];
+            // Boss/enterprise 显示全部，pro 显示大部分，free 只显示本地免费
+            let filtered = all;
+            if (role === 'free') {
+              filtered = all.filter(m => m.provider === 'ollama' || m.tags?.includes('free'));
+            } else if (role === 'pro') {
+              filtered = all.filter(m => m.provider !== 'fastapi');
+            }
+            // 始终包含当前路由推荐的模型
+            const recommended = { model_id: d.model.id, name: d.model.name, provider: d.model.provider, status: 'recommended', description: '当前推荐' };
+            if (!filtered.find(m => m.model_id === recommended.model_id)) {
+              filtered.unshift(recommended);
+            }
+            availableModels.value = filtered;
+            selectedModel.value = d.model.id;
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          // Fallback: 调用旧接口
+          fetch(`${API_BASE}/api/v1/llm/models`, { timeout: 8000 })
+            .then(r => r.json())
+            .then(d => {
+              if (d.models && d.models.length > 0) {
+                availableModels.value = d.models;
+                selectedModel.value = d.default_chain?.[0] || d.models[0]?.model_id || '';
+              }
+            })
+            .catch(() => {});
+        });
     }
 
     function onModelChange() {

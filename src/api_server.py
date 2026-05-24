@@ -1055,7 +1055,7 @@ async def route_model_api(
     task_type: str = "chat",
 ):
     """智能路由：返回当前用户应使用的模型"""
-    from model_registry import route_model, check_network
+    from model_registry import route_model, check_network, list_models
     role = user.get("role", "free") if user else "free"
     chosen, reason = route_model(role, task_type)
     net = check_network()
@@ -1064,6 +1064,7 @@ async def route_model_api(
         "model": asdict(chosen),
         "reason": reason,
         "network": net,
+        "available_models": [asdict(c) for c in list_models() if c.enabled],
     }
 
 

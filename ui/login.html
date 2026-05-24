@@ -4,56 +4,87 @@
 <title>EMA 登录</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh;display:flex;font-family:-apple-system,'Segoe UI',sans-serif}
+body{background:linear-gradient(135deg,#070b11 0%,#0f1a28 100%);min-height:100vh;display:flex;font-family:-apple-system,'Segoe UI',sans-serif}
 .wrap{max-width:420px;width:100%;margin:auto;padding:0 16px}
-.card{background:#141b23;border:1px solid #1e2a3a;border-radius:16px;padding:36px 32px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.card{background:#0f1923;border:1px solid #1e2a3a;border-radius:16px;padding:36px 32px;box-shadow:0 8px 40px rgba(0,0,0,.6)}
 .logo{text-align:center;margin-bottom:28px}.li{font-size:48px;margin-bottom:8px}
-.lt{font-size:22px;font-weight:700;color:#e2e8f0}.ls{font-size:12px;color:#64748b;margin-top:4px}
-.fg{margin-bottom:16px}.fg label{display:block;font-size:11px;color:#64748b;margin-bottom:4px;text-transform:uppercase}
-.fg input{width:100%;padding:10px 12px;background:#0d1117;border:1px solid #1e2a3a;border-radius:8px;font-size:14px;color:#e2e8f0;outline:none}
-.fg input:focus{border-color:#3b82f6}
+.lt{font-size:22px;font-weight:700;color:#e8edf5}.ls{font-size:12px;color:#6b7a8d;margin-top:4px}
+.fg{margin-bottom:16px}.fg label{display:block;font-size:11px;color:#6b7a8d;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.pw-wrap{display:flex;align-items:center;background:#070b11;border:1px solid #1e2a3a;border-radius:8px;transition:border-color .15s}
+.pw-wrap:focus-within{border-color:#3b82f6}
+.pw-wrap input{flex:1;padding:10px 12px;background:transparent;border:none;font-size:14px;color:#e8edf5;outline:none}
+.pw-wrap input::placeholder{color:#4a5568}
+.pw-toggle{padding:0 12px;color:#6b7a8d;font-size:16px;cursor:pointer;flex-shrink:0;user-select:none;line-height:44px}
+.pw-toggle:hover{color:#3b82f6}
+.fg input[type="text"],.fg input[type="email"]{width:100%;padding:10px 12px;background:#070b11;border:1px solid #1e2a3a;border-radius:8px;font-size:14px;color:#e8edf5;outline:none}
+.fg input[type="text"]:focus,.fg input[type="email"]:focus{border-color:#3b82f6}
+.rem-row{display:flex;align-items:center;justify-content:space-between;margin:8px 0 4px;font-size:12px}
+.rem-row label{color:#6b7a8d;cursor:pointer;display:flex;align-items:center;gap:6px}
+.rem-row input[type="checkbox"]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
 .btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
 .btn-p{background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;margin-top:8px}
-.btn-p:hover{opacity:.9;transform:translateY(-1px)}
+.btn-p:hover:not(:disabled){opacity:.9;transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.4)}
+.btn-p:disabled{opacity:.5;cursor:not-allowed}
 .btn-o{background:transparent;border:1px solid #3b82f6;color:#3b82f6;margin-top:12px}
 .btn-o:hover{background:rgba(59,130,246,.1)}
-.msg{padding:8px 0;text-align:center;font-size:12px}.err{color:#ef4444}.ok{color:#22c55e}.inf{color:#3b82f6}
+.msg{padding:8px 0;text-align:center;font-size:12px;min-height:20px}.err{color:#ef4444}.ok{color:#22c55e}.inf{color:#3b82f6}
 .qr{text-align:center;padding:16px 0}.qr-img{width:160px;height:160px;margin:0 auto;border:2px solid #1e2a3a;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff}
 .qr-img img{width:100%;height:100%}.qr-stat{font-size:12px;margin-top:8px}
 .links{display:flex;justify-content:space-between;font-size:11px;margin-top:14px}
-.links span{color:#64748b;cursor:pointer}.links span:hover{color:#3b82f6}
-.btm{text-align:center;margin-top:16px;font-size:12px;color:#64748b;cursor:pointer}.btm:hover{color:#3b82f6}
+.links span{color:#6b7a8d;cursor:pointer}.links span:hover{color:#3b82f6}
+.btm{text-align:center;margin-top:16px;font-size:12px;color:#6b7a8d;cursor:pointer}.btm:hover{color:#3b82f6}
 .p{display:none}.p.show{display:block}
 .reg-flow{padding:10px 0}
-.reg-flow .hint{font-size:11px;color:#64748b;text-align:center;margin:8px 0}
+.reg-flow .hint{font-size:11px;color:#6b7a8d;text-align:center;margin:8px 0}
 @media(max-width:480px){.card{padding:24px 20px}}
-</style></head>
+</style>
+</head>
 <body>
 <div class="wrap"><div class="card" id="card">
   <div class="logo"><div class="li">🤖</div><div class="lt">工程管理智能体</div><div class="ls">EMA · 从"人管"到"智能体协管"</div></div>
 
   <!-- 账号登录 -->
   <div class="p show" id="p-login">
-    <div class="fg"><label>用户名</label><input id="lu" placeholder="输入用户名" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="fg"><label>密码</label><input id="lp" type="password" placeholder="输入密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="fg">
+      <label>用户名</label>
+      <input id="lu" placeholder="输入用户名" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="fg">
+      <label>密码</label>
+      <div class="pw-wrap">
+        <input id="lp" type="password" placeholder="输入密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        <span class="pw-toggle" onclick="togglePw('lp',this)">👁</span>
+      </div>
+    </div>
+    <div class="rem-row">
+      <label><input type="checkbox" id="lrem" checked> 记住用户名</label>
+      <label style="margin-left:12px"><input type="checkbox" id="lremp"> 记住密码</label>
+    </div>
+    <div style="text-align:right;margin-top:4px;font-size:11px;color:#6b7a8d;cursor:pointer" onclick="show('fp')">忘记密码？</div>
     <div id="ml" class="msg"></div>
-    <button class="btn btn-p" onclick="doLogin()">登 录</button>
-    <div class="links"><span onclick="show('reg')">注册账号</span><span onclick="show('fp')">忘记密码</span></div>
+    <button class="btn btn-p" id="lbtn" onclick="doLogin()">登 录</button>
+    <div class="links"><span onclick="show('reg')">注册账号</span><span onclick="show('wx')">📱 微信扫码</span></div>
   </div>
 
   <!-- 微信扫码 -->
   <div class="p" id="p-wx">
-    <div class="qr"><div class="qr-img" id="qr-box"><span style="color:#64748b;font-size:12px">生成中...</span></div><div id="qr-stat" class="qr-stat">请使用微信扫描二维码</div></div>
+    <div class="qr"><div class="qr-img" id="qr-box"><span style="color:#6b7a8d;font-size:12px">生成中...</span></div><div id="qr-stat" class="qr-stat">请使用微信扫描二维码</div></div>
     <div class="links"><span onclick="show('login')">← 返回账号登录</span></div>
   </div>
 
   <!-- 扫码注册 -->
   <div class="p" id="p-wxreg">
     <div style="text-align:center;font-size:24px;margin-bottom:12px">📱</div>
-    <div style="text-align:center;font-size:13px;color:#e2e8f0;margin-bottom:16px">首次扫码，请创建账号完成注册</div>
+    <div style="text-align:center;font-size:13px;color:#e8edf5;margin-bottom:16px">首次扫码，请创建账号完成注册</div>
     <div class="fg"><label>用户名</label><input id="wru" placeholder="至少3位，字母数字下划线"></div>
-    <div class="fg"><label>邮箱（选填）</label><input id="wre" placeholder="用于密码找回"></div>
-    <div class="fg"><label>密码</label><input id="wrp" type="password" placeholder="至少8位，含大小写字母和数字" onkeydown="if(event.key==='Enter')doWxReg()"></div>
+    <div class="fg"><label>邮箱（选填）</label><input id="wre" type="email" placeholder="用于密码找回"></div>
+    <div class="fg">
+      <label>密码</label>
+      <div class="pw-wrap">
+        <input id="wrp" type="password" placeholder="至少8位，含大小写字母和数字" onkeydown="if(event.key==='Enter')doWxReg()">
+        <span class="pw-toggle" onclick="togglePw('wrp',this)">👁</span>
+      </div>
+    </div>
     <div id="mw" class="msg"></div>
     <button class="btn btn-p" onclick="doWxReg()">注册并绑定微信</button>
     <div class="links"><span onclick="show('login')">← 返回登录</span></div>
@@ -63,8 +94,20 @@ body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh
   <div class="p" id="p-reg">
     <div class="fg"><label>用户名</label><input id="ru" placeholder="至少3位，字母数字下划线"></div>
     <div class="fg"><label>邮箱</label><input id="re" type="email" placeholder="用于密码找回"></div>
-    <div class="fg"><label>密码</label><input id="rp" type="password" placeholder="至少8位，含大小写字母和数字"></div>
-    <div class="fg"><label>确认密码</label><input id="rp2" type="password" placeholder="再次输入密码"></div>
+    <div class="fg">
+      <label>密码</label>
+      <div class="pw-wrap">
+        <input id="rp" type="password" placeholder="至少8位，含大小写字母和数字">
+        <span class="pw-toggle" onclick="togglePw('rp',this)">👁</span>
+      </div>
+    </div>
+    <div class="fg">
+      <label>确认密码</label>
+      <div class="pw-wrap">
+        <input id="rp2" type="password" placeholder="再次输入密码">
+        <span class="pw-toggle" onclick="togglePw('rp2',this)">👁</span>
+      </div>
+    </div>
     <div id="mr" class="msg"></div>
     <button class="btn btn-p" onclick="doReg()">注 册</button>
     <div class="links"><span onclick="show('login')">← 返回登录</span></div>
@@ -72,14 +115,40 @@ body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh
 
   <!-- 忘记密码 -->
   <div class="p" id="p-fp">
-    <div id="fp1"><div class="fg"><label>用户名</label><input id="fpu" placeholder="输入用户名"></div><div class="fg"><label>注册邮箱</label><input id="fpe" type="email" placeholder="输入注册邮箱"></div><div id="mf" class="msg"></div><button class="btn btn-p" onclick="doFP()">发送重置码</button></div>
-    <div id="fp2" style="display:none"><div class="fg"><label>重置码</label><input id="fpt" placeholder="收到的重置码"></div><div class="fg"><label>新密码</label><input id="fpn" type="password" placeholder="至少8位，含大小写字母和数字"></div><div class="fg"><label>确认新密码</label><input id="fpn2" type="password" placeholder="再次输入新密码"></div><div id="mf2" class="msg"></div><button class="btn btn-p" onclick="doReset()">重置密码</button></div>
+    <div id="fp1">
+      <div class="fg"><label>用户名</label><input id="fpu" placeholder="输入用户名"></div>
+      <div class="fg"><label>注册邮箱</label><input id="fpe" type="email" placeholder="输入注册邮箱"></div>
+      <div id="mf" class="msg"></div>
+      <button class="btn btn-p" onclick="doFP()">发送重置码</button>
+    </div>
+    <div id="fp2" style="display:none">
+      <div class="fg"><label>重置码</label><input id="fpt" placeholder="收到的重置码"></div>
+      <div class="fg">
+        <label>新密码</label>
+        <div class="pw-wrap">
+          <input id="fpn" type="password" placeholder="至少8位，含大小写字母和数字">
+          <span class="pw-toggle" onclick="togglePw('fpn',this)">👁</span>
+        </div>
+      </div>
+      <div class="fg">
+        <label>确认新密码</label>
+        <div class="pw-wrap">
+          <input id="fpn2" type="password" placeholder="再次输入新密码">
+          <span class="pw-toggle" onclick="togglePw('fpn2',this)">👁</span>
+        </div>
+      </div>
+      <div id="mf2" class="msg"></div>
+      <button class="btn btn-p" onclick="doReset()">重置密码</button>
+    </div>
     <div class="links"><span onclick="show('login')">← 返回登录</span></div>
   </div>
 
   <!-- 成功 -->
   <div class="p" id="p-ok">
-    <div style="text-align:center;padding:20px 0"><div style="font-size:48px;margin-bottom:12px">✅</div><div style="font-size:16px;font-weight:600;color:#e2e8f0;margin-bottom:4px">登录成功</div><div style="font-size:13px;color:#64748b;margin-bottom:16px" id="smsg"></div>
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:12px">✅</div>
+      <div style="font-size:16px;font-weight:600;color:#e8edf5;margin-bottom:4px">登录成功</div>
+      <div style="font-size:13px;color:#6b7a8d;margin-bottom:16px" id="smsg"></div>
       <button class="btn btn-p" onclick="go('app')">进入工作台</button>
       <button class="btn btn-o" onclick="go('admin')" id="ba" style="display:none">👑 Boss后台</button>
     </div>
@@ -88,9 +157,9 @@ body{background:linear-gradient(135deg,#0a0e14 0%,#1a1f2e 100%);min-height:100vh
   <div class="btm" onclick="show('wx')">📱 微信扫码登录</div>
 </div></div>
 <script>
-
 function $(id){return document.getElementById(id)}
 function M(id,t,c){var e=$(id);e.textContent=t;e.className='msg '+c}
+function togglePw(id,el){var i=$(id);if(i.type==='password'){i.type='text';el.textContent='🙈'}else{i.type='password';el.textContent='👁'}}
 
 var mode='login',token='',user={},isBoss=false,wxState='',poll=null;
 
@@ -102,17 +171,38 @@ function show(m){
   if(m==='wx') loadWx();
 }
 
+// Init saved username
+(function(){
+// Init saved username and password (if remember password was set)
+(function(){
+  try{
+    var saved=localStorage.getItem('ema_rem_user');
+    if(saved){
+      var parts=saved.split('::');
+      if(parts[0])$'lu'.value=parts[0];
+      // If we have stored password and remember password checked, fill it
+      if(parts[1] && $'lremp' && $'lremp'.checked){
+        $'lp'.value=parts[1];
+        $'lremp'.checked=true;
+      }
+    }
+  }catch(e){}
+})();
+
 // ── 登录 ──
 async function doLogin(){
   var u=$('lu').value.trim(),p=$('lp').value.trim();
   if(!u||!p){M('ml','请输入用户名和密码','err');return}
-  M('ml','登录中...','inf');
+  $('lbtn').disabled=true;M('ml','登录中...','inf');
   try{
     var r=await fetch((window.location.protocol==='https:'?'':'http://127.0.0.1:6188')+'/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p)});
     var d=await r.json();
-    if(d.success){setSession(d.access_token,d.user||{},d.is_boss);show('ok');}
-    else M('ml',d.detail||'用户名或密码错误','err');
-  }catch(e){M('ml','网络错误','err')}
+    $('lbtn').disabled=false;
+    if(d.success){
+      if($('lrem').checked){try{localStorage.setItem('ema_rem_user',u+'::')}catch(e){}}
+      setSession(d.access_token,d.user||{},d.is_boss);show('ok');
+    }else M('ml',d.detail||'用户名或密码错误','err');
+  }catch(e){$('lbtn').disabled=false;M('ml','网络错误','err')}
 }
 
 // ── 微信扫码 ──
@@ -124,7 +214,7 @@ async function loadWx(){
       wxState=d.qr.state;
       var q=d.qr.qr_base64||'';
       $('qr-box').innerHTML=q?'<img src="'+q+'">':'<span style="font-size:60px">📱</span>';
-      $('qr-stat').textContent='请使用微信扫描二维码';$('qr-stat').style.color='#64748b';
+      $('qr-stat').textContent='请使用微信扫描二维码';$('qr-stat').style.color='#6b7a8d';
       pollWx();
     }else{$('qr-box').innerHTML='<span style="color:#ef4444;font-size:12px">二维码生成失败</span>'}
   }catch(e){$('qr-box').innerHTML='<span style="color:#ef4444;font-size:12px">服务不可用</span>'}
@@ -210,7 +300,8 @@ async function doReset(){
 
 // ── 工具 ──
 function setSession(t,u,b){
-  token=t;user=u||{};isBoss=b||false;try{localStorage.setItem('ema_token',t);localStorage.setItem('ema_user',JSON.stringify({isBoss:b,username:u.username||''}))}catch(e){}
+  token=t;user=u||{};isBoss=b||false;
+  try{localStorage.setItem('ema_token',t);localStorage.setItem('ema_user',JSON.stringify({isBoss:b,username:u.username||''}))}catch(e){}
   $('smsg').textContent=u.username||u.tenant_name||'欢迎';
   $('ba').style.display=b?'block':'none';
 }
