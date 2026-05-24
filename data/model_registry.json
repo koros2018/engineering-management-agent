@@ -105,6 +105,36 @@
         "cloud"
       ],
       "description": "DeepSeek V4 Pro via NVIDIA 免费额度"
+    },
+    {
+      "id": "Nvidia/deepseek-v4-pro",
+      "name": "deepseek-v4-pro",
+      "provider": "nvidia",
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "api_key": "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",
+      "model_name": "Nvidia/deepseek-v4-pro",
+      "context_window": 128000,
+      "reasoning": false,
+      "cost_input": 0.0,
+      "cost_output": 0.0,
+      "enabled": true,
+      "tags": [],
+      "description": ""
+    },
+    {
+      "id": "nvidia/minimax-m2.7",
+      "name": "nvidia/minimax-m2.7",
+      "provider": "nvidia",
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "api_key": "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",
+      "model_name": "nvidia/minimax-m2.7",
+      "context_window": 128000,
+      "reasoning": false,
+      "cost_input": 0.0,
+      "cost_output": 0.0,
+      "enabled": true,
+      "tags": [],
+      "description": ""
     }
   ]
 }
