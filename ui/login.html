@@ -1,47 +1,138 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>EMA 登录</title>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>工程管理智能体 · EMA</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:linear-gradient(135deg,#070b11 0%,#0f1a28 100%);min-height:100vh;display:flex;font-family:-apple-system,'Segoe UI',sans-serif}
-.wrap{max-width:420px;width:100%;margin:auto;padding:0 16px}
-.card{background:#0f1923;border:1px solid #1e2a3a;border-radius:16px;padding:36px 32px;box-shadow:0 8px 40px rgba(0,0,0,.6)}
-.logo{text-align:center;margin-bottom:28px}.li{font-size:48px;margin-bottom:8px}
-.lt{font-size:22px;font-weight:700;color:#e8edf5}.ls{font-size:12px;color:#6b7a8d;margin-top:4px}
-.fg{margin-bottom:16px}.fg label{display:block;font-size:11px;color:#6b7a8d;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
-.pw-wrap{display:flex;align-items:center;background:#070b11;border:1px solid #1e2a3a;border-radius:8px;transition:border-color .15s}
-.pw-wrap:focus-within{border-color:#3b82f6}
-.pw-wrap input{flex:1;padding:10px 12px;background:transparent;border:none;font-size:14px;color:#e8edf5;outline:none}
-.pw-wrap input::placeholder{color:#4a5568}
-.pw-toggle{padding:0 12px;color:#6b7a8d;font-size:16px;cursor:pointer;flex-shrink:0;user-select:none;line-height:44px}
-.pw-toggle:hover{color:#3b82f6}
-.fg input[type="text"],.fg input[type="email"]{width:100%;padding:10px 12px;background:#070b11;border:1px solid #1e2a3a;border-radius:8px;font-size:14px;color:#e8edf5;outline:none}
-.fg input[type="text"]:focus,.fg input[type="email"]:focus{border-color:#3b82f6}
-.rem-row{display:flex;align-items:center;justify-content:space-between;margin:8px 0 4px;font-size:12px}
-.rem-row label{color:#6b7a8d;cursor:pointer;display:flex;align-items:center;gap:6px}
+body{
+  background:linear-gradient(160deg,#060a12 0%,#0c1624 40%,#0f1f30 100%);
+  min-height:100vh;display:flex;
+  font-family:-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  position:relative;overflow-x:hidden
+}
+/* 蓝图网格背景 */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(59,130,246,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(59,130,246,.04) 1px,transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;z-index:0
+}
+body::after{
+  content:'';position:fixed;top:-50%;left:-50%;
+  width:200%;height:200%;
+  background:radial-gradient(ellipse at 30% 40%,rgba(59,130,246,.06) 0%,transparent 50%),
+             radial-gradient(ellipse at 70% 60%,rgba(99,102,241,.04) 0%,transparent 50%);
+  pointer-events:none;z-index:0
+}
+.wrap{max-width:420px;width:100%;margin:auto;padding:24px 16px;position:relative;z-index:1}
+
+/* 卡片 */
+.card{
+  background:linear-gradient(160deg,#0f1a28 0%,#0a121e 100%);
+  border:1px solid rgba(59,130,246,.15);
+  border-radius:20px;padding:40px 32px 32px;
+  box-shadow:0 8px 60px rgba(0,0,0,.5),0 0 0 1px rgba(59,130,246,.05) inset;
+  animation:fadeUp .5s ease-out
+}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:none}}
+
+/* Logo区域 —— SVG EMA徽标 */
+.logo{text-align:center;margin-bottom:28px}
+.logo-svg{width:56px;height:56px;margin:0 auto 10px;position:relative}
+.logo-svg svg{width:100%;height:100%}
+.lt{font-size:22px;font-weight:700;color:#e6edf3;letter-spacing:1.5px}
+.lt span{color:#60a5fa}
+.ls{font-size:11px;color:#6b7a8d;margin-top:6px;letter-spacing:2px;text-transform:uppercase}
+.ls em{font-style:normal;color:#3b82f6;font-weight:600}
+.ls sub{font-size:9px;vertical-align:sub;color:#8b949e}
+
+/* 表单 */
+.fg{margin-bottom:18px}
+.fg label{display:block;font-size:11px;color:#8b949e;margin-bottom:6px;font-weight:500;letter-spacing:.5px}
+.fg input{width:100%;padding:11px 14px;background:#070c14;border:1px solid #1a2740;border-radius:10px;font-size:14px;color:#e8edf5;outline:none;transition:all .2s}
+.fg input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.12);background:#0a111c}
+.fg input::placeholder{color:#3a4a62}
+.pw-wrap{display:flex;align-items:center;background:#070c14;border:1px solid #1a2740;border-radius:10px;transition:all .2s}
+.pw-wrap:focus-within{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.12);background:#0a111c}
+.pw-wrap input{flex:1;padding:11px 14px;background:transparent;border:none;font-size:14px;color:#e8edf5;outline:none}
+.pw-wrap input::placeholder{color:#3a4a62}
+.pw-toggle{padding:0 14px;color:#6b7a8d;font-size:16px;cursor:pointer;flex-shrink:0;user-select:none;line-height:46px;transition:color .15s}
+.pw-toggle:hover{color:#60a5fa}
+
+.rem-row{display:flex;align-items:center;justify-content:space-between;margin:6px 0 10px;font-size:12px}
+.rem-row label{color:#8b949e;cursor:pointer;display:flex;align-items:center;gap:6px;transition:color .15s}
+.rem-row label:hover{color:#e8edf3}
 .rem-row input[type="checkbox"]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
-.btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
-.btn-p{background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;margin-top:8px}
-.btn-p:hover:not(:disabled){opacity:.9;transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.4)}
-.btn-p:disabled{opacity:.5;cursor:not-allowed}
-.btn-o{background:transparent;border:1px solid #3b82f6;color:#3b82f6;margin-top:12px}
-.btn-o:hover{background:rgba(59,130,246,.1)}
-.msg{padding:8px 0;text-align:center;font-size:12px;min-height:20px}.err{color:#ef4444}.ok{color:#22c55e}.inf{color:#3b82f6}
-.qr{text-align:center;padding:16px 0}.qr-img{width:160px;height:160px;margin:0 auto;border:2px solid #1e2a3a;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff}
-.qr-img img{width:100%;height:100%}.qr-stat{font-size:12px;margin-top:8px}
-.links{display:flex;justify-content:space-between;font-size:11px;margin-top:14px}
-.links span{color:#6b7a8d;cursor:pointer}.links span:hover{color:#3b82f6}
-.btm{text-align:center;margin-top:16px;font-size:12px;color:#6b7a8d;cursor:pointer}.btm:hover{color:#3b82f6}
+
+.btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.btn-p{background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;margin-top:6px}
+.btn-p:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,.35)}
+.btn-p:active:not(:disabled){transform:translateY(0)}
+.btn-p:disabled{opacity:.4;cursor:not-allowed}
+.btn-o{background:transparent;border:1px solid rgba(59,130,246,.3);color:#60a5fa;margin-top:10px}
+.btn-o:hover{background:rgba(59,130,246,.08);border-color:#3b82f6}
+
+.msg{padding:6px 0;text-align:center;font-size:12px;min-height:22px;transition:all .15s}
+.err{color:#f87171}.ok{color:#34d399}.inf{color:#60a5fa}
+
+.qr{text-align:center;padding:12px 0}.qr-img{width:160px;height:160px;margin:0 auto;border:2px solid #1a2740;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff}
+.qr-img img{width:100%;height:100%}.qr-stat{font-size:12px;margin-top:8px;color:#8b949e}
+
+.links{display:flex;justify-content:space-between;font-size:11px;margin-top:16px}
+.links span{color:#6b7a8d;cursor:pointer;transition:color .15s;padding:2px 0}
+.links span:hover{color:#60a5fa}
+
+/* 分隔线 */
+.divider{display:flex;align-items:center;margin:18px 0 4px;gap:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,#1a2740,transparent)}
+.divider span{font-size:11px;color:#4a5a72;white-space:nowrap}
+
+/* 底部切换 */
+.btm{text-align:center;margin-top:16px;font-size:12px;color:#5a6a82;cursor:pointer;transition:color .15s}
+.btm:hover{color:#60a5fa}
+
 .p{display:none}.p.show{display:block}
 .reg-flow{padding:10px 0}
 .reg-flow .hint{font-size:11px;color:#6b7a8d;text-align:center;margin:8px 0}
-@media(max-width:480px){.card{padding:24px 20px}}
+
+/* 加载spinner */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .5s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 响应式 */
+@media(max-width:480px){.card{padding:28px 20px 24px}}
 </style>
 </head>
 <body>
 <div class="wrap"><div class="card" id="card">
-  <div class="logo"><div class="li">🤖</div><div class="lt">工程管理智能体</div><div class="ls">EMA · 从"人管"到"智能体协管"</div></div>
+  <!-- EMA品牌Logo -->
+  <div class="logo">
+    <div class="logo-svg">
+      <svg viewBox="0 0 64 64" fill="none">
+        <!-- 外环 -->
+        <circle cx="32" cy="32" r="30" stroke="url(#g1)" stroke-width="1.5" opacity=".6"/>
+        <!-- E - 左上角 -->
+        <path d="M18 22h12v3H22v4h7v3h-7v5h9v3H18V22z" fill="url(#g2)"/>
+        <!-- M - 中间 -->
+        <path d="M31 42L31 30l6 7 6-7v12" stroke="url(#g2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- A - 右下 -->
+        <path d="M45 25l-5 12h3l1-2.5h6l1 2.5h3l-5-12h-4zm1.5 7h-3l1.5-4.5L47.5 32z" fill="url(#g2)"/>
+        <!-- 六边形装饰点 -->
+        <circle cx="18" cy="46" r="2" fill="#3b82f6" opacity=".3"/>
+        <circle cx="48" cy="20" r="1.5" fill="#60a5fa" opacity=".2"/>
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="64" y2="64"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#6366f1"/></linearGradient>
+          <linearGradient id="g2" x1="18" y1="22" x2="48" y2="42"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#818cf8"/></linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div class="lt"><span>E</span>MA · 工程管理智能体</div>
+    <div class="ls">Engineering <em>Management</em> Agent <sub>v1.3</sub></div>
+  </div>
 
   <!-- 账号登录 -->
   <div class="p show" id="p-login">
@@ -58,24 +149,35 @@ body{background:linear-gradient(135deg,#070b11 0%,#0f1a28 100%);min-height:100vh
     </div>
     <div class="rem-row">
       <label><input type="checkbox" id="lrem" checked> 记住用户名</label>
-      <label style="margin-left:12px"><input type="checkbox" id="lremp"> 记住密码</label>
+      <label><input type="checkbox" id="lremp"> 记住密码</label>
     </div>
-    <div style="text-align:right;margin-top:4px;font-size:11px;color:#6b7a8d;cursor:pointer" onclick="show('fp')">忘记密码？</div>
+    <div style="text-align:right;margin-top:2px;font-size:11px;color:#5a6a82;cursor:pointer;transition:color .15s" onclick="show('fp')" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#5a6a82'">忘记密码？</div>
     <div id="ml" class="msg"></div>
     <button class="btn btn-p" id="lbtn" onclick="doLogin()">登 录</button>
-    <div class="links"><span onclick="show('reg')">注册账号</span><span onclick="show('wx')">📱 微信扫码</span></div>
+    <div class="divider"><span>其他方式</span></div>
+    <div class="links" style="justify-content:center;gap:24px">
+      <span onclick="show('reg')">📝 注册账号</span>
+      <span onclick="show('wx')">📱 微信扫码</span>
+    </div>
   </div>
 
   <!-- 微信扫码 -->
   <div class="p" id="p-wx">
-    <div class="qr"><div class="qr-img" id="qr-box"><span style="color:#6b7a8d;font-size:12px">生成中...</span></div><div id="qr-stat" class="qr-stat">请使用微信扫描二维码</div></div>
-    <div class="links"><span onclick="show('login')">← 返回账号登录</span></div>
+    <div style="text-align:center;margin-bottom:8px">
+      <div style="font-size:32px;margin-bottom:4px">📱</div>
+      <div style="font-size:14px;color:#e8edf3;font-weight:500">微信扫码登录</div>
+    </div>
+    <div class="qr">
+      <div class="qr-img" id="qr-box"><span style="color:#6b7a8d;font-size:12px">生成中...</span></div>
+      <div id="qr-stat" class="qr-stat">请使用微信扫描二维码</div>
+    </div>
+    <div class="links" style="justify-content:center"><span onclick="show('login')">← 返回账号登录</span></div>
   </div>
 
   <!-- 扫码注册 -->
   <div class="p" id="p-wxreg">
-    <div style="text-align:center;font-size:24px;margin-bottom:12px">📱</div>
-    <div style="text-align:center;font-size:13px;color:#e8edf5;margin-bottom:16px">首次扫码，请创建账号完成注册</div>
+    <div style="text-align:center;font-size:32px;margin-bottom:8px">✋</div>
+    <div style="text-align:center;font-size:14px;color:#e8edf3;font-weight:500;margin-bottom:16px">首次扫码，创建账号完成注册</div>
     <div class="fg"><label>用户名</label><input id="wru" placeholder="至少3位，字母数字下划线"></div>
     <div class="fg"><label>邮箱（选填）</label><input id="wre" type="email" placeholder="用于密码找回"></div>
     <div class="fg">
@@ -87,11 +189,13 @@ body{background:linear-gradient(135deg,#070b11 0%,#0f1a28 100%);min-height:100vh
     </div>
     <div id="mw" class="msg"></div>
     <button class="btn btn-p" onclick="doWxReg()">注册并绑定微信</button>
-    <div class="links"><span onclick="show('login')">← 返回登录</span></div>
+    <div class="links" style="justify-content:center"><span onclick="show('login')">← 返回登录</span></div>
   </div>
 
   <!-- 注册 -->
   <div class="p" id="p-reg">
+    <div style="text-align:center;font-size:32px;margin-bottom:8px">📝</div>
+    <div style="text-align:center;font-size:14px;color:#e8edf3;font-weight:500;margin-bottom:16px">注册EMA账号</div>
     <div class="fg"><label>用户名</label><input id="ru" placeholder="至少3位，字母数字下划线"></div>
     <div class="fg"><label>邮箱</label><input id="re" type="email" placeholder="用于密码找回"></div>
     <div class="fg">
@@ -110,12 +214,14 @@ body{background:linear-gradient(135deg,#070b11 0%,#0f1a28 100%);min-height:100vh
     </div>
     <div id="mr" class="msg"></div>
     <button class="btn btn-p" onclick="doReg()">注 册</button>
-    <div class="links"><span onclick="show('login')">← 返回登录</span></div>
+    <div class="links" style="justify-content:center"><span onclick="show('login')">← 返回登录</span></div>
   </div>
 
   <!-- 忘记密码 -->
   <div class="p" id="p-fp">
     <div id="fp1">
+      <div style="text-align:center;font-size:32px;margin-bottom:8px">🔐</div>
+      <div style="text-align:center;font-size:14px;color:#e8edf3;font-weight:500;margin-bottom:16px">重置密码</div>
       <div class="fg"><label>用户名</label><input id="fpu" placeholder="输入用户名"></div>
       <div class="fg"><label>注册邮箱</label><input id="fpe" type="email" placeholder="输入注册邮箱"></div>
       <div id="mf" class="msg"></div>
@@ -140,25 +246,27 @@ body{background:linear-gradient(135deg,#070b11 0%,#0f1a28 100%);min-height:100vh
       <div id="mf2" class="msg"></div>
       <button class="btn btn-p" onclick="doReset()">重置密码</button>
     </div>
-    <div class="links"><span onclick="show('login')">← 返回登录</span></div>
+    <div class="links" style="justify-content:center"><span onclick="show('login')">← 返回登录</span></div>
   </div>
 
   <!-- 成功 -->
   <div class="p" id="p-ok">
     <div style="text-align:center;padding:20px 0">
       <div style="font-size:48px;margin-bottom:12px">✅</div>
-      <div style="font-size:16px;font-weight:600;color:#e8edf5;margin-bottom:4px">登录成功</div>
-      <div style="font-size:13px;color:#6b7a8d;margin-bottom:16px" id="smsg"></div>
+      <div style="font-size:16px;font-weight:600;color:#e8edf5;margin-bottom:8px">登录成功</div>
+      <div style="font-size:13px;color:#8b949e;margin-bottom:20px" id="smsg"></div>
       <button class="btn btn-p" onclick="go('app')">进入工作台</button>
-      <button class="btn btn-o" onclick="go('admin')" id="ba" style="display:none">👑 Boss后台</button>
+      <button class="btn btn-o" id="ba" style="display:none" onclick="go('admin')">👑 Boss后台</button>
     </div>
   </div>
 
   <div class="btm" onclick="show('wx')">📱 微信扫码登录</div>
 </div></div>
+
 <script>
 function $(id){return document.getElementById(id)}
 function M(id,t,c){var e=$(id);e.textContent=t;e.className='msg '+c}
+function setBtnLoading(btn,loading){if(loading){btn.disabled=true;btn.innerHTML='<span class="spinner"></span>处理中...'}else{btn.disabled=false;btn.textContent=btn.dataset.orig||'登 录'}}
 function togglePw(id,el){var i=$(id);if(i.type==='password'){i.type='text';el.textContent='🙈'}else{i.type='password';el.textContent='👁'}}
 
 var mode='login',token='',user={},isBoss=false,wxState='',poll=null;
@@ -173,141 +281,131 @@ function show(m){
 
 // Init saved username
 (function(){
-// Init saved username and password (if remember password was set)
-(function(){
   try{
     var saved=localStorage.getItem('ema_rem_user');
-    if(saved){
-      var parts=saved.split('::');
-      if(parts[0])$'lu'.value=parts[0];
-      // If we have stored password and remember password checked, fill it
-      if(parts[1] && $'lremp' && $'lremp'.checked){
-        $'lp'.value=parts[1];
-        $'lremp'.checked=true;
-      }
-    }
+    var remPwd=localStorage.getItem('ema_rem_pwd');
+    if(saved&&saved!=='""'){$('lu').value=JSON.parse(saved);$('lrem').checked=true}
+    if(remPwd&&remPwd!=='""'){$('lp').value=JSON.parse(remPwd);$('lremp').checked=true}
   }catch(e){}
 })();
 
-// ── 登录 ──
-async function doLogin(){
-  var u=$('lu').value.trim(),p=$('lp').value.trim();
+function savePref(){
+  try{
+    if($('lrem').checked){localStorage.setItem('ema_rem_user',JSON.stringify($('lu').value))}
+    else{localStorage.removeItem('ema_rem_user')}
+    if($('lremp').checked){localStorage.setItem('ema_rem_pwd',JSON.stringify($('lp').value))}
+    else{localStorage.removeItem('ema_rem_pwd')}
+  }catch(e){}
+}
+
+function doLogin(){
+  var u=$('lu').value.trim(),p=$('lp').value;
   if(!u||!p){M('ml','请输入用户名和密码','err');return}
-  $('lbtn').disabled=true;M('ml','登录中...','inf');
-  try{
-    var r=await fetch((window.location.protocol==='https:'?'':'http://127.0.0.1:6188')+'/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p)});
-    var d=await r.json();
-    $('lbtn').disabled=false;
-    if(d.success){
-      if($('lrem').checked){try{localStorage.setItem('ema_rem_user',u+'::')}catch(e){}}
-      setSession(d.access_token,d.user||{},d.is_boss);show('ok');
-    }else M('ml',d.detail||'用户名或密码错误','err');
-  }catch(e){$('lbtn').disabled=false;M('ml','网络错误','err')}
+  M('ml','','');
+  var btn=$('lbtn');btn.dataset.orig=btn.textContent;setBtnLoading(btn,true);
+  var b=new FormData();b.append('username',u);b.append('password',p);
+  fetch('/api/v1/auth/login',{method:'POST',body:b})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    setBtnLoading(btn,false);
+    if(d.success||d.data){
+      token=d.data.token||d.token;
+      user=d.data.user||d.user;
+      isBoss=user.role==='super_admin'||user.role==='boss';
+      savePref();
+      M('ml','登录成功，跳转中...','ok');
+      setTimeout(function(){show('ok');$('smsg').textContent='欢迎回来，'+user.display_name+'！';if(isBoss)$('ba').style.display=''},300);
+    }else{M('ml',d.detail||d.message||'登录失败','err')}
+  })
+  .catch(function(e){setBtnLoading(btn,false);M('ml','网络错误：'+e.message,'err')});
 }
 
-// ── 微信扫码 ──
-async function loadWx(){
-  clearPoll();
-  try{
-    var r=await fetch((window.location.protocol==='https:'?'':'http://127.0.0.1:6188')+'/api/v1/auth/wechat-qr',{method:'POST'});var d=await r.json();
-    if(d.success&&d.qr){
-      wxState=d.qr.state;
-      var q=d.qr.qr_base64||'';
-      $('qr-box').innerHTML=q?'<img src="'+q+'">':'<span style="font-size:60px">📱</span>';
-      $('qr-stat').textContent='请使用微信扫描二维码';$('qr-stat').style.color='#6b7a8d';
-      pollWx();
-    }else{$('qr-box').innerHTML='<span style="color:#ef4444;font-size:12px">二维码生成失败</span>'}
-  }catch(e){$('qr-box').innerHTML='<span style="color:#ef4444;font-size:12px">服务不可用</span>'}
+function doReg(){
+  var u=$('ru').value.trim(),e=$('re').value.trim(),p=$('rp').value,p2=$('rp2').value;
+  if(!u||u.length<3){M('mr','用户名至少3位','err');return}
+  if(p!==p2){M('mr','两次密码不一致','err');return}
+  M('mr','','');
+  var b=new FormData();b.append('username',u);b.append('email',e);b.append('password',p);
+  fetch('/api/v1/auth/register',{method:'POST',body:b})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if(d.success||d.data){M('mr','注册成功！请登录','ok');setTimeout(function(){show('login');$('lu').value=u},1500)}
+    else{M('mr',d.detail||d.message||'注册失败','err')}
+  })
+  .catch(function(e){M('mr','网络错误','err')});
 }
 
-function pollWx(){
-  clearPoll();
-  poll=setInterval(function(){
-    fetch((window.location.protocol==='https:'?'':'http://127.0.0.1:6188')+'/api/v1/auth/wechat-poll?state='+encodeURIComponent(wxState))
-    .then(function(r){return r.json()})
-    .then(function(d){
-      if(d.status==='scanned'){ $('qr-stat').textContent='已扫码，确认中...';}
-      if(d.status==='confirmed'){
-        clearPoll();$('qr-stat').textContent='✅ 登录成功！';$('qr-box').innerHTML='<span style="font-size:60px">✅</span>';
-        setSession(d.access_token,d.user||{},d.is_boss);setTimeout(function(){show('ok')},800);
-      }
-      if(d.status==='need_register'){
-        clearPoll();$('qr-stat').textContent='首次使用，请注册账号';
-        show('wxreg');wxState=d.state;
-      }
-      if(d.status==='expired'){clearPoll();$('qr-stat').textContent='过期，点击刷新';$('qr-box').style.cursor='pointer';$('qr-box').onclick=function(){loadWx();$('qr-box').onclick=null};}
-    }).catch(function(){});
-  },2000);
+function doFP(){
+  var u=$('fpu').value.trim(),e=$('fpe').value.trim();
+  if(!u||!e){M('mf','请填写用户名和邮箱','err');return}
+  M('mf','','');
+  var b=new FormData();b.append('username',u);b.append('email',e);
+  fetch('/api/v1/auth/forgot-password',{method:'POST',body:b})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if(d.success||d.data){M('mf','重置码已发送到邮箱，请查收','ok');$('fp1').style.display='none';$('fp2').style.display='block'}
+    else{M('mf',d.detail||d.message||'发送失败','err')}
+  })
+  .catch(function(e){M('mf','网络错误','err')});
+}
+
+function doReset(){
+  var t=$('fpt').value.trim(),p=$('fpn').value,p2=$('fpn2').value;
+  if(!t){M('mf2','请输入重置码','err');return}
+  if(p!==p2){M('mf2','两次密码不一致','err');return}
+  M('mf2','','');
+  var b=new FormData();b.append('token',t);b.append('password',p);
+  fetch('/api/v1/auth/reset-password',{method:'POST',body:b})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if(d.success||d.data){M('mf2','密码已重置，请登录','ok');setTimeout(function(){show('login')},1500)}
+    else{M('mf2',d.detail||d.message||'重置失败','err')}
+  })
+  .catch(function(e){M('mf2','网络错误','err')});
+}
+
+function loadWx(){
+  fetch('/api/v1/auth/wechat-qr',{method:'POST'})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if(d.success||d.data){
+      wxState=d.data.state||d.state;
+      var url=(d.data.qr||d.qr);
+      $('qr-box').innerHTML='<img src="'+url+'" alt="微信二维码">';
+      $('qr-stat').textContent='请使用微信扫描二维码';
+      poll=setInterval(function(){
+        fetch('/api/v1/auth/wechat-poll?state='+wxState)
+        .then(function(r){return r.json()}).then(function(d){
+          if(d.status==='scanned'){$('qr-stat').textContent='✅ 已扫描，请在手机上确认'}
+          else if(d.status==='confirmed'||d.success){
+            clearInterval(poll);$('qr-stat').textContent='✅ 登录成功';
+            token=d.data.token||d.token;user=d.data.user||d.user;
+            isBoss=user.role==='super_admin'||user.role==='boss';
+            setTimeout(function(){show('ok');$('smsg').textContent='欢迎回来，'+user.display_name+'！';if(isBoss)$('ba').style.display=''},300)
+          }
+        }).catch(function(){})
+      },2000)
+    }else{$('qr-box').innerHTML='<span style="color:red;font-size:12px">加载失败</span>'}
+  })
+  .catch(function(){$('qr-box').innerHTML='<span style="color:red;font-size:12px">加载失败</span>'});
+}
+
+function doWxReg(){
+  var u=$('wru').value.trim(),e=$('wre').value.trim(),p=$('wrp').value;
+  if(!u||u.length<3){M('mw','用户名至少3位','err');return}
+  M('mw','','');
+  var b=new FormData();b.append('username',u);b.append('email',e);b.append('password',p);b.append('state',wxState);
+  fetch('/api/v1/auth/wechat-register',{method:'POST',body:b})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if(d.success||d.data){M('mw','注册成功！','ok');setTimeout(function(){show('login')},1500)}
+    else{M('mw',d.detail||d.message||'注册失败','err')}
+  })
+  .catch(function(e){M('mw','网络错误','err')});
 }
 
 function clearPoll(){if(poll){clearInterval(poll);poll=null}}
-
-// ── 扫码注册绑定 ──
-async function doWxReg(){
-  var u=$('wru').value.trim(),e=$('wre').value.trim(),p=$('wrp').value.trim();
-  if(!u||!p){M('mw','请输入用户名和密码','err');return}
-  if(!/^[a-zA-Z0-9_]{3,}$/.test(u)){M('mw','用户名至少3位，仅字母数字下划线','err');return}
-  if(p.length<8||!/[a-z]/.test(p)||!/[A-Z]/.test(p)||!/\d/.test(p)){M('mw','密码需8位+大小写+数字','err');return}
-  M('mw','注册中...','inf');
-  try{
-    var r=await fetch((window.location.protocol==='https:'?'':'http://127.0.0.1:6188')+'/api/v1/auth/wechat-register',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:'state='+encodeURIComponent(wxState)+'&username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p)+'&email='+encodeURIComponent(e)});
-    var d=await r.json();
-    if(d.success){M('mw',d.message||'注册成功！','ok');setSession(d.access_token,d.user||{},false);setTimeout(function(){show('ok')},800);}
-    else M('mw',d.detail||d.error||'注册失败','err');
-  }catch(e){M('mw','网络错误','err')}
-}
-
-// ── 账号注册 ──
-async function doReg(){
-  var u=$('ru').value.trim(),e=$('re').value.trim(),p=$('rp').value,p2=$('rp2').value;
-  if(!u||!e||!p){M('mr','请填写所有字段','err');return}
-  if(p!==p2){M('mr','两次密码不一致','err');return}
-  if(p.length<8||!/[a-z]/.test(p)||!/[A-Z]/.test(p)||!/\d/.test(p)){M('mr','密码需8位+大小写+数字','err');return}
-  M('mr','注册中...','inf');
-  try{
-    var r=await fetch((window.location.protocol==='https:'?'':'http://127.0.0.1:6188')+'/api/v1/auth/register',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p)+'&email='+encodeURIComponent(e)});
-    var d=await r.json();
-    if(d.success){M('mr',(d.message||'注册成功')+'。可前往微信扫码绑定，以后直接扫码登录。','ok');setSession(d.user.access_token,d.user,false);setTimeout(function(){show('ok')},800);}
-    else M('mr',d.detail||'注册失败','err');
-  }catch(e){M('mr','网络错误','err')}
-}
-
-// ── 忘记密码 ──
-async function doFP(){
-  var u=$('fpu').value.trim(),e=$('fpe').value.trim();
-  if(!u||!e){M('mf','请输入用户名和邮箱','err');return}
-  M('mf','发送中...','inf');
-  try{
-    var r=await fetch((window.location.protocol==='https:'?'':'http://127.0.0.1:6188')+'/api/v1/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'username='+encodeURIComponent(u)+'&email='+encodeURIComponent(e)});
-    var d=await r.json();
-    if(d.success){M('mf',d.message,'ok');$('fpt').value=d.token||'';$('fp1').style.display='none';$('fp2').style.display='block'}
-    else M('mf',d.detail||'请求失败','err');
-  }catch(e){M('mf','网络错误','err')}
-}
-async function doReset(){
-  var t=$('fpt').value.trim(),p=$('fpn').value,p2=$('fpn2').value;
-  if(!t||!p){M('mf2','请输入重置码和新密码','err');return}
-  if(p!==p2){M('mf2','两次密码不一致','err');return}
-  M('mf2','重置中...','inf');
-  try{
-    var r=await fetch((window.location.protocol==='https:'?'':'http://127.0.0.1:6188')+'/api/v1/auth/reset-password',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'token='+encodeURIComponent(t)+'&new_password='+encodeURIComponent(p)});
-    var d=await r.json();
-    if(d.success){M('mf2','密码重置成功！','ok');setTimeout(function(){show('login')},1500)}
-    else M('mf2',d.detail||'重置失败','err');
-  }catch(e){M('mf2','网络错误','err')}
-}
-
-// ── 工具 ──
-function setSession(t,u,b){
-  token=t;user=u||{};isBoss=b||false;
-  try{localStorage.setItem('ema_token',t);localStorage.setItem('ema_user',JSON.stringify({isBoss:b,username:u.username||''}))}catch(e){}
-  $('smsg').textContent=u.username||u.tenant_name||'欢迎';
-  $('ba').style.display=b?'block':'none';
-}
-function go(w){
-  if(w==='admin') window.location.href='/ui/admin.html?token='+encodeURIComponent(token);
-  else window.location.href='/ui/index.html?token='+encodeURIComponent(token);
-}
-show('login');
-</script></body></html>
+function go(p){window.location.href=(p==='admin')?'admin.html':'/'}
+</script>
+</body>
+</html>

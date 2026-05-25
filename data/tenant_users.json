@@ -58,5 +58,11 @@
     "tenant_id": "tenant_9d6c50854a9e",
     "role": "tenant_admin",
     "joined_at": "2026-05-20T13:44:44.726920"
+  },
+  "user_17766a6cc05c6193": {
+    "username": "test_admin",
+    "role": "super_admin",
+    "tenant_id": "root",
+    "display_name": "测试管理员"
   }
 }

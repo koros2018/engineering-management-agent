@@ -743,16 +743,11 @@ createApp({setup(){
   async function loadAlerts(){
     alertsLoading.value = true;
     try{
-      const r=await fetch(API+'/api/v1/agent/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({message:'检查预警',task_type:'manager',file_path:''})});
+      const r=await fetch(API+'/api/v1/admin/alerts',{headers:{'Authorization':'Bearer '+token},timeout:10000});
       const d=await r.json();
-      const o=d.output||d;
-      alerts.value=(o?.alert_center||o||{}).alerts||[];
+      alerts.value=d?.alerts||[];
     }catch(e){
-      alerts.value=[
-        {level:'warning',msg:'租户"测试用户A"免费套餐用量已达80%',count:3},
-        {level:'info',msg:'本月新增2个企业版租户，转化率提升15%',count:1},
-        {level:'warning',msg:'customer_service Agent 使用率偏低',count:2},
-      ];
+      alerts.value=[];
     }
     alertsLoading.value = false;
   }
@@ -760,17 +755,11 @@ createApp({setup(){
   async function genReport(){
     reportLoading.value = true;
     try{
-      const r=await fetch(API+'/api/v1/agent/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({message:'生成周报',task_type:'manager',file_path:''})});
+      const r=await fetch(API+'/api/v1/admin/report',{headers:{'Authorization':'Bearer '+token},timeout:10000});
       const d=await r.json();
-      report.value=(d.output||d)?.report||{sections:[]};
+      report.value=d?.report||{sections:[]};
     }catch(e){
-      report.value={sections:[
-        {name:'📊 本周运营概览',content:'本周平台总收入 ¥8,200，较上周增长 12%。新增注册用户 23 人，转化付费租户 2 个。系统健康度维持 A 级，无安全事故。'},
-        {name:'🔧 技术研发',content:'TechRdAgent 处理图纸分析 48 次，PDF 解析 15 次，DWG 解析 12 次。AI 改图功能使用 7 次，优化建议生成 31 次。'},
-        {name:'📡 市场销售',content:'新增企业客户 2 个（上海勘察设计院、深圳建科公司），正在跟进意向客户 5 个。本周免费转付费转化率 18%。'},
-        {name:'🔒 安全合规',content:'完成本周安全巡检，无高危漏洞。API 调用错误率 0.3%，低于 1% 目标值。用户隐私数据加密率 100%。'},
-        {name:'💡 优化建议',content:'建议在 6 月推出"图纸分析季"促销活动；customer_service Agent 使用率偏低，建议增加快捷入口。'},
-      ]};
+      report.value={sections:[{name:'⚠ 生成失败',content:'请稍后重试'}]};
     }
     reportLoading.value = false;
     showToast('报告已生成','success');
@@ -778,22 +767,13 @@ createApp({setup(){
 
   async function loadAdvice(){
     try{
-      const r=await fetch(API+'/api/v1/agent/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({message:'决策建议',task_type:'manager',file_path:''})});
+      const r=await fetch(API+'/api/v1/admin/advice',{headers:{'Authorization':'Bearer '+token},timeout:10000});
       const d=await r.json();
-      const o=d.output||d;
-      suggestions.value=o?.suggestions||[];
-      insights.value=o?.market_insights||[];
+      suggestions.value=d?.suggestions||[];
+      insights.value=d?.market_insights||[];
     }catch(e){
-      suggestions.value=[
-        {priority:'high',title:'推出年度企业套餐优惠',detail:'对现有企业客户提供续费折扣（8折），预计提升续约率至 85%，增加年收入约 ¥36,000。',expectedImpact:'年收入 +¥36,000'},
-        {priority:'medium',title:'新增图纸管理模块',detail:'调研显示 62% 的设计院客户需要版本管理功能，建议 Q3 上线。预期可提升 Pro 套餐转化率 20%。',expectedImpact:'Pro 转化率 +20%'},
-        {priority:'medium',title:'强化客户成功服务',detail:'customer_service Agent 使用率偏低，建议增加主动回访机制，每月对高价值租户发送使用报告。',expectedImpact:'租户留存率 +15%'},
-      ];
-      insights.value=[
-        '工程管理软件市场年增速 23%，BIM + AI 是核心方向',
-        '一线城市设计院决策链长（3-6个月）；二三线城市需求旺盛，转化快',
-        '政策利好：建筑业数字化转型补贴政策（上海/深圳）最高达项目费用 30%',
-      ];
+      suggestions.value=[];
+      insights.value=[];
     }
   }
 

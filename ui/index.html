@@ -203,6 +203,38 @@
     .msg.user .msg-time { text-align: right; }
     .msg-loading { color: var(--text-dim); font-size: 13px; padding: 10px 14px; }
 
+    /* ── 首次使用引导覆盖层 ── */
+    .onboard-overlay {
+      position:fixed;inset:0;z-index:9999;
+      background:rgba(4,8,16,.75);
+      display:flex;align-items:center;justify-content:center;
+      animation:fadeIn .25s ease-out;
+    }
+    @keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
+    .onboard-card {
+      max-width:420px;width:90%;
+      background:linear-gradient(160deg,#132138 0%,#0a121e 100%);
+      border:1px solid rgba(59,130,246,.2);border-radius:16px;
+      padding:32px 28px 24px;
+      box-shadow:0 8px 40px rgba(0,0,0,.6);text-align:center;
+      animation:scaleIn .3s ease-out;
+    }
+    @keyframes scaleIn{0%{opacity:0;transform:scale(.92)}100%{opacity:1;transform:scale(1)}}
+    .onboard-icon{font-size:48px;margin-bottom:8px}
+    .onboard-title{font-size:18px;font-weight:700;color:#e6edf3;margin-bottom:6px}
+    .onboard-desc{font-size:13px;color:#8b949e;line-height:1.6;margin-bottom:20px}
+    .onboard-step-dots{display:flex;gap:6px;justify-content:center;margin-bottom:16px}
+    .onboard-dot{width:8px;height:8px;border-radius:50%;background:#1a2740;transition:all .2s}
+    .onboard-dot.active{width:20px;border-radius:4px;background:linear-gradient(135deg,#2563eb,#4f46e5)}
+    .onboard-actions{display:flex;gap:8px;justify-content:center}
+    .onboard-actions button{padding:8px 20px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+    .onboard-btn-next{background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;border:none}
+    .onboard-btn-next:hover{box-shadow:0 4px 12px rgba(37,99,235,.35)}
+    .onboard-btn-prev{background:transparent;color:#8b949e;border:1px solid #1a2740}
+    .onboard-btn-prev:hover{color:#60a5fa;border-color:#3b82f6}
+    .onboard-btn-skip{background:transparent;color:#5a6a82;border:none;font-size:11px}
+    .onboard-btn-skip:hover{color:#8b949e}
+
     /* ── 欢迎卡片 ── */
     .welcome-card {
       background: var(--agent-bubble); border: 1px solid var(--border); border-radius: 12px;
@@ -639,6 +671,27 @@
         </button>
       </div>
     </div>
+    <!-- 首次使用引导覆盖层 -->
+    <div v-if="showOnboarding" class="onboard-overlay" @click.self="nextOnboarding">
+      <div class="onboard-card">
+        <div class="onboard-step-dots">
+          <span v-for="(step,si) in onboardSteps" :key="si"
+            :class="['onboard-dot', { active: si === onboardingStep }]"></span>
+        </div>
+        <div class="onboard-icon">{{ onboardSteps[onboardingStep].icon }}</div>
+        <div class="onboard-title">{{ onboardSteps[onboardingStep].title }}</div>
+        <div class="onboard-desc">{{ onboardSteps[onboardingStep].desc }}</div>
+        <div class="onboard-actions">
+          <button v-if="onboardingStep > 0" class="onboard-btn-prev" @click="prevOnboarding">← 上一步</button>
+          <button class="onboard-btn-next" @click="nextOnboarding">
+            {{ onboardingStep < onboardSteps.length - 1 ? '下一步 →' : '🚀 开始使用' }}
+          </button>
+        </div>
+        <div style="margin-top:10px">
+          <button class="onboard-btn-skip" @click="skipOnboarding">跳过引导</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -727,6 +780,42 @@ createApp({
     }
 
     
+    // ── 首次使用引导 ──
+    const showOnboarding = ref(false);
+    const onboardingStep = ref(0);
+    const onboardSteps = [
+      { icon:'👋', title:'欢迎来到EMA', desc:'工程管理智能体 — 让工程管理从"人管"到"智能体协管"', pos:'center' },
+      { icon:'🤖', title:'功能中心', desc:'左侧列出所有专业Agent：安全合规、市场销售、技术研发、工程交付等。点击切换专业智能体。', highlight:'agent-list', pos:'right' },
+      { icon:'💬', title:'对话界面', desc:'在此与当前Agent沟通。可以询问工程问题、上传图纸、生成文档等。', highlight:'chat-area', pos:'left' },
+      { icon:'📎', title:'上传图纸', desc:'点击上传DWG/DXF/PDF格式图纸文件，EMA自动解析并分析。', highlight:'upload-area', pos:'right' },
+      { icon:'🧠', title:'模型选择', desc:'下拉选择底层AI模型。云模型(NVIDIA)支持复杂推理，本地模型(Ollama)速度更快。', highlight:'model-select', pos:'bottom' },
+      { icon:'✨', title:'全生命周期体验', desc:'点击"✨全生命周期体验"按钮，选择任一阶段，体验工程管理全流程闭环。', highlight:'tour-btn', pos:'right' },
+      { icon:'🚀', title:'开始探索', desc:'引导完成，开始使用EMA吧！如有疑问，随时向Agent提问。', pos:'center' },
+    ];
+
+    function startOnboarding() {
+      showOnboarding.value = true;
+      onboardingStep.value = 0;
+    }
+
+    function nextOnboarding() {
+      if (onboardingStep.value < onboardSteps.length - 1) {
+        onboardingStep.value++;
+      } else {
+        showOnboarding.value = false;
+        localStorage.setItem('ema_onboarding_complete', '1');
+      }
+    }
+
+    function prevOnboarding() {
+      if (onboardingStep.value > 0) onboardingStep.value--;
+    }
+
+    function skipOnboarding() {
+      showOnboarding.value = false;
+      localStorage.setItem('ema_onboarding_complete', '1');
+    }
+
     // ── 全生命周期体验 v1.2 ──
     const showTour = ref(false);
     const lifecycleStage = ref(0);
@@ -892,7 +981,8 @@ createApp({
     }
 
     function loadModels() {
-      // 调用路由接口获取当前用户可用的模型（按订阅过滤）
+      // 加载模型列表，恢复用户上次选择
+      const savedModel = localStorage.getItem('ema_selected_model');
       fetch(`${API_BASE}/api/v1/models/route?task_type=chat`, { headers: authHeaders(), timeout: 10000 })
         .then(r => r.json())
         .then(d => {
@@ -915,7 +1005,7 @@ createApp({
               filtered.unshift(recommended);
             }
             availableModels.value = filtered;
-            selectedModel.value = d.model.id;
+            selectedModel.value = savedModel || d.model.id;
           }
         })
         .catch(() => {
@@ -933,7 +1023,12 @@ createApp({
     }
 
     function onModelChange() {
-      // 模型切换，后续请求会带上这个 model 参数
+      const m = availableModels.value.find(x => x.model_id === selectedModel.value || x.name === selectedModel.value);
+      if (m) {
+        localStorage.setItem('ema_selected_model', selectedModel.value);
+        // 简单反馈
+        const old = document.title; document.title = '✅ ' + (m.display || m.name); setTimeout(() => document.title = old, 1500);
+      }
     }
 
     function formatSize(bytes) {
@@ -1122,7 +1217,13 @@ createApp({
       scrollBottom();
     }
 
-    onMounted(() => { scrollBottom(); loadModels(); loadSubscription(); loadNotifications(); });
+    onMounted(() => {
+      scrollBottom(); loadModels(); loadSubscription(); loadNotifications();
+      // 首次使用自动弹出引导
+      if (!localStorage.getItem('ema_onboarding_complete')) {
+        setTimeout(() => startOnboarding(), 600);
+      }
+    });
 
     function logout() {
       try { localStorage.removeItem('ema_token'); } catch(e) {}
@@ -1139,6 +1240,8 @@ createApp({
       userRole, canAccessAgent, lockedAgents,
       showTour, lifecycleStage, lcRunning, lcResult, lcName, lcSteps, lifecycles,
       toggleTour, runLifecycle, lcNext, lcReset, lcFinish,
+      showOnboarding, onboardingStep, onboardSteps,
+      startOnboarding, nextOnboarding, prevOnboarding, skipOnboarding,
       openSubscribe, openNotifications, doSubscribe, loadNotificationsList, markAllRead, readNotif, formatNotifTime,
       logout,
     };

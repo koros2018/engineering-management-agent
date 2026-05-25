@@ -6,8 +6,13 @@ agent/base_agent.py - Sub-Agent 基类
 """
 
 import asyncio
+import os
 import traceback
 from abc import ABC, abstractmethod
+
+# 云模型超时（比本地更短，避免用户长时间等待）
+CLOUD_TIMEOUT = int(os.environ.get("LLM_CLOUD_TIMEOUT", "30"))
+LOCAL_TIMEOUT = int(os.environ.get("LLM_LOCAL_TIMEOUT", "120"))
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Literal
@@ -123,7 +128,7 @@ class BaseAgent(ABC):
         self._tool_registry[name] = tool_func
 
     async def execute_tool(self, tool_name: str, params: Dict, context: Dict) -> ToolResult:
-        """执行工具（带超时保护）"""
+        """执行工具（带超时保护+LLM监督）"""
         start = datetime.now()
         try:
             if tool_name not in self._tool_registry:
@@ -134,12 +139,34 @@ class BaseAgent(ABC):
                     execution_time=0.0
                 )
 
+            # LLM监督: 检查当前模型是否需要降级
+            model_id = context.get('model', '')
+            is_cloud = 'nvidia' in model_id.lower() or 'cloud' in model_id.lower()
+            try:
+                from llm_supervisor import supervisor
+                need_fallback, reason = supervisor.should_fallback(model_id)
+                if need_fallback and is_cloud:
+                    supervisor.record_fallback(model_id, 'local', reason)
+                    # 覆盖model为本地
+                    context['model'] = 'ollama/qwen3.5:9b'
+            except ImportError:
+                pass
+
             tool_func = self._tool_registry[tool_name]
+            timeout = CLOUD_TIMEOUT if (is_cloud and 'nvidia' in model_id.lower()) else context.get('timeout', 120)
             result = await asyncio.wait_for(
                 tool_func(params, context),
-                timeout=context.get('timeout', 120)
+                timeout=timeout
             )
             elapsed = (datetime.now() - start).total_seconds()
+
+            # LLM监督: 记录成功调用
+            try:
+                from llm_supervisor import supervisor
+                supervisor.record_call(model_id or 'unknown', True, elapsed, is_cloud=is_cloud)
+            except ImportError:
+                pass
+
             return ToolResult(
                 tool_name=tool_name,
                 success=True,
@@ -148,6 +175,12 @@ class BaseAgent(ABC):
             )
         except asyncio.TimeoutError:
             elapsed = (datetime.now() - start).total_seconds()
+            # LLM监督: 记录超时
+            try:
+                from llm_supervisor import supervisor
+                supervisor.record_call(model_id or 'unknown', False, elapsed, is_timeout=True, is_cloud=is_cloud)
+            except ImportError:
+                pass
             return ToolResult(
                 tool_name=tool_name,
                 success=False,
@@ -156,6 +189,12 @@ class BaseAgent(ABC):
             )
         except Exception as e:
             elapsed = (datetime.now() - start).total_seconds()
+            # LLM监督: 记录错误
+            try:
+                from llm_supervisor import supervisor
+                supervisor.record_call(model_id or 'unknown', False, elapsed, is_cloud=is_cloud)
+            except ImportError:
+                pass
             return ToolResult(
                 tool_name=tool_name,
                 success=False,
