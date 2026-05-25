@@ -1051,21 +1051,48 @@ async def delete_model_api(model_id: str, user: dict = Depends(require_role(Role
 
 @app.get("/api/v1/models/route")
 async def route_model_api(
+    request: Request,
     user: dict = Depends(get_optional_user),
     task_type: str = "chat",
 ):
-    """智能路由：返回当前用户应使用的模型"""
-    from model_registry import route_model, check_network, list_models
+    """智能路由：返回当前用户应使用的模型（含NVIDIA RPM检查）"""
+    from model_registry import route_model, check_network, list_models, get_nvidia_stats
     role = user.get("role", "free") if user else "free"
-    chosen, reason = route_model(role, task_type)
+    request.state.user = user
+    chosen, reason = route_model(role, task_type, request=request)
     net = check_network()
+    nvidia_stats = get_nvidia_stats()
     return {
         "success": True,
         "model": asdict(chosen),
         "reason": reason,
         "network": net,
+        "nvidia_rpm": nvidia_stats,
         "available_models": [asdict(c) for c in list_models() if c.enabled],
     }
+
+
+# ── NVIDIA RPM 统计 ──────────────────────────────────────────
+
+@app.get("/api/v1/models/nvidia-stats")
+async def nvidia_rpm_stats():
+    """获取NVIDIA API速率限制统计"""
+    try:
+        from model_registry import get_nvidia_stats
+        return {"success": True, "data": get_nvidia_stats()}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/v1/models/nvidia-stats/reset")
+async def nvidia_rpm_reset():
+    """重置NVIDIA API速率峰值（管理员）"""
+    try:
+        from model_registry import reset_nvidia_peak
+        reset_nvidia_peak()
+        return {"success": True, "message": "峰值已重置"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 # ── 主动推送通知 API ──────────────────────────────────────────

@@ -12,7 +12,7 @@ model_registry.py - EMA 大模型配置与智能路由
 """
 
 import json
-import time
+import time as _time
 import os
 import threading
 from pathlib import Path
@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, asdict
 from enum import Enum
+from collections import defaultdict
 
 
 # ── 数据目录 ──────────────────────────────────────────────────
@@ -86,6 +87,96 @@ class ModelConfig:
         return 20
 
 
+# ── NVIDIA API RPM 限速（滑动窗口）────────────────────────────
+# 单用户/单租户 每分钟最大 40 请求
+
+RPM_LIMIT = 40  # 每分钟最大请求数
+
+_rate_limit_lock = threading.Lock()
+_request_counts: Dict[str, Dict[str, list]] = defaultdict(lambda: defaultdict(list))
+_peak_rpm = {"value": 0, "reset_at": 0}  # 全局峰值（每天重置）
+
+
+def _clean_window(timestamps: list, window_seconds: int = 60) -> list:
+    """清理滑动窗口外的时间戳"""
+    now = _time.time()
+    return [ts for ts in timestamps if (now - ts) < window_seconds]
+
+
+def _get_user_key(request) -> str:
+    """从请求中提取 user_id 或 tenant_id"""
+    # 先尝试 FastAPI request.state.user
+    if hasattr(request, "state") and hasattr(request.state, "user"):
+        user = request.state.user
+        if user:
+            if isinstance(user, dict):
+                return f"user:{user.get('id', user.get('username', 'anon'))}"
+            else:
+                user_id = getattr(user, 'id', None) or getattr(user, 'username', 'anon')
+                return f"user:{user_id}"
+    # 尝试 query/path param
+    if hasattr(request, "query_params"):
+        uid = (request.query_params.get("user_id")
+               or request.query_params.get("tenant_id")
+               or request.query_params.get("session_id"))
+        if uid:
+            return f"tenant:{uid}"
+    # header 中的 x-user-id
+    if hasattr(request, "headers"):
+        uid = request.headers.get("x-user-id") or request.headers.get("x-session-id")
+        if uid:
+            return f"header:{uid}"
+    return "global"
+
+
+def check_nvidia_rate_limit(request) -> Tuple[bool, str, int]:
+    """
+    检查 NVIDIA API 请求是否超限
+    返回: (allowed, error_msg, current_rpm)
+    """
+    user_key = _get_user_key(request)
+    now = _time.time()
+
+    with _rate_limit_lock:
+        # 清理过期时间戳
+        nvapi_ts = _request_counts[user_key]["nvapi"]
+        # 清理过期时间戳（先过滤再替换）
+        nvapi_ts = _request_counts[user_key]["nvapi"] = [t for t in nvapi_ts if (now - t) < 60]
+
+        current_rpm = len(nvapi_ts)
+
+        # 检查限制
+        if current_rpm >= RPM_LIMIT:
+            return False, f"NVIDIA API rate limit exceeded ({RPM_LIMIT} RPM per minute). Please retry after a while.", current_rpm
+
+        # 记录本次请求
+        nvapi_ts.append(now)
+
+        # 更新峰值
+        if current_rpm + 1 > _peak_rpm["value"]:
+            _peak_rpm["value"] = current_rpm + 1
+            _peak_rpm["reset_at"] = int(now) + 86400  # 次日零点 UTC
+
+        return True, "", current_rpm + 1
+
+
+def get_nvidia_stats() -> Dict:
+    """获取当前 NVIDIA API 统计"""
+    with _rate_limit_lock:
+        return {
+            "peak_rpm": _peak_rpm["value"],
+            "peak_resets_at": _peak_rpm["reset_at"],
+            "alert": _peak_rpm["value"] >= RPM_LIMIT,
+            "limit": RPM_LIMIT,
+        }
+
+
+def reset_nvidia_peak():
+    """重置峰值（每日cron调用）"""
+    with _rate_limit_lock:
+        _peak_rpm["value"] = 0
+
+
 # ── 网络检测 ──────────────────────────────────────────────────
 
 _network_ok = {"ollama_com": True, "nvidia_api": True}
@@ -95,7 +186,7 @@ _network_lock = threading.Lock()
 def check_network() -> Dict[str, bool]:
     """检测外网连通性（结果缓存5分钟）"""
     global _network_ok
-    now = time.time()
+    now = _time.time()
 
     if hasattr(check_network, "_last_check") and (now - check_network._last_check) < 300:
         return _network_ok.copy()
@@ -127,6 +218,7 @@ def route_model(
     user_role: str = "free",
     task_type: str = "chat",
     force_provider: str = None,
+    request = None,  # 可传入请求对象用于NVIDIA RPM检查
 ) -> Tuple[ModelConfig, str]:
     """
     根据用户类型/任务/网络状况自动路由模型
@@ -142,6 +234,23 @@ def route_model(
     - 网络不可用 → 强制本地
     - reasoning 任务 → 优先有 reasoning 能力的模型
     """
+
+    # NVIDIA RPM 检查（仅针对云端NVIDIA模型）
+    if request is not None:
+        allowed, err_msg, rpm = check_nvidia_rate_limit(request)
+        if not allowed:
+            # 路由到本地模型作为降级
+            configs = list_models()
+            local = [c for c in configs if c.enabled and c.is_local]
+            if local:
+                return local[0], f"nvidia_rpm_limit_fallback/{err_msg}"
+            # 无本地模型则返回错误
+            from dataclasses import replace
+            err_model = ModelConfig(
+                id="error", name="Rate Limited",
+                provider="nvidia", base_url="", api_key="", model_name="",
+            )
+            return err_model, f"nvidia_rpm_limit/{err_msg}"
 
     configs = list_models()
     if not configs:
@@ -159,7 +268,7 @@ def route_model(
 
     # Boss 永远最强
     if user_role in ("boss", "super_admin"):
-        # 优先 NVIDIA deepseek-v4-pro
+        # 优先 NVIDIA deepseek-v4-pro（带RPM检查）
         for c in available:
             if c.provider == "nvidia" and "deepseek" in c.model_name.lower():
                 return c, "boss_mode"
