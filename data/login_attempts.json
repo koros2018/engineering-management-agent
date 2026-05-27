@@ -1,32 +1,27 @@
 {
   "127.0.0.1:admin": {
-    "count": 2,
+    "count": 0,
     "first_at": 1779260275.865851,
     "locked_until": 0
   },
   "127.0.0.1:https://integrate.api.nvidia.com/v1": {
-    "count": 1,
+    "count": 0,
     "first_at": 1779588179.9490263,
     "locked_until": 0
   },
-  "127.0.0.1:boss_ke": {
-    "count": 5,
-    "first_at": 1779782077.2566414,
-    "locked_until": 1779783035.5101745
-  },
   "127.0.0.1:testuser1": {
-    "count": 5,
+    "count": 0,
     "first_at": 1779784698.3132288,
-    "locked_until": 1779785598.4699187
+    "locked_until": 0
   },
   "127.0.0.1:test_admin": {
-    "count": 5,
+    "count": 0,
     "first_at": 1779784698.6476097,
-    "locked_until": 1779785598.7976635
+    "locked_until": 0
   },
   "127.0.0.1:test_tester": {
-    "count": 5,
+    "count": 0,
     "first_at": 1779784698.8139596,
-    "locked_until": 1779785598.9714909
+    "locked_until": 0
   }
 }

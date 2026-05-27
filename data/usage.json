@@ -88,5 +88,14 @@
     "api_calls": 0,
     "storage_used_mb": 0,
     "last_updated": "2026-05-20T13:58:49.218667"
+  },
+  "tenant_boss": {
+    "tenant_id": "tenant_boss",
+    "month": "2026-05",
+    "projects_created": 0,
+    "files_uploaded": 0,
+    "api_calls": 0,
+    "storage_used_mb": 0,
+    "last_updated": "2026-05-27T16:24:33.614214"
   }
 }
