@@ -719,7 +719,7 @@ async def upload_and_analyze(
     logger.info(f"[Cache MISS] {file.filename} → 开始解析")
 
     try:
-        from blueprint_parser.core import BlueprintParser
+        from blueprint.core import BlueprintParser
         parser = BlueprintParser()
         if suffix == '.pdf' and disable_ocr:
             parser.pdf_parser.use_ocr = False
@@ -1618,8 +1618,7 @@ async def create_analyze_task(
         _tasks[task_id]["status"] = "running"
         _tasks[task_id]["progress"] = 10
         try:
-            sys.path.insert(0, str(Path("/mnt/d/OpenClawDataworkspace/Projects/blueprint-ai/src")))
-            from blueprint_parser.core import BlueprintParser
+            from blueprint.core import BlueprintParser
             parser = BlueprintParser()
             _tasks[task_id]["progress"] = 30
             result = parser.parse(str(save_path))
