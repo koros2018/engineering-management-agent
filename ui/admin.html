@@ -792,11 +792,7 @@ createApp({setup(){
         const d2=await r2.json();
         logStats.value=d2||{};netStatus.value=d2?.network||{};
       }catch(e2){
-        logStats.value={total_requests:3847,total_errors:12,error_rate_pct:0.31,avg_response_ms:142,top_endpoints:[
-          {path:'/api/v1/main/chat',count:1247,error_rate:0.4},{path:'/api/v1/upload/analyze',count:834,error_rate:0.2},
-          {path:'/api/v1/agent/chat',count:521,error_rate:0.6},{path:'/api/v1/generate/sop',count:312,error_rate:0.1},
-          {path:'/api/v1/admin/models',count:298,error_rate:0.0},
-        ],top_errors:[{msg:'DWG解析失败：图层名称编码错误',count:4},{msg:'PDF OCR 识别超时',count:3},{msg:'JWT token 过期',count:2}],hourly_trend:Array.from({length:24},(_,i)=>({hour:\`\${String(8+i).padStart(2,'0')}:00\`,requests:Math.floor(Math.random()*200+50),errors:Math.floor(Math.random()*5)}))};
+        logStats.value={total_requests:0,total_errors:0,error_rate_pct:0,avg_response_ms:0,top_endpoints:[],top_errors:[],hourly_trend:[]};
         netStatus.value={ollama_com:true,nvidia_api:true};
         userActivity.value={total_users:38,top_users:[{user:'boss_ke',count:156},{user:'test_user',count:89}]};
       }

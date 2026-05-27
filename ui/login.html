@@ -381,7 +381,7 @@ function loadWx(){
           if(d.status==='scanned'){$('qr-stat').textContent='✅ 已扫描，请在手机上确认'}
           else if(d.status==='confirmed'&&d.success){
             clearInterval(poll);$('qr-stat').textContent='✅ 登录成功';
-            token=d.acce…|{};
+            token=d.access_token||d.token;
             isBoss=user.role==='super_admin'||user.role==='boss'||d.is_boss;
             try{localStorage.setItem('ema_token',token);localStorage.setItem('ema_user',JSON.stringify(user))}catch(e){}
             setTimeout(function(){show('ok');$('smsg').textContent='欢迎回来，'+user.display_name+'！';if(isBoss)$('ba').style.display=''},300)
