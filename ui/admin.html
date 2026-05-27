@@ -132,6 +132,16 @@ tr:hover td{background:rgba(59,130,246,.05)}
 .table-wrap{max-height:300px;overflow-y:auto}
 .table-wrap thead{position:sticky;top:0;background:var(--card2);z-index:1}
 @media(max-width:768px){.sidebar{display:none}.grid{grid-template-columns:1fr}.main{padding:14px}}
+
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:12px;width:90%;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+.modal-title{font-size:16px;font-weight:700;color:var(--text-bright)}
+.modal-close{background:none;border:none;font-size:18px;color:var(--dim);cursor:pointer;padding:4px 8px;border-radius:4px}
+.modal-close:hover{background:var(--bg);color:var(--text)}
+.modal-body{padding:20px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:16px 20px;border-top:1px solid var(--border)}
 </style>
 </head>
 <body>
@@ -146,6 +156,7 @@ tr:hover td{background:rgba(59,130,246,.05)}
     <div class="sb-nav">
       <div @click="tab='cockpit'" :class="['sb-item',{active:tab==='cockpit'}]">📊 驾驶舱</div>
       <div @click="tab='tenants'" :class="['sb-item',{active:tab==='tenants'}]">👥 租户管理</div>
+      <div @click="tab='projects';loadProjects()" :class="['sb-item',{active:tab==='projects'}]">🏗️ 项目管理</div>
       <div @click="tab='alerts'" :class="['sb-item',{active:tab==='alerts'}]">🚨 预警中心</div>
       <div @click="tab='reports'" :class="['sb-item',{active:tab==='reports'}]">📝 自动报告</div>
       <div @click="tab='advice'" :class="['sb-item',{active:tab==='advice'}]">💡 决策建议</div>
@@ -291,6 +302,62 @@ tr:hover td{background:rgba(59,130,246,.05)}
           <div class="modal-footer">
             <button class="btn btn-outline" @click="tenantModal.show=false">取消</button>
             <button class="btn btn-primary" :disabled="!tenantModal.name" @click="saveTenant">保存</button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- ════ 项目管理 ════ -->
+    <template v-if="tab==='projects'">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;grid-column:span 2">
+        <div style="font-size:14px;color:var(--dim)">共 {{ projects.length }} 个项目</div>
+        <button class="btn btn-primary btn-sm" @click="showProjectModal()">+ 新建项目</button>
+      </div>
+      <div v-if="projectsLoading" class="loading" style="grid-column:span 2"><span class="spinner"></span> 加载中...</div>
+      <template v-else-if="projects.length">
+        <div v-for="p in projects" :key="p.id" class="card" style="margin-bottom:8px">
+          <div class="card-header">
+            <span class="card-title">{{ p.name }}</span>
+            <span :class="['tag', p.status]">{{ statusLabel(p.status) }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:12px">
+            <div><span style="color:var(--dim)">类型</span><br>{{ p.type||'—' }}</div>
+            <div><span style="color:var(--dim)">预算</span><br>¥{{ (p.budget||0).toLocaleString() }}</div>
+            <div><span style="color:var(--dim)">开始</span><br>{{ p.start_date||'—' }}</div>
+            <div><span style="color:var(--dim)">截止</span><br>{{ p.end_date||'—' }}</div>
+          </div>
+          <div style="margin-top:8px;display:flex;gap:4px">
+            <button class="btn btn-outline btn-sm" @click="showProjectModal(p)">编辑</button>
+            <button class="btn btn-outline btn-sm" @click="loadMilestones(p.id)">里程碑</button>
+            <button class="btn btn-danger btn-sm" @click="deleteProject(p)">删除</button>
+          </div>
+        </div>
+      </template>
+      <div v-else class="empty-state" style="grid-column:span 2">
+        <span class="icon">🏗️</span>
+        <div>暂无项目</div>
+        <button class="btn btn-primary" @click="showProjectModal()">创建第一个项目</button>
+      </div>
+
+      <!-- 项目编辑弹窗 -->
+      <div v-if="projectModal.show" class="modal-overlay" @click.self="projectModal.show=false">
+        <div class="modal">
+          <div class="modal-header">
+            <span class="modal-title">{{ projectModal.edit ? '编辑项目' : '新建项目' }}</span>
+            <button class="modal-close" @click="projectModal.show=false">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-row"><label class="form-label">项目名称</label><input v-model="projectModal.name" class="form-input" placeholder="输入项目名称"></div>
+            <div class="form-row"><label class="form-label">描述</label><input v-model="projectModal.description" class="form-input" placeholder="项目描述"></div>
+            <div class="form-row"><label class="form-label">类型</label><select v-model="projectModal.type" class="form-input"><option value="construction">建筑工程</option><option value="survey">勘察</option><option value="design">设计</option><option value="consult">咨询</option></select></div>
+            <div class="form-row"><label class="form-label">预算 (¥)</label><input v-model.number="projectModal.budget" class="form-input" type="number" placeholder="0"></div>
+            <div class="form-row"><label class="form-label">开始日期</label><input v-model="projectModal.start_date" class="form-input" type="date"></div>
+            <div class="form-row"><label class="form-label">截止日期</label><input v-model="projectModal.end_date" class="form-input" type="date"></div>
+            <div class="form-row" v-if="projectModal.edit"><label class="form-label">状态</label><select v-model="projectModal.status" class="form-input"><option value="planning">规划中</option><option value="designing">设计中</option><option value="reviewing">审查中</option><option value="constructing">施工中</option><option value="accepting">验收中</option><option value="delivered">已交付</option><option value="paused">已暂停</option></select></div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" @click="projectModal.show=false">取消</button>
+            <button class="btn btn-primary" :disabled="!projectModal.name" @click="saveProject">保存</button>
           </div>
         </div>
       </div>
@@ -616,7 +683,9 @@ createApp({setup(){
   const cockpit = ref({health_score:0,health_grade:'B',alerts:[],metrics:{revenue:{},projects:{},agents:{}}});
   const tenants = ref([]); const tenantsLoading = ref(false);
   const tenantModal = ref({show:false,edit:false,id:'',name:'',plan:'free',status:'active'});
-  const alerts = ref([]); const alertsLoading = ref(false);
+  const projects = ref([]); const projectsLoading = ref(false);
+  const projectModal = ref({show:false,edit:false,id:'',name:'',description:'',type:'construction',budget:0,start_date:'',end_date:'',status:'planning'});
+  const milestones = ref([]);
   const report = ref({sections:[]}); const reportLoading = ref(false);
   const suggestions = ref([]); const insights = ref([]);
   const logStats = ref({}); const userActivity = ref({});
@@ -827,6 +896,64 @@ createApp({setup(){
       if(d.success){showToast('租户已删除','success');loadTenants();}
       else{showToast(d.detail||'删除失败','error')}
     }catch(e){showToast('网络错误','error')}
+  }
+
+  // ── 项目管理 ──────────────────────────────────────────
+  const STATUS_LABELS={planning:'📋 规划中',designing:'✏️ 设计中',reviewing:'🔍 审查中',constructing:'🏗️ 施工中',accepting:'✅ 验收中',delivered:'📦 已交付',paused:'⏸️ 已暂停'};
+  function statusLabel(s){return STATUS_LABELS[s]||s||'未知'}
+
+  async function loadProjects(){
+    projectsLoading.value=true;
+    try{
+      const r=await fetch(API+'/api/v1/projects',{headers:{'Authorization':'Bearer '+token}});
+      const d=await r.json();
+      projects.value=d.projects||[];
+    }catch(e){showToast('加载项目失败','error')}
+    projectsLoading.value=false;
+  }
+
+  function showProjectModal(p){
+    if(p){
+      projectModal.value={show:true,edit:true,id:p.id,name:p.name||'',description:p.description||'',type:p.type||'construction',budget:p.budget||0,start_date:p.start_date||'',end_date:p.end_date||'',status:p.status||'planning'};
+    }else{
+      projectModal.value={show:true,edit:false,id:'',name:'',description:'',type:'construction',budget:0,start_date:'',end_date:'',status:'planning'};
+    }
+  }
+
+  async function saveProject(){
+    const m=projectModal.value;
+    if(!m.name){showToast('请输入项目名称','error');return;}
+    try{
+      const body='name='+encodeURIComponent(m.name)+'&description='+encodeURIComponent(m.description)+'&project_type='+m.type+'&budget='+m.budget+'&start_date='+m.start_date+'&end_date='+m.end_date;
+      let r;
+      if(m.edit){
+        r=await fetch(API+'/api/v1/projects/'+m.id,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/x-www-form-urlencoded'},body:body+'&status='+m.status});
+      }else{
+        r=await fetch(API+'/api/v1/projects',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/x-www-form-urlencoded'},body:body});
+      }
+      const d=await r.json();
+      if(d.success){showToast(d.message||(m.edit?'更新成功':'创建成功'),'success');projectModal.value.show=false;loadProjects();}
+      else{showToast(d.detail||'操作失败','error')}
+    }catch(e){showToast('网络错误','error')}
+  }
+
+  async function deleteProject(p){
+    if(!confirm('确定删除项目「'+p.name+'」？'))return;
+    try{
+      const r=await fetch(API+'/api/v1/projects/'+p.id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+      const d=await r.json();
+      if(d.success){showToast('项目已删除','success');loadProjects();}
+      else{showToast(d.detail||'删除失败','error')}
+    }catch(e){showToast('网络错误','error')}
+  }
+
+  async function loadMilestones(projectId){
+    try{
+      const r=await fetch(API+'/api/v1/projects/'+projectId+'/milestones',{headers:{'Authorization':'Bearer '+token}});
+      const d=await r.json();
+      milestones.value=d.milestones||[];
+      showToast('已加载 '+milestones.value.length+' 个里程碑','success');
+    }catch(e){showToast('加载里程碑失败','error')}
   }
 
   async function loadAlerts(){
