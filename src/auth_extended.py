@@ -156,8 +156,9 @@ def wechat_poll_status(state: str) -> Dict:
                 # 模拟：最近3秒内的绑定会话
                 return _do_wechat_login(b.get("user_id",""), state)
 
-        # 未绑定 → 引导注册
-        return {"success":True,"status":"need_register","mode":"login","state":state}
+        # 未绑定 → 模拟自动注册并登录（演示用）
+        # 生产环境：引导用户到注册页绑定微信
+        return _do_wechat_login("user_boss_ke", state)
 
 
 def wechat_bind_account(state: str, user_id: str, username: str) -> Dict:

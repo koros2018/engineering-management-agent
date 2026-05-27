@@ -371,20 +371,26 @@ function loadWx(){
   .then(function(r){return r.json()})
   .then(function(d){
     if(d.success||d.data){
-      wxState=d.data.state||d.state;
-      var url=(d.data.qr||d.qr);
+      wxState=d.qr?.state||d.state;
+      var url=(d.qr?.qr_base64||d.qr||d.data?.qr_base64||'');
       $('qr-box').innerHTML='<img src="'+url+'" alt="微信二维码">';
       $('qr-stat').textContent='请使用微信扫描二维码';
       poll=setInterval(function(){
         fetch('/api/v1/auth/wechat-poll?state='+wxState)
         .then(function(r){return r.json()}).then(function(d){
           if(d.status==='scanned'){$('qr-stat').textContent='✅ 已扫描，请在手机上确认'}
-          else if(d.status==='confirmed'||d.success){
+          else if(d.status==='confirmed'&&d.success){
             clearInterval(poll);$('qr-stat').textContent='✅ 登录成功';
-            token=d.access_token||d.token;user=d.user||{};
+            token=d.acce…|{};
             isBoss=user.role==='super_admin'||user.role==='boss'||d.is_boss;
             try{localStorage.setItem('ema_token',token);localStorage.setItem('ema_user',JSON.stringify(user))}catch(e){}
             setTimeout(function(){show('ok');$('smsg').textContent='欢迎回来，'+user.display_name+'！';if(isBoss)$('ba').style.display=''},300)
+          }
+          else if(d.status==='need_register'){
+            clearInterval(poll);show('wxreg');
+          }
+          else if(d.status==='expired'){
+            clearInterval(poll);$('qr-stat').textContent='❌ 二维码已过期，请刷新';
           }
         }).catch(function(){})
       },2000)
