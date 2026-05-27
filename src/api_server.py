@@ -23,6 +23,7 @@ if _ENV_FILE.exists():
             os.environ.setdefault(k, v)
 
 import asyncio
+import time
 import uuid
 from datetime import datetime
 from typing import Optional, List, Dict, Tuple
@@ -659,7 +660,7 @@ async def upload_and_analyze(
     disable_ocr: bool = Form(True),
 ):
     """
-    上传图纸并分析
+    上传图纸并分析（含缓存加速）
     支持格式：DWG, DXF, PDF
     """
     import tempfile
@@ -669,10 +670,31 @@ async def upload_and_analyze(
     if suffix not in ['.dwg', '.dxf', '.pdf']:
         raise HTTPException(status_code=400, detail="Unsupported file type. Use DWG/DXF/PDF")
 
-    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
-        content = await file.read()
-        tmp.write(content)
-        tmp_path = tmp.name
+    # ── 持久化存储路径 ──
+    from performance import get_cached_analysis, cache_analysis
+    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+    # 保存到持久化路径（文件名加时间戳避免冲突）
+    safe_name = f"{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
+    save_path = UPLOAD_DIR / safe_name
+
+    content = await file.read()
+    save_path.write_bytes(content)
+
+    # ── 检查缓存 ──
+    cached = get_cached_analysis(save_path)
+    if cached:
+        logger.info(f"[Cache HIT] {file.filename} ({save_path.name})")
+        return {
+            "success": True,
+            "file_path": file.filename,
+            "message": "图纸分析完成（缓存）",
+            "analysis": cached.get("analysis", cached),
+            "cached": True,
+        }
+
+    logger.info(f"[Cache MISS] {file.filename} → 开始解析")
 
     try:
         from blueprint_parser.core import BlueprintParser
@@ -680,35 +702,38 @@ async def upload_and_analyze(
         if suffix == '.pdf' and disable_ocr:
             parser.pdf_parser.use_ocr = False
 
-        result = parser.parse(tmp_path)
+        result = parser.parse(str(save_path))
+
+        analysis = {
+            "file_type": result.file_type.value if hasattr(result.file_type, 'value') else str(result.file_type),
+            "drawing_type": "待识别",
+            "layer_count": len(result.layers),
+            "entity_count": len(result.entities),
+            "layers": [
+                {"name": l.name, "color": l.color, "visible": getattr(l, "visible", True)}
+                for l in result.layers[:50]
+            ],
+            "entities": [
+                {"type": getattr(e, "type", "UNKNOWN"), "layer": getattr(e, "layer", "")}
+                for e in result.entities[:50]
+            ],
+            "metadata": result.metadata,
+        }
+
+        # ── 写入缓存 ──
+        cache_analysis(save_path, {"analysis": analysis})
 
         return {
             "success": result.success,
             "file_path": file.filename,
             "message": "图纸分析完成",
-            "analysis": {
-                "file_type": result.file_type.value if hasattr(result.file_type, 'value') else str(result.file_type),
-                "drawing_type": "待识别",
-                "layer_count": len(result.layers),
-                "entity_count": len(result.entities),
-                "layers": [
-                    {"name": l.name, "color": l.color, "visible": getattr(l, "visible", True)}
-                    for l in result.layers[:50]
-                ],
-                "entities": [
-                    {"type": getattr(e, "type", "UNKNOWN"), "layer": getattr(e, "layer", "")}
-                    for e in result.entities[:50]
-                ],
-                "metadata": result.metadata,
-            },
+            "analysis": analysis,
             "error": "; ".join(result.errors) if result.errors else None,
+            "cached": False,
         }
-    finally:
-        # 清理临时文件
-        try:
-            os.unlink(tmp_path)
-        except Exception:
-            pass
+    except Exception as e:
+        logger.error(f"[Parse Error] {file.filename}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"解析失败: {str(e)}")
 
 
 # ── 订阅套餐 API ────────────────────────────────────────────────

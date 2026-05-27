@@ -100,5 +100,14 @@
     "status": "active",
     "role": "super_admin",
     "tenant_id": "root"
+  },
+  "user_90ef370b179559c7": {
+    "user_id": "user_90ef370b179559c7",
+    "username": "testboss",
+    "email": "test@test.com",
+    "password_hash": "dcc9eecec09bb2835a589e1c738884cfc777da4c41233540961c9aa2fbc48f80",
+    "salt": "fc0f4672ead9357fa5be3681476fcd1a",
+    "created_at": "2026-05-27T15:10:27.109820",
+    "status": "active"
   }
 }

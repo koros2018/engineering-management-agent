@@ -18,7 +18,7 @@ export default {
     async checkToken(token) {
       try {
         const res = await uni.request({
-          url: 'http://127.0.0.1:5188/api/v1/auth/me',
+          url: 'http://127.0.0.1:6188/api/v1/auth/me',
           method: 'GET',
           header: { Authorization: `Bearer ${token}` }
         });

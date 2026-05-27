@@ -1,63 +1,98 @@
-# docker-compose.yml
-# EMA 工程管理智能体 — 一键部署
+# ── EMA Docker 部署说明 ──────────────────────────────────────
+# 工程管理智能体 - Windows Docker Desktop 一键部署
+#
+# 前置条件：
+#   1. 安装 Docker Desktop (https://www.docker.com/products/docker-desktop/)
+#   2. 启用 WSL2 集成（Settings → Resources → WSL Integration）
+#   3. 本项目目录：D:\OpenClawDataworkspace\Projects\engineering-management-agent
+#
+# 启动方式：
+#   双击运行：一键启动EMA.bat
+#   或命令行：docker-compose up -d
+#
+# 访问地址：
+#   UI:       http://localhost/ui/
+#   API:      http://localhost/api/v1/...
+#   Admin:    http://localhost/ui/admin.html
+#   Health:   http://localhost/api/v1/health
+#
+# 停止：docker-compose down
+# 日志：docker-compose logs -f api
+# 更新：docker-compose build --no-cache && docker-compose up -d
+# ────────────────────────────────────────────────────────────
 
 version: "3.8"
 
 services:
   # ── EMA API 服务 ───────────────────────────────────────────
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: ema-api
     restart: unless-stopped
     ports:
       - "6188:6188"
     volumes:
-      - ./data:/app/data                      # 持久化：ChromaDB + 用户 + 会话
-      - ./output:/app/output                  # 文档输出目录
-      - ./ui:/app/ui                          # UI 静态文件
-      # 如需连接 blueprint-ai 源码：
-      # - ../blueprint-ai:/app/../blueprint-ai:ro
+      - ema-data:/app/data                   # 持久化：ChromaDB + 用户 + 会话
+      - ema-output:/app/output               # 文档输出目录
+      - ./ui:/app/ui                         # UI 静态文件（挂载便于热更新）
+      - ./certs:/app/certs:ro                # SSL 证书（可选）
     environment:
       - PYTHONPATH=/app/src
       - EMA_ENV=production
       - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY:-}
     healthcheck:
       test: ["CMD", "curl", "-fs", "http://localhost:6188/health"]
       interval: 30s
       timeout: 5s
       retries: 3
+      start_period: 15s
     networks:
       - ema-network
 
   # ── Nginx 反向代理 + UI 静态文件 ───────────────────────────
   nginx:
-    image: nginx:alpine
+    image: nginx:1.26-alpine
     container_name: ema-nginx
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./ui:/usr/share/nginx/html/ui:ro
+      - ./certs:/etc/nginx/certs:ro          # SSL 证书（可选）
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     networks:
       - ema-network
 
-  # ── ChromaDB 独立服务（可选，不配置则用内嵌模式）──────────
+  # ── ChromaDB 独立服务（可选，取消注释启用）────────────────
   # chromadb:
-  #   image: chromadb/chroma:latest
+  #   image: chromadb/chroma:0.5.5
   #   container_name: ema-chromadb
   #   restart: unless-stopped
   #   ports:
   #     - "8000:8000"
   #   volumes:
-  #     - ./data/chromadb-server:/chroma/chroma
+  #     - ema-chromadb:/chroma/chroma
   #   environment:
   #     - IS_PERSISTENT=TRUE
+  #     - ANONYMIZED_TELEMETRY=FALSE
   #   networks:
   #     - ema-network
 
 networks:
   ema-network:
     driver: bridge
+
+volumes:
+  ema-data:
+    name: ema-data
+  ema-output:
+    name: ema-output
+  # ema-chromadb:
+  #   name: ema-chromadb

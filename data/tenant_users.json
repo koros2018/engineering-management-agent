@@ -64,5 +64,11 @@
     "role": "super_admin",
     "tenant_id": "root",
     "display_name": "测试管理员"
+  },
+  "user_90ef370b179559c7": {
+    "user_id": "user_90ef370b179559c7",
+    "tenant_id": "tenant_9c895d931587",
+    "role": "tenant_admin",
+    "joined_at": "2026-05-27T15:10:27.121015"
   }
 }
