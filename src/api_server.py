@@ -11,8 +11,10 @@ from pathlib import Path
 
 # 加入工作空间路径（llm_supervisor 等通用模块）
 _WORKSPACE = Path(__file__).parent.parent.parent.parent  # /mnt/d/OpenClawDataworkspace
-if str(_WORKSPACE / "src") not in sys.path:
-    sys.path.insert(0, str(_WORKSPACE / "src"))
+_PROJECT_SRC = Path(__file__).parent  # .../engineering-management-agent/src
+for _p in [str(_WORKSPACE / "src"), str(_PROJECT_SRC)]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 # 加载 .env
 _ENV_FILE = Path(__file__).parent.parent.parent / ".env"
@@ -1022,6 +1024,245 @@ async def admin_list_tenants(user: dict = Depends(require_role(Role.SUPER_ADMIN)
             "status": t.get("status", "active"),
         })
     return {"success": True, "tenants": tenants, "total": len(tenants)}
+
+
+@app.post("/api/v1/admin/tenants")
+async def admin_create_tenant(
+    name: str = Form(...),
+    plan: str = Form("free"),
+    user: dict = Depends(require_role(Role.SUPER_ADMIN)),
+):
+    """创建租户（仅超级管理员）"""
+    import json, uuid
+    from pathlib import Path
+    EMA_DATA_DIR = Path(__file__).parent.parent / "data"
+    t_f = EMA_DATA_DIR / "tenants.json"
+    tenants_data = json.load(open(t_f)) if t_f.exists() else {}
+    tid = f"tenant_{uuid.uuid4().hex[:12]}"
+    tenants_data[tid] = {
+        "tenant_id": tid,
+        "name": name,
+        "plan": plan,
+        "admin_user_id": "",
+        "created_at": datetime.now().isoformat(),
+        "status": "active",
+    }
+    with open(t_f, "w") as f:
+        json.dump(tenants_data, f, indent=2, ensure_ascii=False)
+    return {"success": True, "tenant_id": tid, "message": f"租户 '{name}' 创建成功"}
+
+
+@app.put("/api/v1/admin/tenants/{tenant_id}")
+async def admin_update_tenant(
+    tenant_id: str,
+    name: Optional[str] = Form(None),
+    plan: Optional[str] = Form(None),
+    status: Optional[str] = Form(None),
+    user: dict = Depends(require_role(Role.SUPER_ADMIN)),
+):
+    """编辑租户（仅超级管理员）"""
+    import json
+    from pathlib import Path
+    EMA_DATA_DIR = Path(__file__).parent.parent / "data"
+    t_f = EMA_DATA_DIR / "tenants.json"
+    tenants_data = json.load(open(t_f)) if t_f.exists() else {}
+    if tenant_id not in tenants_data:
+        raise HTTPException(status_code=404, detail="租户不存在")
+    t = tenants_data[tenant_id]
+    if name is not None:
+        t["name"] = name
+    if plan is not None:
+        t["plan"] = plan
+    if status is not None:
+        t["status"] = status
+    tenants_data[tenant_id] = t
+    with open(t_f, "w") as f:
+        json.dump(tenants_data, f, indent=2, ensure_ascii=False)
+    return {"success": True, "message": "租户更新成功"}
+
+
+@app.delete("/api/v1/admin/tenants/{tenant_id}")
+async def admin_delete_tenant(
+    tenant_id: str,
+    user: dict = Depends(require_role(Role.SUPER_ADMIN)),
+):
+    """删除租户（仅超级管理员）"""
+    import json
+    from pathlib import Path
+    EMA_DATA_DIR = Path(__file__).parent.parent / "data"
+    t_f = EMA_DATA_DIR / "tenants.json"
+    u_f = EMA_DATA_DIR / "tenant_users.json"
+    tenants_data = json.load(open(t_f)) if t_f.exists() else {}
+    if tenant_id not in tenants_data:
+        raise HTTPException(status_code=404, detail="租户不存在")
+    del tenants_data[tenant_id]
+    with open(t_f, "w") as f:
+        json.dump(tenants_data, f, indent=2, ensure_ascii=False)
+    # 清理租户用户关联
+    if u_f.exists():
+        tenant_users = json.load(open(u_f))
+        for uid in [k for k, v in tenant_users.items() if v.get("tenant_id") == tenant_id]:
+            del tenant_users[uid]
+        with open(u_f, "w") as f:
+            json.dump(tenant_users, f, indent=2, ensure_ascii=False)
+    return {"success": True, "message": "租户已删除"}
+
+
+# ── 项目管理 API ──────────────────────────────────────────
+
+@app.get("/api/v1/projects")
+async def list_projects(
+    tenant_id: Optional[str] = None,
+    status: Optional[str] = None,
+    user: dict = Depends(get_current_user),
+):
+    """项目列表"""
+    from projects import list_projects as _list
+    projects_list = _list(tenant_id=tenant_id, status=status)
+    return {"success": True, "projects": projects_list, "total": len(projects_list)}
+
+
+@app.post("/api/v1/projects")
+async def create_project(
+    name: str = Form(...),
+    description: str = Form(""),
+    project_type: str = Form("construction"),
+    budget: float = Form(0),
+    start_date: Optional[str] = Form(None),
+    end_date: Optional[str] = Form(None),
+    tenant_id: Optional[str] = Form(None),
+    user: dict = Depends(get_current_user),
+):
+    """创建项目"""
+    from projects import create_project as _create
+    tid = tenant_id or user.get("tenant_id", "default")
+    p = _create(
+        tenant_id=tid,
+        name=name,
+        description=description,
+        project_type=project_type,
+        budget=budget,
+        start_date=start_date,
+        end_date=end_date,
+        created_by=user.get("user_id", ""),
+    )
+    return {"success": True, "project": p, "message": f"项目 '{name}' 创建成功"}
+
+
+@app.put("/api/v1/projects/{project_id}")
+async def update_project(
+    project_id: str,
+    name: Optional[str] = Form(None),
+    status: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
+    end_date: Optional[str] = Form(None),
+    user: dict = Depends(get_current_user),
+):
+    """更新项目"""
+    from projects import update_project as _update
+    p = _update(project_id, name=name, status=status, description=description, end_date=end_date)
+    if not p:
+        raise HTTPException(status_code=404, detail="项目不存在")
+    return {"success": True, "project": p}
+
+
+@app.delete("/api/v1/projects/{project_id}")
+async def delete_project(project_id: str, user: dict = Depends(get_current_user)):
+    """删除项目"""
+    from projects import delete_project as _delete
+    if not _delete(project_id):
+        raise HTTPException(status_code=404, detail="项目不存在")
+    return {"success": True, "message": "项目已删除"}
+
+
+@app.get("/api/v1/projects/{project_id}/milestones")
+async def list_milestones(project_id: str, user: dict = Depends(get_current_user)):
+    """项目里程碑列表"""
+    from projects import list_milestones as _list
+    milestones = _list(project_id=project_id)
+    return {"success": True, "milestones": milestones}
+
+
+@app.post("/api/v1/projects/{project_id}/milestones")
+async def add_milestone(
+    project_id: str,
+    title: str = Form(...),
+    milestone_type: str = Form("custom"),
+    due_date: str = Form(...),
+    description: str = Form(""),
+    notify_days_before: int = Form(3),
+    user: dict = Depends(get_current_user),
+):
+    """添加里程碑"""
+    from projects import add_milestone as _add
+    ms = _add(project_id, milestone_type, title, due_date, description, notify_days_before)
+    return {"success": True, "milestone": ms}
+
+
+@app.post("/api/v1/projects/milestones/{milestone_id}/complete")
+async def complete_milestone(milestone_id: str, user: dict = Depends(get_current_user)):
+    """完成里程碑"""
+    from projects import complete_milestone as _complete
+    ms = _complete(milestone_id)
+    if not ms:
+        raise HTTPException(status_code=404, detail="里程碑不存在")
+    return {"success": True, "milestone": ms}
+
+
+@app.get("/api/v1/projects/checks")
+async def run_project_checks(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
+    """运行项目检查（里程碑提醒等）"""
+    from projects import run_project_checks as _check
+    result = _check()
+    return {"success": True, **result}
+
+
+# ── 性能优化 API ──────────────────────────────────────────
+
+@app.get("/api/v1/performance/cache-stats")
+async def cache_stats(user: dict = Depends(get_current_user)):
+    """缓存统计"""
+    from performance import get_cache_stats as _stats
+    return {"success": True, "stats": _stats()}
+
+
+@app.post("/api/v1/performance/cache-clear")
+async def cache_clear(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
+    """清理所有缓存"""
+    import shutil
+    from performance import CACHE_DIR
+    if CACHE_DIR.exists():
+        shutil.rmtree(CACHE_DIR)
+    return {"success": True, "message": "缓存已清理"}
+
+
+@app.post("/api/v1/performance/cache-warmup")
+async def cache_warmup(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
+    """缓存预热：扫描样本目录并预解析"""
+    from performance import preload_cache
+    from pathlib import Path
+    sample_dir = Path(__file__).parent.parent / "data" / "samples"
+    files = []
+    if sample_dir.exists():
+        for ext in ["*.dwg", "*.dxf", "*.pdf"]:
+            files.extend(sample_dir.glob(ext))
+    result = preload_cache(files)
+    return {"success": True, "files_found": len(files), **result}
+
+
+@app.get("/api/v1/performance/health")
+async def perf_health():
+    """性能健康检查（无需认证）"""
+    import time, psutil
+    process = psutil.Process()
+    mem_info = process.memory_info()
+    return {
+        "success": True,
+        "memory_mb": round(mem_info.rss / 1024 / 1024, 1),
+        "cpu_percent": process.cpu_percent(interval=0.1),
+        "threads": process.num_threads(),
+        "uptime_seconds": int(time.time() - process.create_time()),
+    }
 
 
 # ── 管理报告 / 决策建议 / 预警 API ──────────────────────────

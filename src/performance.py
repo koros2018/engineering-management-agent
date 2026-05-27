@@ -147,3 +147,30 @@ def get_cache_stats() -> Dict:
         "max_size_mb": CACHE_MAX_SIZE_MB,
         "ttl_hours": CACHE_TTL_SECONDS // 3600,
     }
+
+
+def preload_cache(file_paths: list) -> Dict:
+    """预加载缓存（批量解析图纸后缓存结果）"""
+    from blueprint_parser.core import BlueprintParser
+    parser = BlueprintParser()
+    results = {"cached": 0, "skipped": 0, "errors": 0}
+
+    for fp in file_paths:
+        p = Path(fp)
+        if not p.exists():
+            results["skipped"] += 1
+            continue
+        if get_cached_analysis(p):
+            results["skipped"] += 1
+            continue
+        try:
+            result = parser.parse(str(p))
+            if result.success:
+                cache_analysis(p, {"analysis": {"file_type": str(result.file_type), "layer_count": len(result.layers), "entity_count": len(result.entities)}})
+                results["cached"] += 1
+            else:
+                results["errors"] += 1
+        except Exception:
+            results["errors"] += 1
+
+    return results

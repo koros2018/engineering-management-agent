@@ -1,0 +1,18 @@
+{
+  "proj_45d624ba41d7": {
+    "id": "proj_45d624ba41d7",
+    "tenant_id": "tenant_boss",
+    "name": "测试项目",
+    "description": "desc",
+    "type": "construction",
+    "status": "planning",
+    "budget": 100000,
+    "start_date": "2026-05-27",
+    "end_date": "",
+    "created_by": "",
+    "created_at": "2026-05-27T18:54:45.568670",
+    "updated_at": "2026-05-27T18:54:45.568670",
+    "file_count": 0,
+    "review_count": 0
+  }
+}
