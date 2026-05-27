@@ -58,5 +58,15 @@
     "auto_renew": true,
     "status": "active",
     "payment_history": []
+  },
+  "tenant_boss": {
+    "tenant_id": "tenant_boss",
+    "plan_id": "pro",
+    "plan_name": "专业版",
+    "started_at": "2026-05-27T20:10:32.615224",
+    "expires_at": "2026-06-26T20:10:32.615224",
+    "auto_renew": true,
+    "status": "active",
+    "payment_history": []
   }
 }

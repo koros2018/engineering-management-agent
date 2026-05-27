@@ -16,6 +16,26 @@ for _p in [str(_WORKSPACE / "src"), str(_PROJECT_SRC)]:
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+# ── 异步任务队列 ──────────────────────────────────────────
+import threading
+from concurrent.futures import ThreadPoolExecutor
+_executor = ThreadPoolExecutor(max_workers=3)
+_tasks = {}  # task_id -> {"status": "running|done|error", "result": ..., "progress": 0}
+
+def _run_async(task_id: str, fn, *args, **kwargs):
+    def wrapper():
+        _tasks[task_id]["status"] = "running"
+        try:
+            result = fn(*args, **kwargs)
+            _tasks[task_id]["status"] = "done"
+            _tasks[task_id]["result"] = result
+            _tasks[task_id]["progress"] = 100
+        except Exception as e:
+            _tasks[task_id]["status"] = "error"
+            _tasks[task_id]["error"] = str(e)
+    threading.Thread(target=wrapper, daemon=True).start()
+
+
 # 加载 .env
 _ENV_FILE = Path(__file__).parent.parent.parent / ".env"
 if _ENV_FILE.exists():
@@ -1531,6 +1551,107 @@ async def cache_stats():
     """获取解析缓存统计"""
     from performance import get_cache_stats
     return {"success": True, "cache": get_cache_stats()}
+
+
+# ── 国标规范更新 API ────────────────────────────────────────
+
+@app.get("/api/v1/specs")
+async def list_specs(user: dict = Depends(get_current_user)):
+    """规范列表"""
+    from specs_updater import get_specs_index, initialize_specs_index
+    index = get_specs_index()
+    if not index:
+        index = initialize_specs_index()
+    return {"success": True, "specs": list(index.values()), "total": len(index)}
+
+
+@app.post("/api/v1/specs/check")
+async def check_specs_update(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
+    """手动触发规范更新检查"""
+    from specs_updater import run_specs_check
+    result = run_specs_check()
+    return {"success": True, **result}
+
+
+@app.post("/api/v1/specs/initialize")
+async def initialize_specs(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
+    """初始化规范索引"""
+    from specs_updater import initialize_specs_index
+    index = initialize_specs_index()
+    return {"success": True, "specs": list(index.values()), "total": len(index)}
+
+
+# ── 异步任务 API ─────────────────────────────────────────
+
+@app.post("/api/v1/tasks/analyze")
+async def create_analyze_task(
+    file: UploadFile = File(...),
+    user_id: str = Form("guest"),
+    project_id: Optional[str] = Form(None),
+):
+    """创建异步图纸分析任务"""
+    import tempfile, uuid
+    from pathlib import Path
+
+    task_id = f"task_{uuid.uuid4().hex[:12]}"
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in [".dwg", ".dxf", ".pdf"]:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+
+    # 保存文件
+    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    save_path = UPLOAD_DIR / f"{task_id}_{file.filename}"
+    content = await file.read()
+    save_path.write_bytes(content)
+
+    # 检查缓存
+    from performance import get_cached_analysis, cache_analysis
+    cached = get_cached_analysis(save_path)
+    if cached:
+        return {"success": True, "task_id": task_id, "status": "done", "cached": True, "result": cached}
+
+    # 创建异步任务
+    _tasks[task_id] = {"status": "pending", "progress": 0, "result": None, "error": None}
+
+    def do_analyze():
+        _tasks[task_id]["status"] = "running"
+        _tasks[task_id]["progress"] = 10
+        try:
+            sys.path.insert(0, str(Path("/mnt/d/OpenClawDataworkspace/Projects/blueprint-ai/src")))
+            from blueprint_parser.core import BlueprintParser
+            parser = BlueprintParser()
+            _tasks[task_id]["progress"] = 30
+            result = parser.parse(str(save_path))
+            _tasks[task_id]["progress"] = 80
+            analysis = {
+                "file_type": str(result.file_type),
+                "drawing_type": "待识别",
+                "layer_count": len(result.layers),
+                "entity_count": len(result.entities),
+                "layers": [{"name": l.name, "color": l.color} for l in result.layers[:50]],
+                "entities": [{"type": getattr(e, "type", "UNKNOWN"), "layer": getattr(e, "layer", "")} for e in result.entities[:50]],
+                "metadata": result.metadata,
+            }
+            cache_analysis(save_path, {"analysis": analysis})
+            _tasks[task_id]["result"] = {"success": result.success, "analysis": analysis, "error": "; ".join(result.errors) if result.errors else None}
+            _tasks[task_id]["status"] = "done"
+            _tasks[task_id]["progress"] = 100
+        except Exception as e:
+            _tasks[task_id]["status"] = "error"
+            _tasks[task_id]["error"] = str(e)
+
+    threading.Thread(target=do_analyze, daemon=True).start()
+    return {"success": True, "task_id": task_id, "status": "pending"}
+
+
+@app.get("/api/v1/tasks/{task_id}")
+async def get_task_status(task_id: str):
+    """查询异步任务状态"""
+    task = _tasks.get(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="任务不存在")
+    return {"success": True, "task_id": task_id, **task}
 
 
 # ─────────────────────────────────────────────────────────────────
