@@ -1,25 +1,17 @@
-"""
-src/blueprint/__init__.py - EMA 图纸解析模块
+"""src/blueprint/ - EMA图纸解析模块（自研）"""
 
-Phase 7+1-A: 基础解析能力迁移
-从 blueprint-ai 迁移并增强，作为 TechRdAgent 核心能力。
-
-子模块:
-  parsers/   - 文件解析器 (PDF/DWG/DXF)
-  ai/        - AI推理 (图纸分类/信息提取)
-  review/    - 智能审查 (国标规则引擎)
-  editor/    - 图纸编辑 (DXF编辑)
-  documents/ - 工程文档生成
-  vector/    - 向量搜索 (ChromaDB)
-"""
-
-from .types import FileType, EntityInfo, LayerInfo, ParseResult
 from .core import BlueprintParser
+from .types import FileType, EntityInfo, LayerInfo, ParseResult
+
+# AI模块（延迟导入，避免启动时依赖LLM）
+# from .ai.classifier import smart_classify, batch_classify
+# from .ai.inference import analyze_blueprint, infer_drawing_type
+# from .ai.extractor import smart_extract, extract_material_specs, extract_design_params
 
 __all__ = [
+    "BlueprintParser",
     "FileType",
     "EntityInfo",
     "LayerInfo",
     "ParseResult",
-    "BlueprintParser",
 ]

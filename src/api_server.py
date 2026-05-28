@@ -758,6 +758,109 @@ async def upload_and_analyze(
         raise HTTPException(status_code=500, detail=f"解析失败: {str(e)}")
 
 
+# ── Blueprint AI 增强分析 API ─────────────────────────────────
+
+@app.post("/api/v1/blueprint/ai-analyze")
+async def blueprint_ai_analyze(
+    file: UploadFile = File(...),
+    user_id: str = Form("guest"),
+    use_llm: bool = Form(True),
+    enable_ai: bool = Form(True),
+    disable_ocr: bool = Form(True),
+):
+    """AI增强型图纸分析 — 上传图纸返回完整AI分析（分类+提取+设计原则+施工要求）"""
+    from pathlib import Path
+
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in ['.dwg', '.dxf', '.pdf']:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+
+    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    safe_name = f"ai_{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
+    save_path = UPLOAD_DIR / safe_name
+    save_path.write_bytes(await file.read())
+
+    try:
+        from blueprint.core import BlueprintParser
+        parser = BlueprintParser(use_ocr=not disable_ocr, enable_ai=enable_ai, use_llm=use_llm)
+        result = parser.parse_with_ai(str(save_path))
+        return {"success": result.get('success', False), "file_path": file.filename, "result": result}
+    except Exception as e:
+        logger.error(f"[AI Analyze Error] {file.filename}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI分析失败: {str(e)}")
+
+
+@app.post("/api/v1/blueprint/ai-extract")
+async def blueprint_ai_extract(
+    file: UploadFile = File(...),
+    user_id: str = Form("guest"),
+    use_llm: bool = Form(True),
+    disable_ocr: bool = Form(True),
+):
+    """工程信息智能提取 — 轻量级，只返回工程信息（项目名/面积/层数/结构/材料/参数）"""
+    from pathlib import Path
+
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in ['.dwg', '.dxf', '.pdf']:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+
+    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    safe_name = f"ex_{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
+    save_path = UPLOAD_DIR / safe_name
+    save_path.write_bytes(await file.read())
+
+    try:
+        from blueprint.core import BlueprintParser
+        from blueprint.ai.classifier import smart_classify
+        from blueprint.ai.extractor import smart_extract, extract_material_specs, extract_design_params
+
+        parser = BlueprintParser(use_ocr=not disable_ocr, enable_ai=False)
+        parse_result = parser.parse(str(save_path))
+        if not parse_result.success:
+            return {"success": False, "errors": parse_result.errors}
+
+        file_name = Path(file.filename).name
+        layers = [l.name for l in parse_result.layers]
+        raw_text = parse_result.raw_text
+
+        drawing_type = smart_classify(layers=layers, raw_text=raw_text, file_name=file_name, use_llm=use_llm)
+        project_info = smart_extract(raw_text=raw_text, file_name=file_name, drawing_type=drawing_type.get('primary',''), layers=layers, use_llm=use_llm)
+        material_specs = extract_material_specs(raw_text)
+        design_params = extract_design_params(raw_text)
+
+        return {
+            "success": True, "file_name": file_name, "file_type": parse_result.file_type.value,
+            "drawing_type": drawing_type, "project_info": project_info,
+            "material_specs": material_specs, "design_params": design_params,
+            "layer_count": len(parse_result.layers), "entity_count": len(parse_result.entities),
+        }
+    except Exception as e:
+        logger.error(f"[AI Extract Error] {file.filename}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"信息提取失败: {str(e)}")
+
+
+@app.get("/api/v1/blueprint/supported-formats")
+async def blueprint_supported_formats():
+    """列出支持的图纸格式和AI能力"""
+    import os
+    llm_enabled = os.environ.get("BLUEPRINT_LLM_ENABLED", "true").lower() == "true"
+    return {
+        "success": True, "formats": [".dwg", ".dxf", ".pdf"],
+        "ai_capabilities": {
+            "drawing_type_classification": {"enabled": True, "engines": ["rule_engine", "llm"] if llm_enabled else ["rule_engine"], "types": ["建筑","结构","给排水","暖通","电气","消防","总图","景观","机电","精装","工艺"]},
+            "layer_semantics": {"enabled": True, "languages": ["english", "chinese"], "tarch_encoding": True},
+            "project_info_extraction": {"enabled": True, "engines": ["rule_regex", "llm"] if llm_enabled else ["rule_regex"], "fields": ["project_name","project_number","building_area","floor_count","building_height","structure_type","foundation_type","design_unit","drawing_number","design_basis","fire_resistance_rating","seismic_intensity"]},
+            "material_spec_extraction": {"enabled": True},
+            "design_param_extraction": {"enabled": True},
+            "design_principles": {"enabled": True},
+            "construction_requirements": {"enabled": True},
+        },
+        "llm_status": "enabled" if llm_enabled else "disabled",
+    }
+
+
 # ── 订阅套餐 API ────────────────────────────────────────────────
 
 @app.get("/api/v1/subscription/plans")
