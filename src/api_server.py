@@ -861,6 +861,132 @@ async def blueprint_supported_formats():
     }
 
 
+# ─── Blueprint 审查 API ───────────────────────────────────────────
+
+@app.post("/api/v1/blueprint/review")
+async def blueprint_review(request: Request):
+    """图纸智能审查（基于国标规范）
+    
+    请求体: {"file_path": "/path/to/file.dxf", "drawing_type": "建筑平面图"}
+    或: {"analysis": {...已有的分析结果...}}
+    """
+    from src.blueprint.review.engine import review_blueprint, review_analysis
+    data = await request.json()
+    
+    if "analysis" in data:
+        result = review_analysis(data["analysis"])
+        return {"success": True, "review": result}
+    
+    file_path = data.get("file_path", "")
+    if not file_path:
+        return {"success": False, "error": "缺少file_path或analysis参数"}
+    
+    drawing_type = data.get("drawing_type", "")
+    result = review_blueprint(file_path, drawing_type=drawing_type)
+    return {"success": True, "review": result}
+
+
+@app.post("/api/v1/blueprint/review/analysis")
+async def blueprint_review_analysis(request: Request):
+    """从已有分析结果进行审查"""
+    from src.blueprint.review.engine import review_analysis
+    data = await request.json()
+    analysis = data.get("analysis", {})
+    if not analysis:
+        return {"success": False, "error": "缺少analysis参数"}
+    result = review_analysis(analysis)
+    return {"success": True, "review": result}
+
+
+@app.get("/api/v1/blueprint/review/rules")
+async def blueprint_review_rules():
+    """列出所有审查规则"""
+    from src.blueprint.review.engine import RULES
+    rules = []
+    for r in RULES:
+        rules.append({
+            "id": r.id, "name": r.name, "severity": r.severity,
+            "spec_code": r.spec_code, "spec_section": r.spec_section,
+        })
+    return {"success": True, "rules": rules, "total": len(rules)}
+
+
+# ─── Blueprint 文档生成 API ───────────────────────────────────────
+
+@app.post("/api/v1/blueprint/documents/generate")
+async def blueprint_generate_documents(request: Request):
+    """生成完整工程文档集
+    
+    请求体: {"analysis": {...}, "doc_types": ["all"] 或 ["design_description", ...]}
+    """
+    from src.blueprint.documents.generator import generate_full_document_set
+    data = await request.json()
+    analysis = data.get("analysis", {})
+    if not analysis:
+        return {"success": False, "error": "缺少analysis参数"}
+    
+    doc_types = data.get("doc_types", ["all"])
+    if "all" in doc_types:
+        result = generate_full_document_set(analysis)
+    else:
+        from src.blueprint.documents.generator import (
+            generate_design_description, generate_technical_disclosure,
+            generate_quantity_list, generate_change_request, generate_bid_document,
+        )
+        type_map = {
+            "design_description": generate_design_description,
+            "technical_disclosure": generate_technical_disclosure,
+            "quantity_list": generate_quantity_list,
+            "change_request": generate_change_request,
+            "bid_document": generate_bid_document,
+        }
+        docs = {dt: type_map[dt](analysis) for dt in doc_types if dt in type_map}
+        result = {"success": True, "analysis": analysis, "documents": docs}
+    return {"success": True, "documents": result}
+
+
+@app.post("/api/v1/blueprint/documents/single")
+async def blueprint_generate_single_document(request: Request):
+    """生成单个类型的工程文档
+    
+    请求体: {"analysis": {...}, "doc_type": "design_description"}
+    """
+    from src.blueprint.documents.generator import (
+        generate_design_description, generate_technical_disclosure,
+        generate_quantity_list, generate_change_request, generate_bid_document,
+    )
+    data = await request.json()
+    analysis = data.get("analysis", {})
+    doc_type = data.get("doc_type", "design_description")
+    type_map = {
+        "design_description": generate_design_description,
+        "technical_disclosure": generate_technical_disclosure,
+        "quantity_list": generate_quantity_list,
+        "change_request": generate_change_request,
+        "bid_document": generate_bid_document,
+    }
+    fn = type_map.get(doc_type)
+    if not fn:
+        return {"success": False, "error": f"不支持的文档类型: {doc_type}", "supported": list(type_map.keys())}
+    result = fn(analysis)
+    return {"success": True, "doc_type": doc_type, "content": result}
+
+
+@app.get("/api/v1/blueprint/documents/types")
+async def blueprint_document_types():
+    """列出支持的文档类型"""
+    return {
+        "success": True,
+        "types": [
+            {"id": "design_description", "name": "设计说明", "description": "工程设计说明"},
+            {"id": "technical_disclosure", "name": "施工技术交底", "description": "6大专业施工工艺交底"},
+            {"id": "quantity_list", "name": "工程量清单", "description": "工程量估算清单"},
+            {"id": "change_request", "name": "技术核定单", "description": "设计变更技术核定"},
+            {"id": "bid_document", "name": "招投标文件", "description": "招标文件技术要求"},
+        ],
+    }
+
+
 # ── 订阅套餐 API ────────────────────────────────────────────────
 
 @app.get("/api/v1/subscription/plans")
