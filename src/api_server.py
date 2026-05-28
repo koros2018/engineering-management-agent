@@ -987,6 +987,97 @@ async def blueprint_document_types():
     }
 
 
+# ─── Agent 工作流 API ─────────────────────────────────────────────
+
+@app.post("/api/v1/agent/pipeline")
+async def agent_pipeline(request: Request):
+    """端到端Agent工作流：解析→分类→AI分析→审查→文档
+    
+    请求体: {"file_path": "/path/to/file.dxf", "use_llm": false, "doc_types": ["all"]}
+    """
+    from src.sub_agents.tech_rd_agent import TechRdAgent
+    from src.agent.base_agent import Task
+    
+    data = await request.json()
+    file_path = data.get("file_path")
+    if not file_path:
+        return {"success": False, "error": "缺少file_path参数"}
+    
+    agent = TechRdAgent()
+    task = Task(
+        task_id="api_pipeline",
+        agent_id="tech_rd",
+        task_type="full_pipeline",
+        params={
+            "file_path": file_path,
+            "use_llm": data.get("use_llm", False),
+            "doc_types": data.get("doc_types", ["all"]),
+        },
+        context={"task_id": "api_pipeline"},
+    )
+    result = await agent.run_with_retry(task)
+    return {
+        "success": result.status == "success",
+        "output": result.output,
+        "confidence": result.confidence,
+        "execution_time": result.execution_time,
+        "errors": result.errors,
+    }
+
+
+@app.post("/api/v1/agent/analyze")
+async def agent_analyze(request: Request):
+    """完整分析工作流：解析→分类→AI分析→工程量
+    
+    请求体: {"file_path": "/path/to/file.dxf", "use_llm": false}
+    """
+    from src.sub_agents.tech_rd_agent import TechRdAgent
+    from src.agent.base_agent import Task
+    
+    data = await request.json()
+    file_path = data.get("file_path")
+    if not file_path:
+        return {"success": False, "error": "缺少file_path参数"}
+    
+    agent = TechRdAgent()
+    task = Task(
+        task_id="api_analyze",
+        agent_id="tech_rd",
+        task_type="full_analysis",
+        params={
+            "file_path": file_path,
+            "use_llm": data.get("use_llm", False),
+        },
+        context={"task_id": "api_analyze"},
+    )
+    result = await agent.run_with_retry(task)
+    return {
+        "success": result.status == "success",
+        "output": result.output,
+        "confidence": result.confidence,
+        "execution_time": result.execution_time,
+        "errors": result.errors,
+    }
+
+
+@app.get("/api/v1/agent/capabilities")
+async def agent_capabilities():
+    """列出所有Agent能力"""
+    from src.sub_agents.tech_rd_agent import TechRdAgent
+    from src.agent.main_agent import EngineeringManagementAgent
+    
+    main = EngineeringManagementAgent()
+    tech_rd = TechRdAgent()
+    
+    return {
+        "success": True,
+        "main_agent": main.get_capabilities(),
+        "tech_rd_agent": tech_rd.get_capabilities(),
+        "supported_task_types": tech_rd.get_supported_tasks(),
+        "pipeline_steps": ["parse", "classify", "analyze", "review", "documents"],
+    }
+
+
 # ── 订阅套餐 API ────────────────────────────────────────────────
 
 @app.get("/api/v1/subscription/plans")

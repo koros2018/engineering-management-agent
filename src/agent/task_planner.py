@@ -24,6 +24,8 @@ SINGLE_STEP_TASKS = {
     'tech_rd:extract_quantities': {'agent_id': 'tech_rd', 'task_type': 'extract_quantities', 'mode': 'single'},
     'tech_rd:optimize': {'agent_id': 'tech_rd', 'task_type': 'optimize', 'mode': 'single'},
     'tech_rd:full_analysis': {'agent_id': 'tech_rd', 'task_type': 'full_analysis', 'mode': 'single'},
+    'tech_rd:documents': {'agent_id': 'tech_rd', 'task_type': 'documents', 'mode': 'single'},
+    'tech_rd:full_pipeline': {'agent_id': 'tech_rd', 'task_type': 'full_pipeline', 'mode': 'single'},
     # safety_compliance
     'safety_compliance:review': {'agent_id': 'safety_compliance', 'task_type': 'review', 'mode': 'single'},
     'safety_compliance:fire_review': {'agent_id': 'safety_compliance', 'task_type': 'fire_review', 'mode': 'single'},

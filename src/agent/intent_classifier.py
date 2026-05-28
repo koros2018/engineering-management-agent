@@ -20,7 +20,8 @@ AGENT_KEYWORDS = {
         '图纸', '解析', '分析', '识别', '图层', 'DWG', 'DXF', 'PDF',
         '工程量', '提量', '算量', '设计优化', '审图', '审图规则',
         '蓝图', 'CAD', '建筑', '结构', '机电', '暖通', '给排水',
-        '智能审图', '合规审查',
+        '智能审图', '合规审查', '审查', '文档', '设计说明',
+        '技术交底', '工程量清单', '招投标', '端到端', '流水线',
     ],
     'safety_compliance': [
         '安全', '合规', '消防', '防火', '疏散', '排烟', '验收',
@@ -158,8 +159,12 @@ class IntentClassifier:
                 return 'parse'
             elif any(k in message for k in ['识别', '分类', '类型']):
                 return 'classify'
-            elif any(k in message for k in ['审图', '合规审查', '审查', '规则']):
+            elif any(k in message for k in ['审查', '审图', '合规审查', '规则', '检查问题']):
                 return 'review'
+            elif any(k in message for k in ['文档', '设计说明', '技术交底', '工程量清单', '招投标', '标书']):
+                return 'documents'
+            elif any(k in message for k in ['端到端', '流水线', '全流程', '一键', '全部']):
+                return 'full_pipeline'
             elif any(k in message for k in ['工程量', '提量', '算量', '数量']):
                 return 'extract_quantities'
             elif any(k in message for k in ['优化', '改进', '建议']):
