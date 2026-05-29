@@ -565,6 +565,9 @@ margin-bottom: 0; margin-right: 4px;
         <div :class="['nav-item', { active: showMonitor }]" @click="toggleMonitor" style="color:var(--text-dim)">
           <span style="margin-right:6px">📊</span> 性能监控
         </div>
+        <div :class="['nav-item', { active: showAnalytics }]" @click="toggleAnalytics" style="color:var(--text-dim)">
+          <span style="margin-right:6px">📈</span> 行为分析
+        </div>
       </div>
     </div>
 
@@ -632,6 +635,54 @@ margin-bottom: 0; margin-right: 4px;
         <div v-if="monitorData.data" style="margin-bottom:10px">
           <div style="font-size:12px;font-weight:600;margin-bottom:4px">💾 数据</div>
           <div style="font-size:11px;color:var(--text-dim)">{{ monitorData.data.size_mb }}MB · {{ monitorData.data.files }} files</div>
+        </div>
+      </div>
+      <div v-else style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">点击刷新加载数据</div>
+    </div>
+
+    <!-- 用户行为分析面板 -->
+    <div class="history-panel" v-if="showAnalytics" style="width:340px">
+      <div class="history-header">
+        <span>📈 用户行为分析</span>
+        <span class="history-refresh" @click="loadAnalytics" title="刷新">🔄</span>
+      </div>
+      <div v-if="analyticsLoading" style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">{{ t('loading') }}</div>
+      <div v-else-if="analyticsData" style="padding:8px">
+        <div v-if="analyticsData.error" style="font-size:12px;color:var(--danger);padding:8px">{{ analyticsData.error }}</div>
+        <div v-else>
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <div style="flex:1;text-align:center;padding:8px;background:var(--agent-bubble);border-radius:6px">
+              <div style="font-size:18px;font-weight:700">{{ analyticsData.total_events || 0 }}</div>
+              <div style="font-size:10px;color:var(--text-dim)">总事件</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:8px;background:var(--agent-bubble);border-radius:6px">
+              <div style="font-size:18px;font-weight:700">{{ analyticsData.unique_users || 0 }}</div>
+              <div style="font-size:10px;color:var(--text-dim)">用户数</div>
+            </div>
+          </div>
+          <div v-if="analyticsData.event_types" style="margin-bottom:10px">
+            <div style="font-size:12px;font-weight:600;margin-bottom:4px">事件分布</div>
+            <div v-for="(count, name) in analyticsData.event_types" :key="name" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:11px">
+              <span style="flex:1;color:var(--text)">{{ name }}</span>
+              <span style="color:var(--accent);font-weight:600">{{ count }}</span>
+            </div>
+          </div>
+          <div v-if="analyticsData.categories" style="margin-bottom:10px">
+            <div style="font-size:12px;font-weight:600;margin-bottom:4px">分类</div>
+            <div v-for="(count, name) in analyticsData.categories" :key="name" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:11px">
+              <span style="flex:1;color:var(--text)">{{ name }}</span>
+              <span style="color:var(--text-dim)">{{ count }}</span>
+            </div>
+          </div>
+          <div v-if="analyticsData.hourly_trend && Object.keys(analyticsData.hourly_trend).length">
+            <div style="font-size:12px;font-weight:600;margin-bottom:4px">小时趋势</div>
+            <div style="display:flex;align-items:flex-end;gap:2px;height:40px">
+              <div v-for="(hour, i) in Object.keys(analyticsData.hourly_trend).slice(-12)" :key="hour" style="flex:1;text-align:center">
+                <div :style="{height: Math.max(2, (analyticsData.hourly_trend[hour] / Math.max(...Object.values(analyticsData.hourly_trend))) * 36) + 'px', background: 'var(--accent)', borderRadius: '2px 2px 0 0'}"></div>
+                <div style="font-size:8px;color:var(--text-dim);margin-top:2px">{{ hour.slice(-2) }}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div v-else style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">点击刷新加载数据</div>
@@ -1525,6 +1576,43 @@ createApp({
       monitorLoading.value = false;
     }
 
+    // ── 用户行为埋点 ──
+    const showAnalytics = ref(false);
+    const analyticsData = ref(null);
+    const analyticsLoading = ref(false);
+
+    function trackEvent(event, category, props) {
+      const payload = {
+        event, category, props: props || {},
+        user_id: localStorage.getItem('ema_user') || 'anonymous',
+        session_id: localStorage.getItem('ema_session') || '',
+        timestamp: new Date().toISOString(),
+      };
+      // 不阻塞UI，fire-and-forget
+      fetch(`${API_BASE}/api/v1/analytics/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).catch(() => {});
+    }
+
+    function toggleAnalytics() {
+      showAnalytics.value = !showAnalytics.value;
+      if (showAnalytics.value && !analyticsData.value) loadAnalytics();
+    }
+
+    async function loadAnalytics() {
+      analyticsLoading.value = true;
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/analytics/summary?days=7`);
+        const data = await resp.json();
+        analyticsData.value = data.stats || {};
+      } catch (e) {
+        analyticsData.value = { error: e.message };
+      }
+      analyticsLoading.value = false;
+    }
+
     async function searchHistory() {
       if (!historyQuery.value) { loadHistory(); return; }
       historyLoading.value = true;
@@ -1863,6 +1951,7 @@ createApp({
       planId, planName, unreadCount, showPlans, showNotifs, plans, notifList,
       showHistory, historySessions, historyLoading, historyQuery, activeHistorySession,
       showMonitor, monitorData, monitorLoading, toggleMonitor, loadMonitor,
+      showAnalytics, analyticsData, analyticsLoading, toggleAnalytics, loadAnalytics, trackEvent,
       formatSize, switchAgent, onFileSelect, autoGrow, send, onModelChange,
       toggleHistory, loadHistory, searchHistory, viewHistorySession,
       userRole, canAccessAgent, lockedAgents,

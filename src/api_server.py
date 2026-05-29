@@ -46,8 +46,10 @@ if _ENV_FILE.exists():
 
 import asyncio
 import time
+import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
+from collections import defaultdict
 from typing import Optional, List, Dict, Tuple
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Form, Depends, Body, Request, Query
@@ -536,7 +538,6 @@ async def system_performance():
         ("extractor", "src.blueprint.ai.extractor"),
         ("review_engine", "src.blueprint.review.engine"),
         ("doc_generator", "src.blueprint.documents.generator"),
-        ("llm_supervisor", "src.llm_supervisor"),
         ("tech_rd_agent", "src.sub_agents.tech_rd_agent"),
     ]:
         t0 = time.time()
@@ -1097,11 +1098,13 @@ async def agent_review(
         if parse_result.status != "success":
             return {"success": False, "error": parse_result.errors or ["解析失败"]}
 
-        parsed = parse_result.output
-        layers = parsed.get("layers", []) if isinstance(parsed, dict) else []
-        layer_names = [l.get("name", "") if isinstance(l, dict) else str(l) for l in layers]
-        geometry = parsed.get("geometry", {})
-        layer_stats = parsed.get("layer_stats", {})
+        # AgentResult.output 是 dict（to_dict序列化）
+        pr = parse_result.output or {}
+        layers = pr.get('layers', []) if isinstance(pr, dict) else []
+        layer_names = [l.get('name', '') if isinstance(l, dict) else str(l) for l in layers]
+        raw_text = pr.get('raw_text', '') if isinstance(pr, dict) else ''
+        geometry = pr.get('geometry', {}) if isinstance(pr, dict) else {}
+        layer_stats = pr.get('layer_stats', {}) if isinstance(pr, dict) else {}
 
         # 分类+AI分析并行（CPU密集→to_thread）
         from src.blueprint.ai.classifier import smart_classify
@@ -1109,10 +1112,10 @@ async def agent_review(
         import asyncio as _asyncio
 
         def _classify():
-            return smart_classify(layer_names, file.filename, parsed.get("raw_text", ""), use_llm=False)
+            return smart_classify(layer_names, file_name=file.filename, raw_text=raw_text, use_llm=False)
 
         def _analyze(drawing_type):
-            return smart_extract(parsed, drawing_type, use_llm=False)
+            return smart_extract(raw_text, file.filename, drawing_type, layer_names, use_llm=False)
 
         cls = await _asyncio.to_thread(_classify)
         drawing_type = cls.get("primary_type", "建筑") if isinstance(cls, dict) else "建筑"
@@ -1129,8 +1132,8 @@ async def agent_review(
         }
 
         # 审查
-        from src.blueprint.review.engine import review_analysis as do_review
-        review_output = await _asyncio.to_thread(do_review, review_analysis)
+        from src.blueprint.review.engine import review_drawing
+        review_output = await _asyncio.to_thread(review_drawing, review_analysis)
 
         return {
             "success": True,
@@ -1182,20 +1185,22 @@ async def agent_documents(
         if parse_result.status != "success":
             return {"success": False, "error": parse_result.errors or ["解析失败"]}
 
-        parsed = parse_result.output
-        layers = parsed.get("layers", []) if isinstance(parsed, dict) else []
-        layer_names = [l.get("name", "") if isinstance(l, dict) else str(l) for l in layers]
-        geometry = parsed.get("geometry", {})
-        layer_stats = parsed.get("layer_stats", {})
+        # AgentResult.output 是 dict（to_dict序列化）
+        pr = parse_result.output or {}
+        layers = pr.get('layers', []) if isinstance(pr, dict) else []
+        layer_names = [l.get('name', '') if isinstance(l, dict) else str(l) for l in layers]
+        raw_text = pr.get('raw_text', '') if isinstance(pr, dict) else ''
+        geometry = pr.get('geometry', {}) if isinstance(pr, dict) else {}
+        layer_stats = pr.get('layer_stats', {}) if isinstance(pr, dict) else {}
 
         # 分类
         from src.blueprint.ai.classifier import smart_classify
-        cls = smart_classify(layer_names, file.filename, parsed.get("raw_text", ""), use_llm=False)
+        cls = smart_classify(layer_names, file_name=file.filename, raw_text=raw_text, use_llm=False)
         drawing_type = cls.get("primary_type", "建筑") if isinstance(cls, dict) else "建筑"
 
         # AI分析
         from src.blueprint.ai.extractor import smart_extract
-        analysis = smart_extract(parsed, drawing_type, use_llm=False)
+        analysis = smart_extract(raw_text, file.filename, drawing_type, layer_names, use_llm=False)
 
         review_analysis = {
             "file_name": file.filename,
@@ -1249,28 +1254,44 @@ async def agent_documents(
         raise HTTPException(status_code=500, detail=f"文档生成失败: {str(e)}")
 
 @app.post("/api/v1/agent/pipeline")
-async def agent_pipeline(request: Request):
-    """端到端Agent工作流：解析→分类→AI分析→审查→文档
-    
-    请求体: {"file_path": "/path/to/file.dxf", "use_llm": false, "doc_types": ["all"]}
-    """
+async def agent_pipeline(
+    file: UploadFile = File(None),
+    file_path: str = Form(None),
+    user_id: str = Form("guest"),
+    use_llm: bool = Form(False),
+    doc_types: str = Form("all"),
+):
+    """端到端Agent工作流：解析→分类→AI分析→审查→文档"""
+    import tempfile
+    from pathlib import Path
     from src.sub_agents.tech_rd_agent import TechRdAgent
     from src.agent.base_agent import Task
-    
-    data = await request.json()
-    file_path = data.get("file_path")
-    if not file_path:
-        return {"success": False, "error": "缺少file_path参数"}
+
+    # 支持文件上传或直接传路径
+    if file:
+        suffix = Path(file.filename).suffix.lower()
+        UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
+        UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        safe_name = f"pipe_{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
+        save_path = UPLOAD_DIR / safe_name
+        content = await file.read()
+        save_path.write_bytes(content)
+        actual_path = str(save_path)
+    elif file_path:
+        actual_path = file_path
+    else:
+        raise HTTPException(status_code=400, detail="需要file或file_path参数")
     
     agent = TechRdAgent()
+    doc_type_list = [t.strip() for t in doc_types.split(",")] if doc_types != "all" else ["all"]
     task = Task(
         task_id="api_pipeline",
         agent_id="tech_rd",
         task_type="full_pipeline",
         params={
-            "file_path": file_path,
-            "use_llm": data.get("use_llm", False),
-            "doc_types": data.get("doc_types", ["all"]),
+            "file_path": actual_path,
+            "use_llm": use_llm,
+            "doc_types": doc_type_list,
         },
         context={"task_id": "api_pipeline"},
     )
@@ -2291,12 +2312,101 @@ async def list_feedback(date: str = None):
     return {"feedbacks": feedbacks, "count": len(feedbacks)}
 
 
+# ─── 用户行为分析 API ──────────────────────────────────────────
+
+@app.post("/api/v1/analytics/track")
+async def track_event(request: Request):
+    """前端埋点：记录用户行为事件"""
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+
+    analytics_dir = Path(__file__).parent.parent / "data" / "analytics"
+    analytics_dir.mkdir(parents=True, exist_ok=True)
+
+    entry = {
+        "id": uuid.uuid4().hex[:12],
+        "event": data.get("event", "unknown"),
+        "category": data.get("category", "general"),
+        "properties": data.get("properties", {}),
+        "user_id": data.get("user_id", "anonymous"),
+        "session_id": data.get("session_id", ""),
+        "timestamp": data.get("timestamp", time.strftime("%Y-%m-%dT%H:%M:%S")),
+        "received_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+    }
+
+    date_str = time.strftime("%Y-%m-%d")
+    track_file = analytics_dir / f"events_{date_str}.jsonl"
+    with open(track_file, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    return {"success": True}
+
+
+@app.get("/api/v1/analytics/summary")
+async def analytics_summary(days: int = 7):
+    """用户行为汇总统计"""
+    analytics_dir = Path(__file__).parent.parent / "data" / "analytics"
+    if not analytics_dir.exists():
+        return {"events": [], "stats": {}}
+
+    events = []
+    today = datetime.now()
+    for i in range(days):
+        d = today - timedelta(days=i)
+        f = analytics_dir / f"events_{d.strftime('%Y-%m-%d')}.jsonl"
+        if f.exists():
+            with open(f, encoding="utf-8") as fh:
+                for line in fh:
+                    line = line.strip()
+                    if line:
+                        try:
+                            events.append(json.loads(line))
+                        except json.JSONDecodeError:
+                            continue
+
+    # 统计
+    event_counts = defaultdict(int)
+    category_counts = defaultdict(int)
+    user_counts = defaultdict(int)
+    hourly_counts = defaultdict(int)
+
+    for e in events:
+        event_counts[e.get("event", "unknown")] += 1
+        category_counts[e.get("category", "general")] += 1
+        user_counts[e.get("user_id", "anonymous")] += 1
+        ts = e.get("timestamp", "")
+        if ts:
+            hourly_counts[ts[:13]] += 1  # 按小时聚合
+
+    stats = {
+        "total_events": len(events),
+        "unique_users": len(user_counts),
+        "event_types": dict(event_counts),
+        "categories": dict(category_counts),
+        "top_users": dict(sorted(user_counts.items(), key=lambda x: -x[1])[:10]),
+        "hourly_trend": dict(sorted(hourly_counts.items())),
+    }
+
+    return {"stats": stats, "recent_events": events[-20:]}
+
+
 def run_server(host: str = "0.0.0.0", port: int = 6188, reload: bool = False):
+    # 确保EMA的src在路径最前面（uvicorn子进程需要）
+    _src_dir = str(Path(__file__).parent)
+    _ema_dir = str(Path(__file__).parent.parent)
+    # 清除可能冲突的blueprint-ai路径
+    sys.path = [p for p in sys.path if 'blueprint-ai' not in p]
+    sys.path.insert(0, _src_dir)
+    sys.path.insert(0, _ema_dir)
+    os.environ["PYTHONPATH"] = _src_dir + os.pathsep + _ema_dir + os.pathsep + os.environ.get("PYTHONPATH", "")
+    from src.api_server import app as _ema_app
     uvicorn.run(
-        "api_server:app",
+        _ema_app,
         host=host,
         port=port,
-        reload=reload,
+        reload=False,
         log_level="info",
     )
 
