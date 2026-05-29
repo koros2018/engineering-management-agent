@@ -568,6 +568,9 @@ margin-bottom: 0; margin-right: 4px;
         <div :class="['nav-item', { active: showAnalytics }]" @click="toggleAnalytics" style="color:var(--text-dim)">
           <span style="margin-right:6px">📈</span> 行为分析
         </div>
+        <div v-if="isSuperAdmin" :class="['nav-item', { active: showAdmin }]" @click="toggleAdmin" style="color:var(--warning);font-weight:600;margin-top:4px">
+          <span style="margin-right:6px">⚙️</span> 管理后台
+        </div>
       </div>
     </div>
 
@@ -686,6 +689,113 @@ margin-bottom: 0; margin-right: 4px;
         </div>
       </div>
       <div v-else style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">点击刷新加载数据</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         Admin 管理面板 (Phase 15)
+         ═══════════════════════════════════════════ -->
+    <div class="history-panel" v-if="showAdmin" style="width:380px;overflow-y:auto">
+      <div class="history-header">
+        <span>⚙️ 管理后台</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="history-refresh" @click="loadAdminData" title="刷新">🔄</span>
+        </div>
+      </div>
+
+      <!-- Admin Tab 切换 -->
+      <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:8px">
+        <div v-for="t in adminTabs" :key="t.id" @click="activeAdminTab=t.id"
+             :style="{padding:'6px 10px',fontSize:'12px',cursor:'pointer',borderBottom:activeAdminTab===t.id?'2px solid var(--accent)':'2px solid transparent',color:activeAdminTab===t.id?'var(--accent)':'var(--text-dim)',fontWeight:activeAdminTab===t.id?'600':'400'}">
+          {{ t.icon }} {{ t.name }}
+        </div>
+      </div>
+
+      <!-- Tab 1: 系统概览 -->
+      <div v-if="activeAdminTab==='overview'" style="padding:4px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <div style="padding:10px;background:var(--agent-bubble);border-radius:6px;text-align:center">
+            <div style="font-size:20px;font-weight:700;color:var(--accent)">{{ adminStats.users || 0 }}</div>
+            <div style="font-size:10px;color:var(--text-dim)">总用户</div>
+          </div>
+          <div style="padding:10px;background:var(--agent-bubble);border-radius:6px;text-align:center">
+            <div style="font-size:20px;font-weight:700;color:var(--success)">{{ adminStats.tenants || 0 }}</div>
+            <div style="font-size:10px;color:var(--text-dim)">租户</div>
+          </div>
+          <div style="padding:10px;background:var(--agent-bubble);border-radius:6px;text-align:center">
+            <div style="font-size:20px;font-weight:700;color:var(--warning)">{{ adminStats.projects || 0 }}</div>
+            <div style="font-size:10px;color:var(--text-dim)">项目</div>
+          </div>
+          <div style="padding:10px;background:var(--agent-bubble);border-radius:6px;text-align:center">
+            <div style="font-size:20px;font-weight:700;color:#a78bfa">{{ adminStats.uploads || 0 }}</div>
+            <div style="font-size:10px;color:var(--text-dim)">文件</div>
+          </div>
+        </div>
+        <div v-if="adminStats.performance" style="margin-bottom:8px">
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px">系统状态</div>
+          <div v-if="adminStats.performance.system" style="font-size:11px;color:var(--text-dim);line-height:1.8">
+            CPU: {{ adminStats.performance.system.cpu_percent }}% | 内存: {{ adminStats.performance.system.memory_percent }}% | 磁盘: {{ adminStats.performance.system.disk_percent }}%
+          </div>
+        </div>
+        <div v-if="adminStats.llm">
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px">LLM 状态</div>
+          <div v-for="(v,k) in adminStats.llm.models" :key="k" style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0">
+            <span>{{ k }}</span>
+            <span :style="{color:v.status==='ok'?'var(--success)':'var(--danger)'}">{{ v.status }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: 用户管理 -->
+      <div v-if="activeAdminTab==='users'" style="padding:4px">
+        <div v-if="adminLoading" style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">加载中...</div>
+        <div v-else-if="adminUsers.length===0" style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">暂无用户</div>
+        <div v-for="u in adminUsers" :key="u.id" style="display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid var(--border)">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:600">{{ u.username?.[0]?.toUpperCase() }}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ u.username }}</div>
+            <div style="font-size:10px;color:var(--text-dim)">{{ u.email || '无邮箱' }} · {{ u.role || 'user' }}</div>
+          </div>
+          <div style="font-size:10px;padding:2px 6px;border-radius:4px;background:u.is_active?'rgba(35,134,54,0.15)':'rgba(239,68,68,0.15)';color:u.is_active?'var(--success)':'var(--danger)'">{{ u.is_active?'正常':'禁用' }}</div>
+        </div>
+      </div>
+
+      <!-- Tab 3: 租户管理 -->
+      <div v-if="activeAdminTab==='tenants'" style="padding:4px">
+        <div v-if="adminLoading" style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">加载中...</div>
+        <div v-else-if="adminTenants.length===0" style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">暂无租户</div>
+        <div v-for="t in adminTenants" :key="t.tenant_id" style="padding:8px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:12px;font-weight:600">{{ t.name || t.tenant_id }}</div>
+            <div style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--accent);color:#fff">{{ t.plan_id || 'free' }}</div>
+          </div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:2px">ID: {{ t.tenant_id }} · 用户: {{ t.user_count || 0 }} · 项目: {{ t.project_count || 0 }}</div>
+        </div>
+      </div>
+
+      <!-- Tab 4: 模型配置 -->
+      <div v-if="activeAdminTab==='models'" style="padding:4px">
+        <div v-if="adminLoading" style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">加载中...</div>
+        <div v-for="m in adminModels" :key="m.id" style="padding:8px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:12px;font-weight:600">{{ m.name }}</div>
+            <div style="font-size:10px;padding:2px 6px;border-radius:4px;background:m.enabled?'rgba(35,134,54,0.15)':'rgba(239,68,68,0.15)';color:m.enabled?'var(--success)':'var(--danger)'">{{ m.enabled?'启用':'禁用' }}</div>
+          </div>
+          <div style="font-size:10px;color:var(--text-dim)">{{ m.provider }} · {{ m.model_id }}</div>
+        </div>
+      </div>
+
+      <!-- Tab 5: 反馈管理 -->
+      <div v-if="activeAdminTab==='feedback'" style="padding:4px">
+        <div v-if="adminLoading" style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">加载中...</div>
+        <div v-for="f in adminFeedback" :key="f.id" style="padding:8px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:12px;font-weight:600">{{ f.type || '建议' }}</div>
+            <div style="font-size:10px;color:var(--text-dim)">{{ f.created_at }}</div>
+          </div>
+          <div style="font-size:11px;margin-top:4px;color:var(--text)">{{ f.content }}</div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:2px">评分: {{ '⭐'.repeat(f.score || 0) }}</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1139,6 +1249,11 @@ createApp({
     const availableModels = ref([]);
     const selectedModel = ref('');
     const planId = ref('free');
+    const currentUser = ref(null);
+    const isSuperAdmin = computed(() => currentUser.value?.role === 'super_admin' || currentUser.value?.role === 'admin');
+
+    // 从localStorage恢复用户信息
+    try { currentUser.value = JSON.parse(localStorage.getItem('ema_user_info') || 'null'); } catch(e) {}
     const planName = ref('体验版');
     const unreadCount = ref(0);
     const showPlans = ref(false);
@@ -1620,6 +1735,96 @@ createApp({
         analyticsData.value = { error: e.message };
       }
       analyticsLoading.value = false;
+    }
+
+    // ── Admin 管理面板 (Phase 15) ──
+    const showAdmin = ref(false);
+    const activeAdminTab = ref('overview');
+    const adminLoading = ref(false);
+    const adminStats = ref({});
+    const adminUsers = ref([]);
+    const adminTenants = ref([]);
+    const adminModels = ref([]);
+    const adminFeedback = ref([]);
+    const adminTabs = [
+      { id: 'overview', name: '概览', icon: '📊' },
+      { id: 'users', name: '用户', icon: '👥' },
+      { id: 'tenants', name: '租户', icon: '🏢' },
+      { id: 'models', name: '模型', icon: '🤖' },
+      { id: 'feedback', name: '反馈', icon: '💬' },
+    ];
+
+    function toggleAdmin() {
+      showAdmin.value = !showAdmin.value;
+      if (showAdmin.value) {
+        showHistory.value = false;
+        showMonitor.value = false;
+        showAnalytics.value = false;
+        loadAdminData();
+      }
+    }
+
+    async function loadAdminData() {
+      adminLoading.value = true;
+      const token = localStorage.getItem('ema_token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+      // 并行加载所有admin数据
+      const [perfRes, usersRes, tenantsRes, modelsRes, feedbackRes] = await Promise.allSettled([
+        fetch(`${API_BASE}/api/v1/system/performance`, { headers }),
+        fetch(`${API_BASE}/api/v1/admin/users`, { headers }),
+        fetch(`${API_BASE}/api/v1/admin/tenants`, { headers }),
+        fetch(`${API_BASE}/api/v1/admin/models`, { headers }),
+        fetch(`${API_BASE}/api/v1/admin/feedback`, { headers }),
+      ]);
+
+      // 系统概览
+      if (perfRes.status === 'fulfilled') {
+        try {
+          const p = await perfRes.value.json();
+          adminStats.value = {
+            performance: p,
+            users: 0, tenants: 0, projects: 0, uploads: 0,
+            llm: p.llm || null,
+          };
+        } catch(e) {}
+      }
+
+      // 用户列表
+      if (usersRes.status === 'fulfilled') {
+        try {
+          const u = await usersRes.value.json();
+          adminUsers.value = u.users || u || [];
+          adminStats.value.users = adminUsers.value.length;
+        } catch(e) {}
+      }
+
+      // 租户列表
+      if (tenantsRes.status === 'fulfilled') {
+        try {
+          const t = await tenantsRes.value.json();
+          adminTenants.value = t.tenants || t || [];
+          adminStats.value.tenants = adminTenants.value.length;
+        } catch(e) {}
+      }
+
+      // 模型配置
+      if (modelsRes.status === 'fulfilled') {
+        try {
+          const m = await modelsRes.value.json();
+          adminModels.value = m.models || m || [];
+        } catch(e) {}
+      }
+
+      // 反馈列表
+      if (feedbackRes.status === 'fulfilled') {
+        try {
+          const f = await feedbackRes.value.json();
+          adminFeedback.value = f.feedback || f || [];
+        } catch(e) {}
+      }
+
+      adminLoading.value = false;
     }
 
     async function searchHistory() {
