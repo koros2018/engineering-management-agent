@@ -511,6 +511,76 @@ async def get_agent_info(agent_id: str):
     raise HTTPException(status_code=404, detail=f"Agent '{agent_id}' not found")
 
 
+# ── 性能监控 API ──────────────────────────────────────────────
+
+@app.get("/api/v1/system/performance")
+async def system_performance():
+    """系统性能监控面板数据"""
+    import time, os, platform, sys
+    from pathlib import Path
+
+    perf = {"timestamp": time.strftime("%Y-%m-%d %H:%M:%S")}
+
+    # 系统信息
+    perf["system"] = {
+        "platform": platform.system(),
+        "python": sys.version.split()[0],
+        "uptime": "N/A",
+    }
+
+    # 模块加载状态
+    modules = {}
+    for mod_name, import_path in [
+        ("blueprint_core", "src.blueprint.core"),
+        ("classifier", "src.blueprint.ai.classifier"),
+        ("extractor", "src.blueprint.ai.extractor"),
+        ("review_engine", "src.blueprint.review.engine"),
+        ("doc_generator", "src.blueprint.documents.generator"),
+        ("llm_supervisor", "src.llm_supervisor"),
+        ("tech_rd_agent", "src.sub_agents.tech_rd_agent"),
+    ]:
+        t0 = time.time()
+        try:
+            __import__(import_path)
+            modules[mod_name] = {"status": "✅", "load_ms": round((time.time()-t0)*1000, 1)}
+        except Exception as e:
+            modules[mod_name] = {"status": "❌", "error": str(e)[:60]}
+    perf["modules"] = modules
+
+    # LLM状态
+    try:
+        from src.llm_supervisor import LLMSupervisor
+        supervisor = LLMSupervisor()
+        perf["llm"] = supervisor.get_health()
+    except Exception:
+        perf["llm"] = {"status": "unavailable"}
+
+    # 缓存统计
+    try:
+        from src.performance import get_cache_stats
+        perf["cache"] = get_cache_stats()
+    except Exception:
+        perf["cache"] = {"status": "unavailable"}
+
+    # 日志统计
+    try:
+        from src.log_stats import get_log_stats
+        perf["logs"] = get_log_stats()
+    except Exception:
+        perf["logs"] = {"status": "unavailable"}
+
+    # 数据目录大小
+    data_dir = Path(__file__).parent.parent / "data"
+    if data_dir.exists():
+        total_size = sum(f.stat().st_size for f in data_dir.rglob("*") if f.is_file())
+        file_count = sum(1 for _ in data_dir.rglob("*") if _.is_file())
+        perf["data"] = {"size_mb": round(total_size/1024/1024, 1), "files": file_count}
+    else:
+        perf["data"] = {"size_mb": 0, "files": 0}
+
+    return perf
+
+
 # ── LLM 超时监督 API ──────────────────────────────────────────
 
 @app.get("/api/v1/llm/health")

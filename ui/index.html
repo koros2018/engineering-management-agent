@@ -8,8 +8,80 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="/ui/manifest.json">
-  <title>工程管理智能体 (EMA)</title>
+  <title>{{ t('app_name_full') }}</title>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script>
+  // ═══ i18n 语言包 ═══
+  const I18N = {
+    zh: {
+      // 通用
+      app_name: '工程管理智能体', app_name_full: '工程管理智能体 (EMA)',
+      loading: '⏳ 加载中...', send: '发送', processing: '处理中',
+      cancel: '取消', confirm: '确认', close: '关闭', refresh: '🔄 刷新',
+      current: '当前', skip: '跳过引导', next_step: '▶ 下一阶段', reset: '重选',
+      no_content: '暂无内容', no_history: '暂无历史对话', no_notif: '🎉 暂无通知',
+      type_label: '类型：', score_label: '评分：',
+      // 导航
+      quick_entry: '🚀 快速入口', func_center: '🤖 功能中心', func_list: '📋 功能',
+      upgrade: '🔒 升级解锁', history: '📜 对话历史', notif: '🔔 通知',
+      // 工作流Tab
+      wf_review: '🔍 智能审查', wf_docs: '📄 文档生成', wf_pipeline: '⚡ 端到端流水线',
+      wf_review_desc: '🔍 智能审查 — 上传图纸自动检测国标合规问题',
+      wf_docs_desc: '📄 文档生成 — 从图纸自动生成工程文档',
+      wf_pipeline_desc: '⚡ 端到端流水线 — 解析→分类→分析→审查→文档',
+      // 审查
+      review_result: '🔍 审查结果', quality_score: '质量评分', issues_found: ' 个问题',
+      critical: '严重', warning: '警告', info: '建议', passed_rules: '✅ 通过的规则',
+      // 文档
+      doc_generation: '文档生成', select_doc_type: '选择文档类型：', generate_docs: '📄 生成文档',
+      // 流水线
+      pipeline_step1: '图纸解析', pipeline_step2: '类型识别', pipeline_step3: 'AI分析',
+      pipeline_step4: '合规审查', pipeline_step5: '文档生成',
+      pipeline_start: '▶ 启动流水线', pipeline_running: '⏳ 流水线执行中...',
+      // 全生命周期
+      lifecycle: '全生命周期体验', select_stage: '📋 选择阶段，体验全流程',
+      // 分析
+      blueprint_analysis: '📊 图纸分析结果', blueprint_recognition: '📊 图纸识别结果',
+      drawing_type: '图纸类型', confidence: '置信度',
+      // 反馈
+      feedback_title: '💬 反馈建议', feedback_desc: '您在使用中遇到了什么问题？或者有什么建议？',
+      feedback_submit: '提交反馈', feedback_submitting: '提交中...',
+      // 订阅
+      subscription: '📦 订阅套餐',
+      // 其他
+      read_all: '✅ 全部已读', optimize: '💡 优化建议', raw_data: '▼ 查看原始数据',
+      collapse: '▲ 收起原始数据', prev: '← 上一步',
+    },
+    en: {
+      app_name: 'EMA', app_name_full: 'Engineering Management Agent (EMA)',
+      loading: '⏳ Loading...', send: 'Send', processing: 'Processing',
+      cancel: 'Cancel', confirm: 'Confirm', close: 'Close', refresh: '🔄 Refresh',
+      current: 'Current', skip: 'Skip Tour', next_step: '▶ Next Step', reset: 'Reset',
+      no_content: 'No content', no_history: 'No chat history', no_notif: '🎉 No notifications',
+      type_label: 'Type:', score_label: 'Rating:',
+      quick_entry: '🚀 Quick Entry', func_center: '🤖 Agent Hub', func_list: '📋 Features',
+      upgrade: '🔒 Upgrade', history: '📜 Chat History', notif: '🔔 Notifications',
+      wf_review: '🔍 Smart Review', wf_docs: '📄 Doc Generation', wf_pipeline: '⚡ Full Pipeline',
+      wf_review_desc: '🔍 Smart Review — Upload drawings, auto-check compliance',
+      wf_docs_desc: '📄 Doc Generation — Auto-generate engineering documents',
+      wf_pipeline_desc: '⚡ Full Pipeline — Parse→Classify→Analyze→Review→Docs',
+      review_result: '🔍 Review Result', quality_score: 'Quality Score', issues_found: ' issues',
+      critical: 'Critical', warning: 'Warning', info: 'Info', passed_rules: '✅ Passed Rules',
+      doc_generation: 'Document Generation', select_doc_type: 'Select doc type:', generate_docs: '📄 Generate Docs',
+      pipeline_step1: 'Parse', pipeline_step2: 'Classify', pipeline_step3: 'AI Analysis',
+      pipeline_step4: 'Compliance', pipeline_step5: 'Documents',
+      pipeline_start: '▶ Start Pipeline', pipeline_running: '⏳ Pipeline Running...',
+      lifecycle: 'Full Lifecycle', select_stage: '📋 Select Stage',
+      blueprint_analysis: '📊 Analysis Result', blueprint_recognition: '📊 Recognition Result',
+      drawing_type: 'Drawing Type', confidence: 'Confidence',
+      feedback_title: '💬 Feedback', feedback_desc: 'Any issues or suggestions?',
+      feedback_submit: 'Submit', feedback_submitting: 'Submitting...',
+      subscription: '📦 Subscription',
+      read_all: '✅ Mark All Read', optimize: '💡 Optimization', raw_data: '▼ View Raw Data',
+      collapse: '▲ Collapse', prev: '← Prev',
+    }
+  };
+  </script>
   <style>
 :root {
 --bg: #040810;
@@ -408,7 +480,7 @@ margin-bottom: 0; margin-right: 4px;
   <div class="sidebar" :class="{open: mobileSidebarOpen}">
     <div class="sidebar-header">
       <div class="sidebar-logo">🤖 EMA</div>
-      <div class="sidebar-sub" style="margin-bottom:6px">工程管理智能体</div>
+      <div class="sidebar-sub" style="margin-bottom:6px">{{ t('app_name') }}</div>
       <div style="display:flex;align-items:center;gap:6px">
         <span :class="['plan-badge', planId]" style="font-size:10px;padding:3px 8px">
           {{ planName || '体验版' }}
@@ -419,9 +491,9 @@ margin-bottom: 0; margin-right: 4px;
     </div>
     <div class="sidebar-nav">
       <!-- 一键体验 -->
-      <div class="nav-section">🚀 快速入口</div>
+      <div class="nav-section">{{ t('quick_entry') }}</div>
       <div :class="['nav-item', { active: showTour }]" @click="toggleTour" style="color:var(--accent);font-weight:500">
-                <span style="margin-right:6px">✨</span> 全生命周期体验
+                <span style="margin-right:6px">✨</span> {{ t('lifecycle') }}
         <span v-if="lifecycleStage>0" style="font-size:10px;color:var(--dim);margin-left:auto">{{ lifecycleStage }}/7</span>
       </div>
       <!-- Phase 9: 工作流快捷入口 -->
@@ -429,14 +501,14 @@ margin-bottom: 0; margin-right: 4px;
         <span style="margin-right:6px">🔍</span> 智能审查
       </div>
       <div :class="['nav-item', { active: activeWfTab === 'documents' }]" @click="switchWfTab('documents')">
-        <span style="margin-right:6px">📄</span> 文档生成
+        <span style="margin-right:6px">📄</span> {{ t('doc_generation') }}
       </div>
       <div :class="['nav-item', { active: activeWfTab === 'pipeline' }]" @click="switchWfTab('pipeline')">
         <span style="margin-right:6px">⚡</span> 端到端流水线
       </div>
       <div v-if="showTour" class="tour-panel">
         <div v-if="lifecycleStage===0" style="padding:6px 8px">
-          <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">📋 选择阶段，体验全流程</div>
+          <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">{{ t('select_stage') }}</div>
           <div v-for="(st,si) in lifecycles" :key="si" @click="runLifecycle(st)"
             style="padding:5px 6px;margin:2px 0;border-radius:5px;cursor:pointer;font-size:10px;display:flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--agent-bubble);transition:border-color 0.15s"
             onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -454,13 +526,13 @@ margin-bottom: 0; margin-right: 4px;
           </div>
           <div v-if="lcResult" style="margin-top:3px;padding:4px;border-radius:3px;background:var(--sidebar);border:1px solid var(--border);font-size:9px;color:var(--text);max-height:100px;overflow-y:auto;white-space:pre-wrap;word-break:break-all">{{lcResult}}</div>
           <div style="display:flex;gap:3px;margin-top:4px">
-            <button v-if="!lcRunning && lifecycleStage<7" @click="lcNext" style="flex:1;padding:4px;font-size:10px;background:var(--accent2);color:#fff;border:none;border-radius:3px;cursor:pointer">▶ 下一阶段</button>
+            <button v-if="!lcRunning && lifecycleStage<7" @click="lcNext" style="flex:1;padding:4px;font-size:10px;background:var(--accent2);color:#fff;border:none;border-radius:3px;cursor:pointer">{{ t('next_step') }}</button>
             <button v-if="!lcRunning && lifecycleStage>=7" @click="lcFinish" style="flex:1;padding:4px;font-size:10px;background:var(--accent2);color:#fff;border:none;border-radius:3px;cursor:pointer">✅ 完成全流程</button>
-            <button @click="lcReset" style="padding:4px 6px;font-size:10px;background:var(--agent-bubble);color:var(--text-dim);border:1px solid var(--border);border-radius:3px;cursor:pointer">重选</button>
+            <button @click="lcReset" style="padding:4px 6px;font-size:10px;background:var(--agent-bubble);color:var(--text-dim);border:1px solid var(--border);border-radius:3px;cursor:pointer">{{ t('reset') }}</button>
           </div>
         </div>
       </div><!-- Agent 列表（分级展示）-->
-      <div class="nav-section">🤖 功能中心</div>
+      <div class="nav-section">{{ t('func_center') }}</div>
       <div
         v-for="agent in agents.filter(a => canAccessAgent(a))"
         :key="agent.id"
@@ -473,7 +545,7 @@ margin-bottom: 0; margin-right: 4px;
       </div>
       <!-- 锁定Agent（未付费）-->
       <div v-if="lockedAgents().length > 0" style="margin-top:6px">
-        <div class="nav-section">🔒 升级解锁</div>
+        <div class="nav-section">{{ t('upgrade') }}</div>
         <div
           v-for="agent in lockedAgents()"
           :key="agent.id"
@@ -486,9 +558,12 @@ margin-bottom: 0; margin-right: 4px;
         </div>
       </div>
       <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
-        <div class="nav-section">📋 功能</div>
+        <div class="nav-section">{{ t('func_list') }}</div>
         <div :class="['nav-item', { active: showHistory }]" @click="toggleHistory" style="color:var(--text-dim)">
           <span style="margin-right:6px">📜</span> 历史记录
+        </div>
+        <div :class="['nav-item', { active: showMonitor }]" @click="toggleMonitor" style="color:var(--text-dim)">
+          <span style="margin-right:6px">📊</span> 性能监控
         </div>
       </div>
     </div>
@@ -496,13 +571,13 @@ margin-bottom: 0; margin-right: 4px;
     <!-- 历史记录面板 -->
     <div class="history-panel" v-if="showHistory">
       <div class="history-header">
-        <span>📜 对话历史</span>
+        <span>{{ t('history') }}</span>
         <span class="history-refresh" @click="loadHistory" title="刷新">🔄</span>
       </div>
       <input class="history-search" v-model="historyQuery" placeholder="搜索对话..." @input="searchHistory">
       <div class="history-list">
-        <div v-if="historyLoading" class="history-empty">⏳ 加载中...</div>
-        <div v-else-if="historySessions.length === 0" class="history-empty">暂无历史对话</div>
+        <div v-if="historyLoading" class="history-empty">{{ t('loading') }}</div>
+        <div v-else-if="historySessions.length === 0" class="history-empty">{{ t('no_history') }}</div>
         <div
           v-for="s in historySessions"
           :key="s.id"
@@ -515,20 +590,66 @@ margin-bottom: 0; margin-right: 4px;
         </div>
       </div>
     </div>
+
+    <!-- 性能监控面板 -->
+    <div class="history-panel" v-if="showMonitor" style="width:340px">
+      <div class="history-header">
+        <span>📊 性能监控</span>
+        <span class="history-refresh" @click="loadMonitor" title="刷新">🔄</span>
+      </div>
+      <div v-if="monitorLoading" style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">{{ t('loading') }}</div>
+      <div v-else-if="monitorData" style="padding:8px">
+        <!-- 系统概览 -->
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">{{ monitorData.timestamp }}</div>
+        <div v-if="monitorData.system" style="margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;margin-bottom:4px">🖥️ 系统</div>
+          <div style="font-size:11px;color:var(--text-dim)">{{ monitorData.system.platform }} · Python {{ monitorData.system.python }}</div>
+        </div>
+        <!-- 模块状态 -->
+        <div v-if="monitorData.modules" style="margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;margin-bottom:4px">📦 模块</div>
+          <div v-for="(mod, name) in monitorData.modules" :key="name" style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">
+            <span>{{ mod.status }}</span>
+            <span style="flex:1;color:var(--text)">{{ name }}</span>
+            <span v-if="mod.load_ms" style="color:var(--text-dim)">{{ mod.load_ms }}ms</span>
+          </div>
+        </div>
+        <!-- LLM状态 -->
+        <div v-if="monitorData.llm && monitorData.llm.models" style="margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;margin-bottom:4px">🤖 LLM</div>
+          <div v-for="(model, name) in monitorData.llm.models" :key="name" style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">
+            <span>{{ model.status === 'healthy' ? '✅' : '⚠️' }}</span>
+            <span style="flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="name">{{ name }}</span>
+            <span v-if="model.error_rate" style="color:model.error_rate > 0.3 ? 'var(--danger)' : 'var(--text-dim)'">{{ (model.error_rate*100).toFixed(0) }}%</span>
+          </div>
+        </div>
+        <!-- 缓存 -->
+        <div v-if="monitorData.cache && monitorData.cache.status !== 'unavailable'" style="margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;margin-bottom:4px">⚡ 缓存</div>
+          <div style="font-size:11px;color:var(--text-dim)">{{ monitorData.cache.hits || 0 }} hits · {{ monitorData.cache.misses || 0 }} misses</div>
+        </div>
+        <!-- 数据 -->
+        <div v-if="monitorData.data" style="margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;margin-bottom:4px">💾 数据</div>
+          <div style="font-size:11px;color:var(--text-dim)">{{ monitorData.data.size_mb }}MB · {{ monitorData.data.files }} files</div>
+        </div>
+      </div>
+      <div v-else style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">点击刷新加载数据</div>
+    </div>
   </div>
 
   <!-- 套餐弹窗 -->
   <div class="overlay" v-if="showPlans" @click.self="showPlans = false">
     <div class="popup">
       <div class="popup-header">
-        <span class="popup-title">📦 订阅套餐</span>
+        <span class="popup-title">{{ t('subscription') }}</span>
         <button class="popup-close" @click="showPlans = false">✕</button>
       </div>
-      <div v-if="plans.length === 0" style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px">⏳ 加载中...</div>
+      <div v-if="plans.length === 0" style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px">{{ t('loading') }}</div>
       <div v-for="p in plans" :key="p.plan_id" :class="['plan-card', { current: p.plan_id === planId }]">
         <div class="plan-card-icon">{{ p.plan_id === 'free' ? '🆓' : p.plan_id === 'pro' ? '💎' : p.plan_id === 'enterprise' ? '🏢' : '🏰' }}</div>
         <div class="plan-card-body">
-          <div class="plan-card-name">{{ p.name }}<span class="plan-current-tag" v-if="p.plan_id === planId">当前</span></div>
+          <div class="plan-card-name">{{ p.name }}<span class="plan-current-tag" v-if="p.plan_id === planId">{{ t('current') }}</span></div>
           <div class="plan-card-price">{{ p.price_yuan === -1 ? '议价' : (p.price_yuan === 0 ? '免费' : '¥' + p.price_yuan + '/月') }}</div>
           <div class="plan-card-features">
             <span v-for="f in p.features" :key="f">{{ f }}</span>
@@ -549,11 +670,11 @@ margin-bottom: 0; margin-right: 4px;
         <button class="popup-close" @click="showNotifs = false">✕</button>
       </div>
       <div class="notif-actions">
-        <button class="notif-btn" @click="markAllRead">✅ 全部已读</button>
-        <button class="notif-btn" @click="loadNotificationsList">🔄 刷新</button>
+        <button class="notif-btn" @click="markAllRead">{{ t('read_all') }}</button>
+        <button class="notif-btn" @click="loadNotificationsList">{{ t('refresh') }}</button>
       </div>
       <div v-if="notifList.length === 0" style="font-size:12px;color:var(--text-dim);text-align:center;padding:30px">
-        🎉 暂无通知
+        {{ t('no_notif') }}
       </div>
       <div v-for="n in notifList" :key="n.id"
         :class="['notif-item', 'sev-' + (n.severity || 'info'), { unread: !n.read }]"
@@ -586,6 +707,7 @@ margin-bottom: 0; margin-right: 4px;
         </option>
       </select>
       <span style="font-size:18px;cursor:pointer;margin-left:4px" @click="toggleTheme" :title="themeLabel">{{ themeIcon }}</span>
+      <span style="font-size:14px;cursor:pointer;margin-left:4px;padding:2px 6px;border-radius:4px;border:1px solid var(--border)" @click="toggleLang" title="切换语言 / Language">{{ lang === 'zh' ? 'EN' : '中' }}</span>
       <span style="font-size:12px;color:var(--dim);cursor:pointer;margin-left:4px" @click="showFeedback=true" title="反馈建议">💬</span>
       <span style="font-size:12px;color:var(--dim);cursor:pointer;margin-left:4px" @click="logout" title="登出">🚪</span>
     </div>
@@ -594,18 +716,18 @@ margin-bottom: 0; margin-right: 4px;
     <div class="overlay" v-if="showFeedback" @click.self="showFeedback=false">
       <div class="popup" style="width:420px">
         <div class="popup-header">
-          <span class="popup-title">💬 反馈建议</span>
+          <span class="popup-title">{{ t('feedback_title') }}</span>
           <button class="popup-close" @click="showFeedback=false">✕</button>
         </div>
         <div style="margin-top:12px">
-          <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">您在使用中遇到了什么问题？或者有什么建议？</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">{{ t('feedback_desc') }}</div>
           <textarea v-model="feedbackText" rows="4" placeholder="请描述您的问题或建议..." style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
           <div style="margin-top:8px">
-            <span style="font-size:12px;color:var(--text-dim);margin-right:8px">类型：</span>
+            <span style="font-size:12px;color:var(--text-dim);margin-right:8px">{{ t('type_label') }}</span>
             <span v-for="t in feedbackTypes" :key="t.id" @click="feedbackType=t.id" :style="{display:'inline-block',padding:'3px 10px',borderRadius:'12px',fontSize:'11px',cursor:'pointer',marginRight:'6px',background: feedbackType===t.id ? 'var(--accent)' : 'var(--agent-bubble)', color: feedbackType===t.id ? '#fff' : 'var(--text-dim)', border:'1px solid '+(feedbackType===t.id?'var(--accent)':'var(--border)')">{{t.icon}} {{t.name}}</span>
           </div>
           <div style="margin-top:8px">
-            <span style="font-size:12px;color:var(--text-dim);margin-right:8px">评分：</span>
+            <span style="font-size:12px;color:var(--text-dim);margin-right:8px">{{ t('score_label') }}</span>
             <span v-for="n in 5" :key="n" @click="feedbackScore=n" style="cursor:pointer;font-size:16px;margin-right:2px">{{n <= feedbackScore ? '⭐' : '☆'}}</span>
           </div>
           <button class="wf-run-btn" :disabled="!feedbackText.trim()" style="margin-top:12px" @click="submitFeedback">{{ feedbackSubmitting ? '提交中...' : '提交反馈' }}</button>
@@ -637,9 +759,9 @@ margin-bottom: 0; margin-right: 4px;
             <template v-if="msg.type === 'result'">
               <!-- 分析结果（TechRdAgent） -->
               <div v-if="msg.data.drawing_type">
-                <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px">📊 图纸分析结果</div>
+                <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px">{{ t('blueprint_analysis') }}</div>
                 <div class="result-section">
-                  <div class="result-label">图纸类型</div>
+                  <div class="result-label">{{ t('drawing_type') }}</div>
                   <span class="result-tag highlight">{{ msg.data.drawing_type }}</span>
                   <span class="result-tag">置信度：{{ ((msg.data.type_confidence || 0.8) * 100).toFixed(0) }}%</span>
                 </div>
@@ -650,7 +772,7 @@ margin-bottom: 0; margin-right: 4px;
                   </div>
                 </div>
                 <div v-if="msg.data.optimizations && msg.data.optimizations.suggestions" class="result-section">
-                  <div class="result-label">💡 优化建议</div>
+                  <div class="result-label">{{ t('optimize') }}</div>
                   <div v-for="(s, si) in msg.data.optimizations.suggestions.slice(0,3)" :key="si" style="font-size:12px;margin-bottom:3px">
                     <span :style="'color:' + (s.priority==='high'?'var(--danger)':'var(--text)')">• [{{ s.type }}]</span> {{ s.recommendation }}
                   </div>
@@ -698,7 +820,7 @@ margin-bottom: 0; margin-right: 4px;
               <div v-else-if="typeof msg.data === 'string'">
                 <div class="result-text">{{ msg.data }}</div>
               </div>
-              <div v-else style="color:var(--text-dim);font-size:13px">暂无内容</div>
+              <div v-else style="color:var(--text-dim);font-size:13px">{{ t('no_content') }}</div>
             </template>
             <template v-else>{{ msg.content }}</template>
           </div>
@@ -719,7 +841,7 @@ margin-bottom: 0; margin-right: 4px;
     <div class="wf-panel" v-if="activeWfTab" style="flex:1;overflow-y:auto;padding:16px;">
       <!-- 智能审查 -->
       <div v-if="activeWfTab === 'review'">
-        <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:12px">🔍 智能审查 — 上传图纸自动检测国标合规问题</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:12px">{{ t('wf_review_desc') }}</div>
         <div :class="['wf-upload-area', { 'has-file': wfFile }]" @click="$refs.wfReviewInput.click()">
           <input type="file" accept=".dwg,.dxf,.pdf" style="display:none" ref="wfReviewInput" @change="onWfFileSelect('review', $event)">
           <div class="wf-upload-icon">{{ wfFile ? '✅' : '📎' }}</div>
@@ -734,7 +856,7 @@ margin-bottom: 0; margin-right: 4px;
             <div class="review-header">
               <span class="review-score" :class="reviewResult.score >= 0.8 ? 'good' : reviewResult.score >= 0.5 ? 'warn' : 'bad'">{{ (reviewResult.score * 100).toFixed(0) }}</span>
               <div>
-                <div style="font-size:13px;font-weight:600;color:var(--text-bright)">质量评分</div>
+                <div style="font-size:13px;font-weight:600;color:var(--text-bright)">{{ t('quality_score') }}</div>
                 <div style="font-size:11px;color:var(--text-dim)">{{ reviewResult.total_issues || 0 }} 个问题</div>
               </div>
             </div>
@@ -763,7 +885,7 @@ margin-bottom: 0; margin-right: 4px;
       </div>
       <!-- 文档生成 -->
       <div v-if="activeWfTab === 'documents'">
-        <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:12px">📄 文档生成 — 从图纸自动生成工程文档</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:12px">{{ t('wf_docs_desc') }}</div>
         <div :class="['wf-upload-area', { 'has-file': wfDocFile }]" @click="$refs.wfDocInput.click()">
           <input type="file" accept=".dwg,.dxf,.pdf" style="display:none" ref="wfDocInput" @change="onWfFileSelect('doc', $event)">
           <div class="wf-upload-icon">{{ wfDocFile ? '✅' : '📎' }}</div>
@@ -771,7 +893,7 @@ margin-bottom: 0; margin-right: 4px;
           <div class="wf-file-name" v-if="wfDocFile">{{ wfDocFile.name }}</div>
         </div>
         <div style="margin-bottom:8px">
-          <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">选择文档类型：</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">{{ t('select_doc_type') }}</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px">
             <label v-for="dt in docTypes" :key="dt.id" style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer">
               <input type="checkbox" :value="dt.id" v-model="selectedDocTypes" style="accent-color:var(--accent)">
@@ -792,7 +914,7 @@ margin-bottom: 0; margin-right: 4px;
       </div>
       <!-- 端到端流水线 -->
       <div v-if="activeWfTab === 'pipeline'">
-        <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:12px">⚡ 端到端流水线 — 解析→分类→分析→审查→文档</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:12px">{{ t('wf_pipeline_desc') }}</div>
         <div :class="['wf-upload-area', { 'has-file': wfPipeFile }]" @click="$refs.wfPipeInput.click()">
           <input type="file" accept=".dwg,.dxf,.pdf" style="display:none" ref="wfPipeInput" @change="onWfFileSelect('pipeline', $event)">
           <div class="wf-upload-icon">{{ wfPipeFile ? '✅' : '📎' }}</div>
@@ -800,11 +922,11 @@ margin-bottom: 0; margin-right: 4px;
           <div class="wf-file-name" v-if="wfPipeFile">{{ wfPipeFile.name }}</div>
         </div>
         <div v-if="!pipelineRunning && !pipelineResult" class="pipeline-container" style="margin-bottom:8px">
-          <div class="pipeline-step"><span class="step-icon">1️⃣</span><span class="step-label">图纸解析</span><span class="step-pending">待执行</span></div>
-          <div class="pipeline-step"><span class="step-icon">2️⃣</span><span class="step-label">类型识别</span><span class="step-pending">待执行</span></div>
-          <div class="pipeline-step"><span class="step-icon">3️⃣</span><span class="step-label">AI分析</span><span class="step-pending">待执行</span></div>
-          <div class="pipeline-step"><span class="step-icon">4️⃣</span><span class="step-label">合规审查</span><span class="step-pending">待执行</span></div>
-          <div class="pipeline-step"><span class="step-icon">5️⃣</span><span class="step-label">文档生成</span><span class="step-pending">待执行</span></div>
+          <div class="pipeline-step"><span class="step-icon">1️⃣</span><span class="step-label">{{ t('pipeline_step1') }}</span><span class="step-pending">待执行</span></div>
+          <div class="pipeline-step"><span class="step-icon">2️⃣</span><span class="step-label">{{ t('pipeline_step2') }}</span><span class="step-pending">待执行</span></div>
+          <div class="pipeline-step"><span class="step-icon">3️⃣</span><span class="step-label">{{ t('pipeline_step3') }}</span><span class="step-pending">待执行</span></div>
+          <div class="pipeline-step"><span class="step-icon">4️⃣</span><span class="step-label">{{ t('pipeline_step4') }}</span><span class="step-pending">待执行</span></div>
+          <div class="pipeline-step"><span class="step-icon">5️⃣</span><span class="step-label">{{ t('doc_generation') }}</span><span class="step-pending">待执行</span></div>
         </div>
         <div v-if="pipelineRunning || pipelineResult" class="pipeline-container" style="margin-bottom:8px">
           <div class="pipe-progress"><div class="pipe-progress-fill" :style="{width: pipelineProgress + '%'}"></div></div>
@@ -819,11 +941,11 @@ margin-bottom: 0; margin-right: 4px;
         </button>
         <div v-if="pipelineResult" style="margin-top:12px">
           <div v-if="pipelineResult.drawing_type" class="review-card">
-            <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:6px">📊 图纸识别结果</div>
-            <div style="font-size:13px">类型：<strong>{{ pipelineResult.drawing_type }}</strong>（置信度 {{ (pipelineResult.confidence * 100).toFixed(0) }}%）</div>
+            <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:6px">{{ t('blueprint_recognition') }}</div>
+            <div style="font-size:13px">{{ t('type_label') }}<strong>{{ pipelineResult.drawing_type }}</strong>（置信度 {{ (pipelineResult.confidence * 100).toFixed(0) }}%）</div>
           </div>
           <div v-if="pipelineResult.review && pipelineResult.review.issues" class="review-card">
-            <div style="font-size:12px;font-weight:600;color:var(--danger);margin-bottom:6px">🔍 审查结果</div>
+            <div style="font-size:12px;font-weight:600;color:var(--danger);margin-bottom:6px">{{ t('review_result_alt') }}</div>
             <div style="font-size:12px;margin-bottom:6px">发现 {{ pipelineResult.review.issues.length }} 个问题
               <span v-if="pipelineResult.review.summary">（评分 {{ (pipelineResult.review.summary.confidence * 100).toFixed(0) }}）</span>
             </div>
@@ -890,7 +1012,7 @@ margin-bottom: 0; margin-right: 4px;
           </button>
         </div>
         <div style="margin-top:10px">
-          <button class="onboard-btn-skip" @click="skipOnboarding">跳过引导</button>
+          <button class="onboard-btn-skip" @click="skipOnboarding">{{ t('skip') }}</button>
         </div>
       </div>
     </div>
@@ -1381,6 +1503,28 @@ createApp({
       historyLoading.value = false;
     }
 
+    // ── 性能监控 ──
+    const showMonitor = ref(false);
+    const monitorData = ref(null);
+    const monitorLoading = ref(false);
+
+    function toggleMonitor() {
+      showMonitor.value = !showMonitor.value;
+      if (showMonitor.value && !monitorData.value) loadMonitor();
+    }
+
+    async function loadMonitor() {
+      monitorLoading.value = true;
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/system/performance`);
+        const data = await resp.json();
+        monitorData.value = data;
+      } catch (e) {
+        monitorData.value = { error: e.message, timestamp: new Date().toLocaleString() };
+      }
+      monitorLoading.value = false;
+    }
+
     async function searchHistory() {
       if (!historyQuery.value) { loadHistory(); return; }
       historyLoading.value = true;
@@ -1430,6 +1574,16 @@ createApp({
     function logout() {
       try { localStorage.removeItem('ema_token'); } catch(e) {}
       window.location.href = '/ui/login.html';
+    }
+
+    // ═══ i18n ═══
+    const savedLang = localStorage.getItem('ema_lang') || 'zh';
+    const lang = ref(savedLang);
+    const t = (key) => (I18N[lang.value] || I18N.zh)[key] || key;
+    function toggleLang() {
+      lang.value = lang.value === 'zh' ? 'en' : 'zh';
+      localStorage.setItem('ema_lang', lang.value);
+      document.documentElement.lang = lang.value === 'zh' ? 'zh-CN' : 'en';
     }
 
     // ═══ Phase 9: Agent工作流 ═══
@@ -1708,6 +1862,7 @@ createApp({
       agents, currentAgent, availableModels, selectedModel,
       planId, planName, unreadCount, showPlans, showNotifs, plans, notifList,
       showHistory, historySessions, historyLoading, historyQuery, activeHistorySession,
+      showMonitor, monitorData, monitorLoading, toggleMonitor, loadMonitor,
       formatSize, switchAgent, onFileSelect, autoGrow, send, onModelChange,
       toggleHistory, loadHistory, searchHistory, viewHistorySession,
       userRole, canAccessAgent, lockedAgents,
@@ -1725,6 +1880,7 @@ createApp({
       docTypes, selectedDocTypes,
       switchWfTab, onWfFileSelect, runReview, runDocuments, runPipeline,
       // Phase 11
+      lang, t, toggleLang,
       themeMode, themeIcon, themeLabel, toggleTheme,
       // Phase 11 反馈
       showFeedback, feedbackText, feedbackType, feedbackScore,
