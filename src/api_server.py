@@ -2166,6 +2166,61 @@ async def get_task_status(task_id: str):
 # 启动
 # ─────────────────────────────────────────────────────────────────
 
+# ─── 用户反馈 API ───────────────────────────────────────────────
+
+@app.post("/api/v1/feedback")
+async def submit_feedback(request: Request):
+    """收集用户反馈"""
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+
+    feedback_dir = Path(__file__).parent.parent / "data" / "feedback"
+    feedback_dir.mkdir(parents=True, exist_ok=True)
+
+    entry = {
+        "id": uuid.uuid4().hex[:12],
+        "type": data.get("type", "other"),
+        "score": data.get("score", 0),
+        "content": data.get("content", ""),
+        "agent_id": data.get("agent_id", ""),
+        "user_id": data.get("user_id", "guest"),
+        "timestamp": data.get("timestamp", ""),
+        "received_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+    }
+
+    date_str = time.strftime("%Y-%m-%d")
+    fb_file = feedback_dir / f"feedback_{date_str}.jsonl"
+    with open(fb_file, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    logger.info(f"[Feedback] {entry['type']} score={entry['score']} from {entry['user_id']}")
+    return {"success": True, "id": entry["id"]}
+
+
+@app.get("/api/v1/admin/feedback")
+async def list_feedback(date: str = None):
+    """查看反馈列表（管理端）"""
+    feedback_dir = Path(__file__).parent.parent / "data" / "feedback"
+    if not feedback_dir.exists():
+        return {"feedbacks": []}
+    date_str = date or time.strftime("%Y-%m-%d")
+    fb_file = feedback_dir / f"feedback_{date_str}.jsonl"
+    if not fb_file.exists():
+        return {"feedbacks": []}
+    feedbacks = []
+    with open(fb_file, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                try:
+                    feedbacks.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+    return {"feedbacks": feedbacks, "count": len(feedbacks)}
+
+
 def run_server(host: str = "0.0.0.0", port: int = 6188, reload: bool = False):
     uvicorn.run(
         "api_server:app",

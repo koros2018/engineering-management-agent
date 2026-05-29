@@ -30,6 +30,7 @@
 --delivery: #4ade80;
 --cost: #60a5fa;
 }
+/* 亮色主题：系统偏好或手动切换 */
 @media (prefers-color-scheme: light) {
 :root:not(.force-dark) {
 --bg: #f5f8ff;
@@ -44,6 +45,20 @@
 --warning: #b45309;
 --agent-bubble: #eef2f9;
 }
+}
+/* 手动强制亮色（覆盖系统暗色） */
+:root.force-light {
+--bg: #f5f8ff;
+--sidebar: #eef2f9;
+--border: #c8d5e8;
+--accent: #2563eb;
+--accent2: #1d4ed8;
+--text: #0f1c2e;
+--text-bright: #000000;
+--text-dim: #5a6b80;
+--danger: #dc2626;
+--warning: #b45309;
+--agent-bubble: #eef2f9;
 }
 @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -570,7 +585,33 @@ margin-bottom: 0; margin-right: 4px;
           {{ m.type === 'cloud' ? '☁️' : '💻' }} {{ m.display || m.name }}
         </option>
       </select>
+      <span style="font-size:18px;cursor:pointer;margin-left:4px" @click="toggleTheme" :title="themeLabel">{{ themeIcon }}</span>
+      <span style="font-size:12px;color:var(--dim);cursor:pointer;margin-left:4px" @click="showFeedback=true" title="反馈建议">💬</span>
       <span style="font-size:12px;color:var(--dim);cursor:pointer;margin-left:4px" @click="logout" title="登出">🚪</span>
+    </div>
+
+    <!-- 反馈弹窗 -->
+    <div class="overlay" v-if="showFeedback" @click.self="showFeedback=false">
+      <div class="popup" style="width:420px">
+        <div class="popup-header">
+          <span class="popup-title">💬 反馈建议</span>
+          <button class="popup-close" @click="showFeedback=false">✕</button>
+        </div>
+        <div style="margin-top:12px">
+          <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">您在使用中遇到了什么问题？或者有什么建议？</div>
+          <textarea v-model="feedbackText" rows="4" placeholder="请描述您的问题或建议..." style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+          <div style="margin-top:8px">
+            <span style="font-size:12px;color:var(--text-dim);margin-right:8px">类型：</span>
+            <span v-for="t in feedbackTypes" :key="t.id" @click="feedbackType=t.id" :style="{display:'inline-block',padding:'3px 10px',borderRadius:'12px',fontSize:'11px',cursor:'pointer',marginRight:'6px',background: feedbackType===t.id ? 'var(--accent)' : 'var(--agent-bubble)', color: feedbackType===t.id ? '#fff' : 'var(--text-dim)', border:'1px solid '+(feedbackType===t.id?'var(--accent)':'var(--border)')">{{t.icon}} {{t.name}}</span>
+          </div>
+          <div style="margin-top:8px">
+            <span style="font-size:12px;color:var(--text-dim);margin-right:8px">评分：</span>
+            <span v-for="n in 5" :key="n" @click="feedbackScore=n" style="cursor:pointer;font-size:16px;margin-right:2px">{{n <= feedbackScore ? '⭐' : '☆'}}</span>
+          </div>
+          <button class="wf-run-btn" :disabled="!feedbackText.trim()" style="margin-top:12px" @click="submitFeedback">{{ feedbackSubmitting ? '提交中...' : '提交反馈' }}</button>
+          <div v-if="feedbackResult" style="margin-top:8px;font-size:12px" :style="{color: feedbackResult.ok ? 'var(--success)' : 'var(--danger)'}">{{ feedbackResult.msg }}</div>
+        </div>
+      </div>
     </div>
 
     <div class="chat-area" ref="chatArea">
@@ -1393,6 +1434,11 @@ createApp({
 
     // ═══ Phase 9: Agent工作流 ═══
     const mobileSidebarOpen = ref(false);
+    // 主题切换
+    const savedTheme = localStorage.getItem('ema_theme');
+    const themeMode = ref(savedTheme || 'auto'); // 'auto'|'dark'|'light'
+    const themeIcon = ref(themeMode.value === 'dark' ? '🌙' : themeMode.value === 'light' ? '☀️' : '🌓');
+    const themeLabel = ref('切换主题');
     const activeWfTab = ref(null);
     const wfFile = ref(null);
     const wfDocFile = ref(null);
@@ -1537,6 +1583,87 @@ createApp({
       pipelineProgress.value = pipelineSteps.value.filter(s => s.status === 'done').length * 20;
     }
 
+    // ── 主题切换 ──
+    function applyTheme(mode) {
+      const root = document.documentElement;
+      root.classList.remove('force-dark', 'force-light');
+      if (mode === 'dark') {
+        root.classList.add('force-dark');
+        themeIcon.value = '🌙';
+      } else if (mode === 'light') {
+        root.classList.add('force-light');
+        themeIcon.value = '☀️';
+      } else {
+        // auto: 跟随系统
+        themeIcon.value = '🌓';
+      }
+      themeLabel.value = mode === 'dark' ? '当前：暗色' : mode === 'light' ? '当前：亮色' : '当前：跟随系统';
+      localStorage.setItem('ema_theme', mode);
+    }
+
+    function toggleTheme() {
+      const modes = ['auto', 'dark', 'light'];
+      const idx = modes.indexOf(themeMode.value);
+      themeMode.value = modes[(idx + 1) % 3];
+      applyTheme(themeMode.value);
+    }
+
+    // 初始化主题
+    applyTheme(themeMode.value);
+
+    // ── 用户反馈 ──
+    const showFeedback = ref(false);
+    const feedbackText = ref('');
+    const feedbackType = ref('bug');
+    const feedbackScore = ref(0);
+    const feedbackSubmitting = ref(false);
+    const feedbackResult = ref(null);
+    const feedbackTypes = [
+      { id:'bug', name:'问题', icon:'🐛' },
+      { id:'feature', name:'建议', icon:'💡' },
+      { id:'praise', name:'好评', icon:'👍' },
+      { id:'other', name:'其他', icon:'📝' },
+    ];
+
+    async function submitFeedback() {
+      if (!feedbackText.value.trim()) return;
+      feedbackSubmitting.value = true;
+      feedbackResult.value = null;
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/feedback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: feedbackType.value,
+            score: feedbackScore.value,
+            content: feedbackText.value,
+            agent_id: currentAgent.value?.id || '',
+            user_id: 'web_user',
+            timestamp: new Date().toISOString(),
+          }),
+        });
+        if (resp.ok) {
+          feedbackResult.value = { ok: true, msg: '✅ 感谢您的反馈！我们会认真对待每一条建议。' };
+          setTimeout(() => { showFeedback.value = false; feedbackText.value = ''; feedbackScore.value = 0; feedbackResult.value = null; }, 2000);
+        } else {
+          // API不存在时本地保存
+          const feedbacks = JSON.parse(localStorage.getItem('ema_feedbacks') || '[]');
+          feedbacks.push({ type: feedbackType.value, score: feedbackScore.value, content: feedbackText.value, time: Date.now() });
+          localStorage.setItem('ema_feedbacks', JSON.stringify(feedbacks));
+          feedbackResult.value = { ok: true, msg: '✅ 反馈已保存（本地模式）' };
+          setTimeout(() => { showFeedback.value = false; feedbackText.value = ''; feedbackScore.value = 0; feedbackResult.value = null; }, 2000);
+        }
+      } catch(e) {
+        // 离线时本地保存
+        const feedbacks = JSON.parse(localStorage.getItem('ema_feedbacks') || '[]');
+        feedbacks.push({ type: feedbackType.value, score: feedbackScore.value, content: feedbackText.value, time: Date.now() });
+        localStorage.setItem('ema_feedbacks', JSON.stringify(feedbacks));
+        feedbackResult.value = { ok: true, msg: '✅ 反馈已保存（离线模式）' };
+        setTimeout(() => { showFeedback.value = false; feedbackText.value = ''; feedbackScore.value = 0; feedbackResult.value = null; }, 2000);
+      }
+      feedbackSubmitting.value = false;
+    }
+
     async function runPipeline() {
       if (!wfPipeFile.value) return;
       pipelineRunning.value = true;
@@ -1597,6 +1724,11 @@ createApp({
       pipelineResult, pipelineRunning, pipelineProgress, pipelineSteps,
       docTypes, selectedDocTypes,
       switchWfTab, onWfFileSelect, runReview, runDocuments, runPipeline,
+      // Phase 11
+      themeMode, themeIcon, themeLabel, toggleTheme,
+      // Phase 11 反馈
+      showFeedback, feedbackText, feedbackType, feedbackScore,
+      feedbackSubmitting, feedbackResult, feedbackTypes, submitFeedback,
     };
   }
 }).mount('#app');
