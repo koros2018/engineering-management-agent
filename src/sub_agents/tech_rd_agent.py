@@ -44,25 +44,43 @@ class EMABlueprintParserTool:
 
         if use_ai:
             result = parser.parse_with_ai(file_path)
+            if not result.get("success"):
+                return {"success": False, "error": result.get("error", "未知错误")}
+            parse_result = result.get("parse_result", result)
         else:
-            result = parser.parse(file_path)
+            pr = parser.parse(file_path)
+            if not pr.success:
+                return {"success": False, "error": "; ".join(pr.errors) if pr.errors else "解析失败"}
+            # dataclass → dict
+            parse_result = {
+                "file_path": str(pr.file_path),
+                "file_type": pr.file_type.value if hasattr(pr.file_type, "value") else str(pr.file_type),
+                "layers": [{"name": l.name, "color": l.color, "visible": l.visible} for l in pr.layers],
+                "entities": pr.entities,
+                "raw_text": pr.raw_text,
+                "metadata": pr.metadata,
+                "errors": pr.errors,
+            }
 
-        if not result.get("success"):
-            return {"success": False, "error": result.get("error", "未知错误")}
+        # 提取geometry和layer_stats（从metadata或计算）
+        metadata = parse_result.get("metadata", {})
+        geometry = metadata.get("geometry", {})
+        layer_stats = metadata.get("layer_stats", {})
 
-        parse_result = result.get("parse_result", result)
         return {
             "success": True,
             "file_path": file_path,
             "file_type": parse_result.get("file_type", ""),
             "layer_count": len(parse_result.get("layers", [])),
             "entity_count": len(parse_result.get("entities", [])),
+            "raw_text": parse_result.get("raw_text", ""),
             "raw_text_length": len(parse_result.get("raw_text", "")),
             "layers": parse_result.get("layers", []),
-            "geometry": parse_result.get("geometry", {}),
-            "layer_stats": parse_result.get("layer_stats", {}),
+            "entities": parse_result.get("entities", []),
+            "geometry": geometry,
+            "layer_stats": layer_stats,
             "drawing_type": parse_result.get("drawing_type", {}),
-            "ai_analysis": result.get("ai_analysis", {}),
+            "ai_analysis": result.get("ai_analysis", {}) if use_ai else {},
         }
 
 

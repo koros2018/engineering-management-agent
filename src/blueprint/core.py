@@ -73,6 +73,54 @@ class BlueprintParser:
                 errors=[f"Unsupported file type: {ext}"]
             )
 
+    def dwg_to_dxf(self, dwg_path: str, output_dxf: str = None) -> str:
+        """DWG → DXF 转换
+        
+        优先使用 ezdwg（纯Python），失败时返回空字符串。
+        返回输出DXF路径，失败返回空字符串。
+        """
+        if output_dxf is None:
+            output_dxf = os.path.splitext(dwg_path)[0] + ".dxf"
+        
+        # Method 1: ezdwg (pure Python)
+        try:
+            import ezdwg
+            import ezdwg.convert as _cvt
+            doc = ezdwg.read(dwg_path)
+            _cvt.to_dxf(doc, output_dxf)
+            if os.path.exists(output_dxf):
+                return output_dxf
+        except Exception:
+            pass
+        
+        # Method 2: libredwg Node.js WASM (fallback)
+        try:
+            project_root = "/mnt/d/OpenClawDataworkspace/Projects/blueprint-ai"
+            wasm_dir = os.path.join(project_root, "node_modules/@mlightcad/libredwg-web/wasm")
+            if os.path.exists(wasm_dir):
+                import subprocess
+                script = (
+                    "import {LibreDwg} from '@mlightcad/libredwg-web';"
+                    "import {readFileSync,writeFileSync} from 'fs';"
+                    f"const buf=readFileSync('{dwg_path}');"
+                    "const ld=LibreDwg.create();"
+                    "ld.dwg_read_data(buf);"
+                    "const dxf=ld.dwg_write_dxf();"
+                    f"writeFileSync('{output_dxf}',Buffer.from(dxf));"
+                    "console.log('OK');"
+                )
+                result = subprocess.run(
+                    ["node", "-e", script],
+                    capture_output=True, text=True, timeout=60,
+                    cwd=project_root
+                )
+                if result.returncode == 0 and os.path.exists(output_dxf):
+                    return output_dxf
+        except Exception:
+            pass
+        
+        return ""
+
     def parse_with_ai(self, file_path: str) -> dict:
         """
         解析图纸并进行AI增强分析
