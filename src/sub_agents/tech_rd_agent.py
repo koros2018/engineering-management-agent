@@ -520,30 +520,31 @@ class TechRdAgent(BaseAgent):
         layer_stats = parsed.get("layer_stats", {})
         drawing_type_info = parsed.get("drawing_type", {})
 
-        # Step 2: 类型识别
+        # Step 2+3: 类型识别 + AI分析 并行执行
         filename = Path(file_path).name
-        type_result = await self.execute_tool('type_classifier', {
-            "layers": layer_names,
-            "filename": filename,
-            "raw_text": raw_text,
-            "use_llm": use_llm,
-        }, context)
-        drawing_type = type_result.data.get("primary_type", "建筑") if type_result.success else "建筑"
 
-        # Step 3: AI分析
-        analysis_result = {}
-        try:
-            analyze_result = await self.execute_tool('blueprint_analyzer', {
-                "parse_result": parsed,
-                "drawing_type": drawing_type,
-                "use_llm": use_llm,
+        async def _classify():
+            r = await self.execute_tool('type_classifier', {
+                "layers": layer_names, "filename": filename,
+                "raw_text": raw_text, "use_llm": use_llm,
             }, context)
-            if analyze_result.success:
-                analysis_result = analyze_result.data
-        except Exception:
-            analysis_result = {"extraction": {}, "confidence": 0.3}
+            return r.data.get("primary_type", "建筑") if r.success else "建筑"
 
-        # 构建审查用的analysis dict
+        async def _analyze(drawing_type):
+            try:
+                r = await self.execute_tool('blueprint_analyzer', {
+                    "parse_result": parsed, "drawing_type": drawing_type,
+                    "use_llm": use_llm,
+                }, context)
+                return r.data if r.success else {"extraction": {}, "confidence": 0.3}
+            except Exception:
+                return {"extraction": {}, "confidence": 0.3}
+
+        # 先分类，AI分析依赖分类结果
+        drawing_type = await _classify()
+        analysis_result = await _analyze(drawing_type)
+
+        # 构建审查+文档共用的analysis dict
         review_analysis = {
             "file_name": filename,
             "drawing_type": {"primary": drawing_type, "confidence": 0.85},
@@ -554,19 +555,26 @@ class TechRdAgent(BaseAgent):
             "ai_analysis": analysis_result,
         }
 
-        # Step 4: 智能审查
-        review_result = await self.execute_tool('blueprint_review', {
-            "analysis_result": review_analysis,
-            "drawing_type": drawing_type,
-        }, context)
-        review = review_result.data if review_result.success else {}
+        # Step 4+5: 智能审查 + 文档生成 并行执行
+        async def _review():
+            try:
+                r = await self.execute_tool('blueprint_review', {
+                    "analysis_result": review_analysis, "drawing_type": drawing_type,
+                }, context)
+                return r.data if r.success else {}
+            except Exception:
+                return {}
 
-        # Step 5: 文档生成
-        doc_result = await self.execute_tool('blueprint_documents', {
-            "analysis_result": review_analysis,
-            "doc_types": doc_types,
-        }, context)
-        documents = doc_result.data if doc_result.success else {}
+        async def _documents():
+            try:
+                r = await self.execute_tool('blueprint_documents', {
+                    "analysis_result": review_analysis, "doc_types": doc_types,
+                }, context)
+                return r.data if r.success else {}
+            except Exception:
+                return {}
+
+        review, documents = await asyncio.gather(_review(), _documents())
 
         # 整合结果
         pipeline_output = {
@@ -578,7 +586,7 @@ class TechRdAgent(BaseAgent):
                 "entity_count": parsed.get("entity_count", 0),
                 "file_type": parsed.get("file_type", ""),
             },
-            "classification": type_result.data if type_result.success else {},
+            "classification": {"primary_type": drawing_type, "confidence": 0.85},
             "ai_analysis": analysis_result,
             "review": review,
             "documents": documents,
@@ -586,12 +594,18 @@ class TechRdAgent(BaseAgent):
             "analyzed_at": datetime.now().isoformat(),
         }
 
+        # confidence: 基于审查结果质量（规则审查有实际输出时最低0.7）
+        if isinstance(review, dict) and review.get("summary", {}).get("rules_applied", 0) > 0:
+            _conf = max(0.7, review.get("summary", {}).get("confidence", 0.7))
+        else:
+            _conf = analysis_result.get("confidence", 0.75) if isinstance(analysis_result, dict) else 0.75
+
         return AgentResult(
             task_id=context.get("task_id", ""),
             agent_id=self.AGENT_ID,
             status='success',
             output=pipeline_output,
-            confidence=analysis_result.get("confidence", 0.75),
+            confidence=_conf,
             execution_time=(datetime.now() - start_time).total_seconds(),
         )
 

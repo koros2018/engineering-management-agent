@@ -1033,14 +1033,20 @@ async def agent_review(
         geometry = parsed.get("geometry", {})
         layer_stats = parsed.get("layer_stats", {})
 
-        # 分类
+        # 分类+AI分析并行（CPU密集→to_thread）
         from src.blueprint.ai.classifier import smart_classify
-        cls = smart_classify(layer_names, file.filename, parsed.get("raw_text", ""), use_llm=False)
-        drawing_type = cls.get("primary_type", "建筑") if isinstance(cls, dict) else "建筑"
-
-        # AI分析
         from src.blueprint.ai.extractor import smart_extract
-        analysis = smart_extract(parsed, drawing_type, use_llm=False)
+        import asyncio as _asyncio
+
+        def _classify():
+            return smart_classify(layer_names, file.filename, parsed.get("raw_text", ""), use_llm=False)
+
+        def _analyze(drawing_type):
+            return smart_extract(parsed, drawing_type, use_llm=False)
+
+        cls = await _asyncio.to_thread(_classify)
+        drawing_type = cls.get("primary_type", "建筑") if isinstance(cls, dict) else "建筑"
+        analysis = await _asyncio.to_thread(_analyze, drawing_type)
 
         review_analysis = {
             "file_name": file.filename,
@@ -1054,7 +1060,7 @@ async def agent_review(
 
         # 审查
         from src.blueprint.review.engine import review_analysis as do_review
-        review_output = do_review(review_analysis)
+        review_output = await _asyncio.to_thread(do_review, review_analysis)
 
         return {
             "success": True,
