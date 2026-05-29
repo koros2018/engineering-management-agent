@@ -1,0 +1,4091 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "工程管理智能体 API",
+    "description": "EMA v1.0 - 技术研发中心Agent",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "summary": "Auth Register",
+        "description": "用户注册 - 密码强度检查 + 用户名验证",
+        "operationId": "auth_register_api_v1_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_auth_register_api_v1_auth_register_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Auth Login",
+        "description": "用户登录 - Boss只需账号密码即可进入主界面",
+        "operationId": "auth_login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_auth_login_api_v1_auth_login_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify-admin-password": {
+      "post": {
+        "summary": "Verify Admin Pw Route",
+        "description": "验证管理后台密码（Boss进入后台时调用）",
+        "operationId": "verify_admin_pw_route_api_v1_auth_verify_admin_password_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_verify_admin_pw_route_api_v1_auth_verify_admin_password_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/wechat-qr": {
+      "post": {
+        "summary": "Wechat Qr",
+        "description": "微信扫码登录 - 生成真实QR码(base64) + 会话",
+        "operationId": "wechat_qr_api_v1_auth_wechat_qr_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/wechat-poll": {
+      "get": {
+        "summary": "Wechat Poll",
+        "description": "轮询微信扫码状态",
+        "operationId": "wechat_poll_api_v1_auth_wechat_poll_get",
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "State"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/wechat-register": {
+      "post": {
+        "summary": "Wechat Register",
+        "description": "扫码后注册新账号 + 绑定微信",
+        "operationId": "wechat_register_api_v1_auth_wechat_register_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_wechat_register_api_v1_auth_wechat_register_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "summary": "Forgot Password",
+        "description": "密码找回",
+        "operationId": "forgot_password_api_v1_auth_forgot_password_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_forgot_password_api_v1_auth_forgot_password_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "summary": "Reset Pw",
+        "description": "重置密码",
+        "operationId": "reset_pw_api_v1_auth_reset_password_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_reset_pw_api_v1_auth_reset_password_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Auth Me",
+        "description": "获取当前登录用户信息",
+        "operationId": "auth_me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "summary": "Auth Refresh",
+        "description": "用 refresh_token 换取新的 access_token",
+        "operationId": "auth_refresh_api_v1_auth_refresh_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_auth_refresh_api_v1_auth_refresh_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects": {
+      "get": {
+        "summary": "List Projects",
+        "description": "项目列表",
+        "operationId": "list_projects_api_v1_projects_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tenant Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Project",
+        "description": "创建项目",
+        "operationId": "create_project_api_v1_projects_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/fastapi___compat__v2__Body_create_project_api_v1_projects_post__2"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}": {
+      "get": {
+        "summary": "Get Project",
+        "description": "获取项目详情",
+        "operationId": "get_project_api_v1_projects__project_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Project",
+        "description": "删除项目",
+        "operationId": "delete_project_api_v1_projects__project_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Project",
+        "description": "更新项目",
+        "operationId": "update_project_api_v1_projects__project_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_update_project_api_v1_projects__project_id__put"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agents": {
+      "get": {
+        "summary": "List Agents",
+        "description": "列出所有Agent及其能力",
+        "operationId": "list_agents_api_v1_agents_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations": {
+      "get": {
+        "summary": "Get Conversations",
+        "description": "获取对话历史（从 ChromaDB）",
+        "operationId": "get_conversations_api_v1_conversations_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/search": {
+      "get": {
+        "summary": "Search Conversations",
+        "description": "搜索对话历史",
+        "operationId": "search_conversations_api_v1_conversations_search_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "session_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/llm/models": {
+      "get": {
+        "summary": "List Llm Models",
+        "description": "列出所有可用的 LLM 模型（本地 Ollama + 云端）",
+        "operationId": "list_llm_models_api_v1_llm_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/llm/test": {
+      "post": {
+        "summary": "Test Llm Model",
+        "description": "测试指定模型是否可用 (接受 JSON {\"model\": \"xxx\"} 或 Form model=xxx)",
+        "operationId": "test_llm_model_api_v1_llm_test_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agents/{agent_id}": {
+      "get": {
+        "summary": "Get Agent Info",
+        "description": "获取单个Agent信息",
+        "operationId": "get_agent_info_api_v1_agents__agent_id__get",
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/system/performance": {
+      "get": {
+        "summary": "System Performance",
+        "description": "系统性能监控面板数据",
+        "operationId": "system_performance_api_v1_system_performance_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/llm/health": {
+      "get": {
+        "summary": "Llm Health",
+        "description": "获取LLM健康状态（超时监督数据）",
+        "operationId": "llm_health_api_v1_llm_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/llm/health/reset": {
+      "post": {
+        "summary": "Llm Health Reset",
+        "description": "重置每日统计",
+        "operationId": "llm_health_reset_api_v1_llm_health_reset_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/llm/health/check": {
+      "get": {
+        "summary": "Llm Health Check",
+        "description": "立即执行云模型健康检测",
+        "operationId": "llm_health_check_api_v1_llm_health_check_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/main/chat": {
+      "post": {
+        "summary": "Main Agent Chat",
+        "description": "Main-Agent 主对话接口\n接收自然语言 → 意图分类 → 任务规划 → Sub-Agent调度 → 结果整合\n\n这是 EMA 的核心入口，支持所有 Agent 的自然语言调度。",
+        "operationId": "main_agent_chat_api_v1_main_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/chat": {
+      "post": {
+        "summary": "Agent Chat",
+        "description": "Sub-Agent 对话接口（兼容模式）\n直接路由到指定 Agent",
+        "operationId": "agent_chat_api_v1_agent_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/task": {
+      "post": {
+        "summary": "Submit Task",
+        "description": "通用任务提交接口",
+        "operationId": "submit_task_api_v1_agent_task_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentTaskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/task/{task_id}": {
+      "get": {
+        "summary": "Get Task Status",
+        "description": "查询任务状态（预留）",
+        "operationId": "get_task_status_api_v1_agent_task__task_id__get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/upload/analyze": {
+      "post": {
+        "summary": "Upload And Analyze",
+        "description": "上传图纸并分析（含缓存加速）\n支持格式：DWG, DXF, PDF",
+        "operationId": "upload_and_analyze_api_v1_upload_analyze_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_and_analyze_api_v1_upload_analyze_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/blueprint/ai-analyze": {
+      "post": {
+        "summary": "Blueprint Ai Analyze",
+        "description": "AI增强型图纸分析 — 上传图纸返回完整AI分析（分类+提取+设计原则+施工要求）",
+        "operationId": "blueprint_ai_analyze_api_v1_blueprint_ai_analyze_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_blueprint_ai_analyze_api_v1_blueprint_ai_analyze_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/blueprint/ai-extract": {
+      "post": {
+        "summary": "Blueprint Ai Extract",
+        "description": "工程信息智能提取 — 轻量级，只返回工程信息（项目名/面积/层数/结构/材料/参数）",
+        "operationId": "blueprint_ai_extract_api_v1_blueprint_ai_extract_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_blueprint_ai_extract_api_v1_blueprint_ai_extract_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/blueprint/supported-formats": {
+      "get": {
+        "summary": "Blueprint Supported Formats",
+        "description": "列出支持的图纸格式和AI能力",
+        "operationId": "blueprint_supported_formats_api_v1_blueprint_supported_formats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/blueprint/review": {
+      "post": {
+        "summary": "Blueprint Review",
+        "description": "图纸智能审查（基于国标规范）\n\n请求体: {\"file_path\": \"/path/to/file.dxf\", \"drawing_type\": \"建筑平面图\"}\n或: {\"analysis\": {...已有的分析结果...}}",
+        "operationId": "blueprint_review_api_v1_blueprint_review_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/blueprint/review/analysis": {
+      "post": {
+        "summary": "Blueprint Review Analysis",
+        "description": "从已有分析结果进行审查",
+        "operationId": "blueprint_review_analysis_api_v1_blueprint_review_analysis_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/blueprint/review/rules": {
+      "get": {
+        "summary": "Blueprint Review Rules",
+        "description": "列出所有审查规则",
+        "operationId": "blueprint_review_rules_api_v1_blueprint_review_rules_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/blueprint/documents/generate": {
+      "post": {
+        "summary": "Blueprint Generate Documents",
+        "description": "生成完整工程文档集\n\n请求体: {\"analysis\": {...}, \"doc_types\": [\"all\"] 或 [\"design_description\", ...]}",
+        "operationId": "blueprint_generate_documents_api_v1_blueprint_documents_generate_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/blueprint/documents/single": {
+      "post": {
+        "summary": "Blueprint Generate Single Document",
+        "description": "生成单个类型的工程文档\n\n请求体: {\"analysis\": {...}, \"doc_type\": \"design_description\"}",
+        "operationId": "blueprint_generate_single_document_api_v1_blueprint_documents_single_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/blueprint/documents/types": {
+      "get": {
+        "summary": "Blueprint Document Types",
+        "description": "列出支持的文档类型",
+        "operationId": "blueprint_document_types_api_v1_blueprint_documents_types_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/review": {
+      "post": {
+        "summary": "Agent Review",
+        "description": "上传图纸并执行智能审查",
+        "operationId": "agent_review_api_v1_agent_review_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_agent_review_api_v1_agent_review_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/documents": {
+      "post": {
+        "summary": "Agent Documents",
+        "description": "上传图纸并生成工程文档",
+        "operationId": "agent_documents_api_v1_agent_documents_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_agent_documents_api_v1_agent_documents_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/pipeline": {
+      "post": {
+        "summary": "Agent Pipeline",
+        "description": "端到端Agent工作流：解析→分类→AI分析→审查→文档",
+        "operationId": "agent_pipeline_api_v1_agent_pipeline_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_agent_pipeline_api_v1_agent_pipeline_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/analyze": {
+      "post": {
+        "summary": "Agent Analyze",
+        "description": "完整分析工作流：解析→分类→AI分析→工程量\n\n请求体: {\"file_path\": \"/path/to/file.dxf\", \"use_llm\": false}",
+        "operationId": "agent_analyze_api_v1_agent_analyze_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/capabilities": {
+      "get": {
+        "summary": "Agent Capabilities",
+        "description": "列出所有Agent能力",
+        "operationId": "agent_capabilities_api_v1_agent_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subscription/plans": {
+      "get": {
+        "summary": "Get Plans",
+        "description": "列出所有订阅套餐",
+        "operationId": "get_plans_api_v1_subscription_plans_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subscription/status": {
+      "get": {
+        "summary": "Subscription Status",
+        "description": "获取当前用户/租户的订阅状态",
+        "operationId": "subscription_status_api_v1_subscription_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/subscription/subscribe": {
+      "post": {
+        "summary": "Subscribe",
+        "description": "订阅/升级套餐",
+        "operationId": "subscribe_api_v1_subscription_subscribe_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_subscribe_api_v1_subscription_subscribe_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/payment/create": {
+      "post": {
+        "summary": "Create Payment",
+        "description": "创建支付订单（微信/支付宝）",
+        "operationId": "create_payment_api_v1_payment_create_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_payment_api_v1_payment_create_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/payment/orders": {
+      "get": {
+        "summary": "List Payment Orders",
+        "description": "列出用户的支付订单",
+        "operationId": "list_payment_orders_api_v1_payment_orders_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payment/orders/{order_id}": {
+      "get": {
+        "summary": "Get Payment Order",
+        "description": "查询单个订单",
+        "operationId": "get_payment_order_api_v1_payment_orders__order_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payment/mock-pay/{order_id}": {
+      "post": {
+        "summary": "Mock Pay",
+        "description": "模拟支付成功（Phase 7 Stub，生产环境改为微信/支付宝回调）",
+        "operationId": "mock_pay_api_v1_payment_mock_pay__order_id__post",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payment/wechat-callback": {
+      "post": {
+        "summary": "Wechat Callback",
+        "description": "微信支付回调（生产环境）",
+        "operationId": "wechat_callback_api_v1_payment_wechat_callback_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payment/alipay-callback": {
+      "post": {
+        "summary": "Alipay Callback",
+        "description": "支付宝支付回调（生产环境）",
+        "operationId": "alipay_callback_api_v1_payment_alipay_callback_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/system/benchmark": {
+      "post": {
+        "summary": "Run Benchmark",
+        "description": "执行性能压测（后台异步执行，不阻塞API）",
+        "operationId": "run_benchmark_api_v1_system_benchmark_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_run_benchmark_api_v1_system_benchmark_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/system/health-check": {
+      "get": {
+        "summary": "System Health Check",
+        "description": "系统快速健康检查（本地直调，不经过HTTP）",
+        "operationId": "system_health_check_api_v1_system_health_check_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/security/audit": {
+      "get": {
+        "summary": "Security Audit",
+        "description": "查看安全审计日志",
+        "operationId": "security_audit_api_v1_security_audit_get",
+        "parameters": [
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Severity"
+            }
+          },
+          {
+            "name": "event_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Event Type"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/security/baseline": {
+      "get": {
+        "summary": "Security Baseline",
+        "description": "执行安全基线检查",
+        "operationId": "security_baseline_api_v1_security_baseline_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/security/rate-limit": {
+      "get": {
+        "summary": "Check Rate",
+        "description": "检查当前IP的速率限制状态",
+        "operationId": "check_rate_api_v1_security_rate_limit_get",
+        "parameters": [
+          {
+            "name": "client_ip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "127.0.0.1",
+              "title": "Client Ip"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "summary": "Admin List Users",
+        "description": "用户列表（仅超级管理员）",
+        "operationId": "admin_list_users_api_v1_admin_users_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/tenants": {
+      "get": {
+        "summary": "Admin List Tenants",
+        "description": "租户列表（仅超级管理员）",
+        "operationId": "admin_list_tenants_api_v1_admin_tenants_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Admin Create Tenant",
+        "description": "创建租户（仅超级管理员）",
+        "operationId": "admin_create_tenant_api_v1_admin_tenants_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_admin_create_tenant_api_v1_admin_tenants_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/tenants/{tenant_id}": {
+      "put": {
+        "summary": "Admin Update Tenant",
+        "description": "编辑租户（仅超级管理员）",
+        "operationId": "admin_update_tenant_api_v1_admin_tenants__tenant_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_admin_update_tenant_api_v1_admin_tenants__tenant_id__put"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Admin Delete Tenant",
+        "description": "删除租户（仅超级管理员）",
+        "operationId": "admin_delete_tenant_api_v1_admin_tenants__tenant_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/milestones": {
+      "get": {
+        "summary": "List Milestones",
+        "description": "项目里程碑列表",
+        "operationId": "list_milestones_api_v1_projects__project_id__milestones_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add Milestone",
+        "description": "添加里程碑",
+        "operationId": "add_milestone_api_v1_projects__project_id__milestones_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_add_milestone_api_v1_projects__project_id__milestones_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/milestones/{milestone_id}/complete": {
+      "post": {
+        "summary": "Complete Milestone",
+        "description": "完成里程碑",
+        "operationId": "complete_milestone_api_v1_projects_milestones__milestone_id__complete_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "milestone_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Milestone Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/checks": {
+      "get": {
+        "summary": "Run Project Checks",
+        "description": "运行项目检查（里程碑提醒等）",
+        "operationId": "run_project_checks_api_v1_projects_checks_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/performance/cache-stats": {
+      "get": {
+        "summary": "Cache Stats",
+        "description": "缓存统计",
+        "operationId": "cache_stats_api_v1_performance_cache_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/performance/cache-clear": {
+      "post": {
+        "summary": "Cache Clear",
+        "description": "清理所有缓存",
+        "operationId": "cache_clear_api_v1_performance_cache_clear_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/performance/cache-warmup": {
+      "post": {
+        "summary": "Cache Warmup",
+        "description": "缓存预热：扫描样本目录并预解析",
+        "operationId": "cache_warmup_api_v1_performance_cache_warmup_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/performance/health": {
+      "get": {
+        "summary": "Perf Health",
+        "description": "性能健康检查（无需认证）",
+        "operationId": "perf_health_api_v1_performance_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/report": {
+      "get": {
+        "summary": "Admin Report",
+        "description": "平台周报生成",
+        "operationId": "admin_report_api_v1_admin_report_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/advice": {
+      "get": {
+        "summary": "Admin Advice",
+        "description": "决策建议 + 市场洞察",
+        "operationId": "admin_advice_api_v1_admin_advice_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/alerts": {
+      "get": {
+        "summary": "Admin Alerts",
+        "description": "系统预警",
+        "operationId": "admin_alerts_api_v1_admin_alerts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/dashboard": {
+      "get": {
+        "summary": "Dashboard",
+        "description": "综合数据看板",
+        "operationId": "dashboard_api_v1_dashboard_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/projects": {
+      "get": {
+        "summary": "Dashboard Projects",
+        "description": "项目统计",
+        "operationId": "dashboard_projects_api_v1_dashboard_projects_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/usage": {
+      "get": {
+        "summary": "Dashboard Usage",
+        "description": "使用趋势",
+        "operationId": "dashboard_usage_api_v1_dashboard_usage_get",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 30,
+              "title": "Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/revenue": {
+      "get": {
+        "summary": "Dashboard Revenue",
+        "description": "收益报表",
+        "operationId": "dashboard_revenue_api_v1_dashboard_revenue_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/agents": {
+      "get": {
+        "summary": "Dashboard Agents",
+        "description": "Agent使用热度",
+        "operationId": "dashboard_agents_api_v1_dashboard_agents_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/models": {
+      "get": {
+        "summary": "List Models Api",
+        "description": "列出所有模型配置（仅超级管理员）",
+        "operationId": "list_models_api_api_v1_admin_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Add Model Api",
+        "description": "添加模型配置（仅超级管理员）",
+        "operationId": "add_model_api_api_v1_admin_models_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelConfigSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/models/{model_id}": {
+      "put": {
+        "summary": "Update Model Api",
+        "description": "更新模型配置（仅超级管理员）",
+        "operationId": "update_model_api_api_v1_admin_models__model_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "model_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelConfigSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Model Api",
+        "description": "删除模型配置（仅超级管理员）",
+        "operationId": "delete_model_api_api_v1_admin_models__model_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "model_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/models/route": {
+      "get": {
+        "summary": "Route Model Api",
+        "description": "智能路由：返回当前用户应使用的模型（含NVIDIA RPM检查）",
+        "operationId": "route_model_api_api_v1_models_route_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "chat",
+              "title": "Task Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/models/nvidia-stats": {
+      "get": {
+        "summary": "Nvidia Rpm Stats",
+        "description": "获取NVIDIA API速率限制统计",
+        "operationId": "nvidia_rpm_stats_api_v1_models_nvidia_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/models/nvidia-stats/reset": {
+      "post": {
+        "summary": "Nvidia Rpm Reset",
+        "description": "重置NVIDIA API速率峰值（管理员）",
+        "operationId": "nvidia_rpm_reset_api_v1_models_nvidia_stats_reset_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "summary": "List Notifications",
+        "description": "获取通知列表",
+        "operationId": "list_notifications_api_v1_notifications_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "unread_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Unread Only"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/read-all": {
+      "post": {
+        "summary": "Read All Notifications",
+        "description": "标记全部通知已读",
+        "operationId": "read_all_notifications_api_v1_notifications_read_all_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/notifications/{notification_id}/read": {
+      "post": {
+        "summary": "Read Notification",
+        "description": "标记单条通知已读",
+        "operationId": "read_notification_api_v1_notifications__notification_id__read_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "notification_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Notification Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/logs/stats": {
+      "get": {
+        "summary": "Get Log Stats",
+        "description": "日志统计（默认24小时，支持1-168小时）",
+        "operationId": "get_log_stats_api_v1_logs_stats_get",
+        "parameters": [
+          {
+            "name": "hours",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 168,
+              "minimum": 1,
+              "default": 24,
+              "title": "Hours"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/logs/stats/full": {
+      "get": {
+        "summary": "Get Full Log Stats",
+        "description": "全量统计（24h + 7天 + 用户活动 + 错误汇总）",
+        "operationId": "get_full_log_stats_api_v1_logs_stats_full_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/logs/user-activity": {
+      "get": {
+        "summary": "Get User Activity Stats",
+        "description": "用户活动统计（默认7天）",
+        "operationId": "get_user_activity_stats_api_v1_logs_user_activity_get",
+        "parameters": [
+          {
+            "name": "hours",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1680,
+              "minimum": 1,
+              "default": 168,
+              "title": "Hours"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/logs/errors": {
+      "get": {
+        "summary": "Get Error Summary Stats",
+        "description": "错误汇总（默认7天）",
+        "operationId": "get_error_summary_stats_api_v1_logs_errors_get",
+        "parameters": [
+          {
+            "name": "hours",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1680,
+              "minimum": 1,
+              "default": 168,
+              "title": "Hours"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/system/cache-stats": {
+      "get": {
+        "summary": "Cache Stats",
+        "description": "获取解析缓存统计",
+        "operationId": "cache_stats_api_v1_system_cache_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/specs": {
+      "get": {
+        "summary": "List Specs",
+        "description": "规范列表",
+        "operationId": "list_specs_api_v1_specs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/specs/check": {
+      "post": {
+        "summary": "Check Specs Update",
+        "description": "手动触发规范更新检查",
+        "operationId": "check_specs_update_api_v1_specs_check_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/specs/initialize": {
+      "post": {
+        "summary": "Initialize Specs",
+        "description": "初始化规范索引",
+        "operationId": "initialize_specs_api_v1_specs_initialize_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/tasks/analyze": {
+      "post": {
+        "summary": "Create Analyze Task",
+        "description": "创建异步图纸分析任务",
+        "operationId": "create_analyze_task_api_v1_tasks_analyze_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_analyze_task_api_v1_tasks_analyze_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{task_id}": {
+      "get": {
+        "summary": "Get Task Status",
+        "description": "查询异步任务状态",
+        "operationId": "get_task_status_api_v1_tasks__task_id__get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/feedback": {
+      "post": {
+        "summary": "Submit Feedback",
+        "description": "收集用户反馈",
+        "operationId": "submit_feedback_api_v1_feedback_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/feedback": {
+      "get": {
+        "summary": "List Feedback",
+        "description": "查看反馈列表（管理端）",
+        "operationId": "list_feedback_api_v1_admin_feedback_get",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/track": {
+      "post": {
+        "summary": "Track Event",
+        "description": "前端埋点：记录用户行为事件",
+        "operationId": "track_event_api_v1_analytics_track_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/summary": {
+      "get": {
+        "summary": "Analytics Summary",
+        "description": "用户行为汇总统计",
+        "operationId": "analytics_summary_api_v1_analytics_summary_get",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 7,
+              "title": "Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AgentChatRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "task_type": {
+            "type": "string",
+            "title": "Task Type",
+            "default": "full_analysis"
+          },
+          "file_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Path"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "guest"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "model_chain": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Chain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "AgentChatRequest"
+      },
+      "AgentTaskRequest": {
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "title": "Agent Id"
+          },
+          "task_type": {
+            "type": "string",
+            "title": "Task Type"
+          },
+          "params": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Params",
+            "default": {}
+          },
+          "context": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Context",
+            "default": {}
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agent_id",
+          "task_type"
+        ],
+        "title": "AgentTaskRequest"
+      },
+      "Body_add_milestone_api_v1_projects__project_id__milestones_post": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "milestone_type": {
+            "type": "string",
+            "title": "Milestone Type",
+            "default": "custom"
+          },
+          "due_date": {
+            "type": "string",
+            "title": "Due Date"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "notify_days_before": {
+            "type": "integer",
+            "title": "Notify Days Before",
+            "default": 3
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "due_date"
+        ],
+        "title": "Body_add_milestone_api_v1_projects__project_id__milestones_post"
+      },
+      "Body_admin_create_tenant_api_v1_admin_tenants_post": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "plan": {
+            "type": "string",
+            "title": "Plan",
+            "default": "free"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "Body_admin_create_tenant_api_v1_admin_tenants_post"
+      },
+      "Body_admin_update_tenant_api_v1_admin_tenants__tenant_id__put": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "title": "Body_admin_update_tenant_api_v1_admin_tenants__tenant_id__put"
+      },
+      "Body_agent_documents_api_v1_agent_documents_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "guest"
+          },
+          "doc_types": {
+            "type": "string",
+            "title": "Doc Types",
+            "default": "design_spec"
+          },
+          "use_llm": {
+            "type": "boolean",
+            "title": "Use Llm",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_agent_documents_api_v1_agent_documents_post"
+      },
+      "Body_agent_pipeline_api_v1_agent_pipeline_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "file_path": {
+            "type": "string",
+            "title": "File Path"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "guest"
+          },
+          "use_llm": {
+            "type": "boolean",
+            "title": "Use Llm",
+            "default": false
+          },
+          "doc_types": {
+            "type": "string",
+            "title": "Doc Types",
+            "default": "all"
+          }
+        },
+        "type": "object",
+        "title": "Body_agent_pipeline_api_v1_agent_pipeline_post"
+      },
+      "Body_agent_review_api_v1_agent_review_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "guest"
+          },
+          "use_llm": {
+            "type": "boolean",
+            "title": "Use Llm",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_agent_review_api_v1_agent_review_post"
+      },
+      "Body_auth_login_api_v1_auth_login_post": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Body_auth_login_api_v1_auth_login_post"
+      },
+      "Body_auth_refresh_api_v1_auth_refresh_post": {
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "refresh_token"
+        ],
+        "title": "Body_auth_refresh_api_v1_auth_refresh_post"
+      },
+      "Body_auth_register_api_v1_auth_register_post": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "default": ""
+          },
+          "tenant_name": {
+            "type": "string",
+            "title": "Tenant Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Body_auth_register_api_v1_auth_register_post"
+      },
+      "Body_blueprint_ai_analyze_api_v1_blueprint_ai_analyze_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "guest"
+          },
+          "use_llm": {
+            "type": "boolean",
+            "title": "Use Llm",
+            "default": true
+          },
+          "enable_ai": {
+            "type": "boolean",
+            "title": "Enable Ai",
+            "default": true
+          },
+          "disable_ocr": {
+            "type": "boolean",
+            "title": "Disable Ocr",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_blueprint_ai_analyze_api_v1_blueprint_ai_analyze_post"
+      },
+      "Body_blueprint_ai_extract_api_v1_blueprint_ai_extract_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "guest"
+          },
+          "use_llm": {
+            "type": "boolean",
+            "title": "Use Llm",
+            "default": true
+          },
+          "disable_ocr": {
+            "type": "boolean",
+            "title": "Disable Ocr",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_blueprint_ai_extract_api_v1_blueprint_ai_extract_post"
+      },
+      "Body_create_analyze_task_api_v1_tasks_analyze_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "guest"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_create_analyze_task_api_v1_tasks_analyze_post"
+      },
+      "Body_create_payment_api_v1_payment_create_post": {
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "title": "Plan Id"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "payment_method": {
+            "type": "string",
+            "title": "Payment Method",
+            "default": "wechat"
+          },
+          "duration_months": {
+            "type": "integer",
+            "title": "Duration Months",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan_id",
+          "amount"
+        ],
+        "title": "Body_create_payment_api_v1_payment_create_post"
+      },
+      "Body_forgot_password_api_v1_auth_forgot_password_post": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "email"
+        ],
+        "title": "Body_forgot_password_api_v1_auth_forgot_password_post"
+      },
+      "Body_reset_pw_api_v1_auth_reset_password_post": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "new_password": {
+            "type": "string",
+            "title": "New Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "new_password"
+        ],
+        "title": "Body_reset_pw_api_v1_auth_reset_password_post"
+      },
+      "Body_run_benchmark_api_v1_system_benchmark_post": {
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "title": "Endpoint"
+          },
+          "concurrent": {
+            "type": "integer",
+            "title": "Concurrent",
+            "default": 10
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "default": 100
+          }
+        },
+        "type": "object",
+        "title": "Body_run_benchmark_api_v1_system_benchmark_post"
+      },
+      "Body_subscribe_api_v1_subscription_subscribe_post": {
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "title": "Plan Id"
+          },
+          "duration_months": {
+            "type": "integer",
+            "title": "Duration Months",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan_id"
+        ],
+        "title": "Body_subscribe_api_v1_subscription_subscribe_post"
+      },
+      "Body_update_project_api_v1_projects__project_id__put": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          }
+        },
+        "type": "object",
+        "title": "Body_update_project_api_v1_projects__project_id__put"
+      },
+      "Body_upload_and_analyze_api_v1_upload_analyze_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "guest"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "disable_ocr": {
+            "type": "boolean",
+            "title": "Disable Ocr",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_and_analyze_api_v1_upload_analyze_post"
+      },
+      "Body_verify_admin_pw_route_api_v1_auth_verify_admin_password_post": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "title": "Body_verify_admin_pw_route_api_v1_auth_verify_admin_password_post"
+      },
+      "Body_wechat_register_api_v1_auth_wechat_register_post": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "username",
+          "password"
+        ],
+        "title": "Body_wechat_register_api_v1_auth_wechat_register_post"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ModelConfigSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "base_url": {
+            "type": "string",
+            "title": "Base Url"
+          },
+          "api_key": {
+            "type": "string",
+            "title": "Api Key",
+            "default": ""
+          },
+          "model_name": {
+            "type": "string",
+            "title": "Model Name"
+          },
+          "context_window": {
+            "type": "integer",
+            "title": "Context Window",
+            "default": 128000
+          },
+          "reasoning": {
+            "type": "boolean",
+            "title": "Reasoning",
+            "default": false
+          },
+          "cost_input": {
+            "type": "number",
+            "title": "Cost Input",
+            "default": 0.0
+          },
+          "cost_output": {
+            "type": "number",
+            "title": "Cost Output",
+            "default": 0.0
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "default": []
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "provider",
+          "base_url",
+          "model_name"
+        ],
+        "title": "ModelConfigSchema"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "fastapi___compat__v2__Body_create_project_api_v1_projects_post__1": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "Body_create_project_api_v1_projects_post"
+      },
+      "fastapi___compat__v2__Body_create_project_api_v1_projects_post__2": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "project_type": {
+            "type": "string",
+            "title": "Project Type",
+            "default": "construction"
+          },
+          "budget": {
+            "type": "number",
+            "title": "Budget",
+            "default": 0
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "tenant_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tenant Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "Body_create_project_api_v1_projects_post"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

@@ -82,6 +82,101 @@ from auth import (
 
 
 # ─────────────────────────────────────────────────────────────────
+# API响应模型（Phase 14: OpenAPI文档增强）
+# ─────────────────────────────────────────────────────────────────
+
+class ReviewIssue(BaseModel):
+    rule_id: str = ""
+    rule_name: str = ""
+    severity: str = "建议"  # 严重/警告/建议
+    layer: str = ""
+    description: str = ""
+    detail: str = ""
+    spec_code: str = ""
+    spec_section: str = ""
+    suggestion: str = ""
+
+class ReviewSummary(BaseModel):
+    total_issues: int = 0
+    critical_count: int = 0
+    warning_count: int = 0
+    suggest_count: int = 0
+    confidence: float = 0.0
+    drawing_type: dict = {}
+    layer_count: int = 0
+    rules_applied: int = 0
+
+class ReviewOutput(BaseModel):
+    success: bool = True
+    file_name: str = ""
+    drawing_type: str = ""
+    summary: ReviewSummary = ReviewSummary()
+    issues: List[ReviewIssue] = []
+    passed_rules: List[dict] = []
+    specs_linked: List[dict] = []
+
+class DocumentItem(BaseModel):
+    type: str = ""
+    icon: str = ""
+    content: str = ""
+    summary: str = ""
+
+class DocumentsOutput(BaseModel):
+    success: bool = True
+    file_name: str = ""
+    drawing_type: str = ""
+    documents: List[DocumentItem] = []
+    generated_at: str = ""
+
+class PipelineOutput(BaseModel):
+    success: bool = True
+    file_name: str = ""
+    drawing_type: str = ""
+    project_info: dict = {}
+    material_specs: dict = {}
+    review: dict = {}
+    documents: dict = {}
+    execution_time: float = 0.0
+
+class AnalyticsEvent(BaseModel):
+    user_id: str = ""
+    event: str = ""
+    metadata: dict = {}
+    timestamp: str = ""
+
+class PerformanceOutput(BaseModel):
+    timestamp: str = ""
+    system: dict = {}
+    modules: dict = {}
+    llm: dict = {}
+    cache: dict = {}
+    data: dict = {}
+
+class FeedbackInput(BaseModel):
+    type: str = "suggestion"  # bug/feature/suggestion/praise
+    score: int = 5  # 1-5
+    content: str = ""
+    contact: str = ""
+
+class FeedbackOutput(BaseModel):
+    success: bool = True
+    message: str = ""
+
+class LLMHealthOutput(BaseModel):
+    status: str = ""
+    models: dict = {}
+    supervisor: dict = {}
+    timeout_stats: dict = {}
+
+class MessageResponse(BaseModel):
+    success: bool = True
+    message: str = ""
+
+class HealthResponse(BaseModel):
+    status: str = "ok"
+    timestamp: str = ""
+
+# ─────────────────────────────────────────────────────────────────
 # 全局Agent实例（懒加载）
 # ─────────────────────────────────────────────────────────────────
 
@@ -515,7 +610,7 @@ async def get_agent_info(agent_id: str):
 
 # ── 性能监控 API ──────────────────────────────────────────────
 
-@app.get("/api/v1/system/performance")
+@app.get("/api/v1/system/performance", summary="系统性能监控", description="获取系统各模块的性能指标。\n\n**返回数据**:\n- 系统信息 (CPU/内存/磁盘/OS)\n- 模块加载状态 (Blueprint/Review/Documents/LLM)\n- LLM健康状态 (超时统计/错误率/降级记录)\n- 缓存统计 (命中率/大小/TTL)\n- 数据统计 (用户数/项目数/文件数)")
 async def system_performance():
     """系统性能监控面板数据"""
     import time, os, platform, sys
@@ -584,7 +679,7 @@ async def system_performance():
 
 # ── LLM 超时监督 API ──────────────────────────────────────────
 
-@app.get("/api/v1/llm/health")
+@app.get("/api/v1/llm/health", summary="LLM健康检查", description="获取大模型服务健康状态和超时监督数据。\n\n**返回数据**:\n- 各模型状态 (可用/禁用/超时次数)\n- 超时监督统计 (连续失败/自动降级/恢复记录)\n- 响应时间分布\n- 错误率统计")
 async def llm_health():
     """获取LLM健康状态（超时监督数据）"""
     try:
@@ -1060,7 +1155,7 @@ async def blueprint_document_types():
 
 # ─── Agent 工作流 API ─────────────────────────────────────────────
 
-@app.post("/api/v1/agent/review")
+@app.post("/api/v1/agent/review", summary="智能审查", description="上传图纸文件(DWG/DXF/PDF)，执行AI智能审查。\n\n**流程**: 文件上传 → 图纸解析 → 图层分类 → 规则引擎审查 → 输出审查报告\n\n**审查规则**: 消防疏散、防火分区、楼梯规范、标题栏、标注规范、结构安全等15条国标规则\n\n**返回**: 审查问题列表(严重/警告/建议)、质量评分、规范引用")
 async def agent_review(
     file: UploadFile = File(...),
     user_id: str = Form("guest"),
@@ -1146,7 +1241,7 @@ async def agent_review(
         raise HTTPException(status_code=500, detail=f"审查失败: {str(e)}")
 
 
-@app.post("/api/v1/agent/documents")
+@app.post("/api/v1/agent/documents", summary="文档生成", description="上传图纸文件，自动生成工程文档。\n\n**支持文档类型**:\n- 设计说明 — 工程概况、设计依据、技术指标\n- 工程量清单 — 按专业分类的估算清单\n- 施工技术交底 — 施工工艺、质量标准、安全措施\n- 技术核定单 — 设计变更确认\n- 招投标文件 — 招标文件框架\n\n**流程**: 文件上传 → 图纸解析 → AI信息提取 → 文档生成")
 async def agent_documents(
     file: UploadFile = File(...),
     user_id: str = Form("guest"),
@@ -1253,7 +1348,7 @@ async def agent_documents(
         logger.error(f"[Agent Documents Error] {file.filename}: {e}")
         raise HTTPException(status_code=500, detail=f"文档生成失败: {str(e)}")
 
-@app.post("/api/v1/agent/pipeline")
+@app.post("/api/v1/agent/pipeline", summary="端到端流水线", description="一键执行完整的Agent工作流：解析 → 分类 → AI分析 → 审查 → 文档生成。\n\n**5步流程**:\n1. 图纸解析 (DWG/DXF/PDF)\n2. 图层分类 (规则+AI)\n3. 工程信息提取 (smart_extract)\n4. 智能审查 (15条国标规则)\n5. 文档生成 (设计说明+工程量清单+技术交底)\n\n**返回**: 完整的分析结果、审查报告、生成文档")
 async def agent_pipeline(
     file: UploadFile = File(None),
     file_path: str = Form(None),
@@ -1730,19 +1825,19 @@ async def admin_delete_tenant(
 
 # ── 项目管理 API ──────────────────────────────────────────
 
-@app.get("/api/v1/projects")
+@app.get("/api/v1/projects", operation_id="list_projects_tenant")
 async def list_projects(
     tenant_id: Optional[str] = None,
     status: Optional[str] = None,
     user: dict = Depends(get_current_user),
 ):
     """项目列表"""
-    from projects import list_projects as _list
-    projects_list = _list(tenant_id=tenant_id, status=status)
+    from projects import list_projects as _list_projects
+    projects_list = _list_projects(tenant_id=tenant_id, status=status)
     return {"success": True, "projects": projects_list, "total": len(projects_list)}
 
 
-@app.post("/api/v1/projects")
+@app.post("/api/v1/projects", operation_id="create_project_tenant")
 async def create_project(
     name: str = Form(...),
     description: str = Form(""),
@@ -1754,7 +1849,7 @@ async def create_project(
     user: dict = Depends(get_current_user),
 ):
     """创建项目"""
-    from projects import create_project as _create
+    from projects import create_project as _create_project
     tid = tenant_id or user.get("tenant_id", "default")
     p = _create(
         tenant_id=tid,
@@ -1786,11 +1881,11 @@ async def update_project(
     return {"success": True, "project": p}
 
 
-@app.delete("/api/v1/projects/{project_id}")
+@app.delete("/api/v1/projects/{project_id}", operation_id="delete_project_tenant")
 async def delete_project(project_id: str, user: dict = Depends(get_current_user)):
     """删除项目"""
-    from projects import delete_project as _delete
-    if not _delete(project_id):
+    from projects import delete_project as _delete_project
+    if not _delete_project(project_id):
         raise HTTPException(status_code=404, detail="项目不存在")
     return {"success": True, "message": "项目已删除"}
 
@@ -2259,7 +2354,7 @@ async def get_task_status(task_id: str):
 
 # ─── 用户反馈 API ───────────────────────────────────────────────
 
-@app.post("/api/v1/feedback")
+@app.post("/api/v1/feedback", summary="提交用户反馈", description="收集用户反馈意见。\n\n**参数**:\n- type: 反馈类型 (bug/feature/other)\n- score: 评分 (1-5星)\n- content: 反馈内容")
 async def submit_feedback(request: Request):
     """收集用户反馈"""
     try:
@@ -2314,7 +2409,7 @@ async def list_feedback(date: str = None):
 
 # ─── 用户行为分析 API ──────────────────────────────────────────
 
-@app.post("/api/v1/analytics/track")
+@app.post("/api/v1/analytics/track", summary="行为埋点", description="记录前端用户行为事件，用于产品分析和用户画像。\n\n**参数**:\n- event: 事件名称 (page_view/click/upload/review等)\n- metadata: 附加数据 (页面/按钮/文件信息等)")
 async def track_event(request: Request):
     """前端埋点：记录用户行为事件"""
     try:

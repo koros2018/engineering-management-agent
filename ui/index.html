@@ -235,7 +235,7 @@ border-radius: 8px; padding: 1px 5px; min-width: 16px; text-align: center;
 .step-error { color:var(--danger); font-size:12px; }
 .pipe-progress { height:3px; background:var(--border); border-radius:2px; margin:8px 0; overflow:hidden; }
 .pipe-progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),#34d399); transition:width .5s; }
-.wf-upload-area { border:2px dashed var(--border); border-radius:8px; padding:20px; text-align:center; cursor:pointer; transition:border-color .15s; margin-bottom:12px; }
+.wf-upload-area { border:2px dashed var(--border); border-radius:8px; padding:20px; text-align:center; cursor:pointer; transition:border-color .15s, background .15s, transform .15s; margin-bottom:12px; position:relative; }
 .wf-upload-area:hover { border-color:var(--accent); }
 .wf-upload-area.has-file { border-color:#34d399; background:rgba(52,211,153,0.05); }
 .wf-upload-icon { font-size:28px; margin-bottom:6px; }
@@ -893,11 +893,14 @@ margin-bottom: 0; margin-right: 4px;
       <!-- 智能审查 -->
       <div v-if="activeWfTab === 'review'">
         <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:12px">{{ t('wf_review_desc') }}</div>
-        <div :class="['wf-upload-area', { 'has-file': wfFile }]" @click="$refs.wfReviewInput.click()">
+        <div :class="['wf-upload-area', { 'has-file': wfFile }]" @click="$refs.wfReviewInput.click()"
+             @dragenter="onWfDragEnter('review', $event)" @dragleave="onWfDragLeave('review', $event)"
+             @dragover="onWfDragOver" @drop="onWfDrop('review', $event)">
           <input type="file" accept=".dwg,.dxf,.pdf" style="display:none" ref="wfReviewInput" @change="onWfFileSelect('review', $event)">
           <div class="wf-upload-icon">{{ wfFile ? '✅' : '📎' }}</div>
           <div class="wf-upload-text">{{ wfFile ? '已选择文件' : '点击或拖拽上传 DWG/DXF/PDF 图纸' }}</div>
           <div class="wf-file-name" v-if="wfFile">{{ wfFile.name }}</div>
+          <div v-if="!wfFile" style="font-size:10px;color:var(--text-dim);margin-top:4px">支持拖拽文件到此处</div>
         </div>
         <button class="wf-run-btn" :disabled="!wfFile || wfRunning" @click="runReview">
           {{ wfRunning ? '⏳ 审查中...' : '🔍 开始审查' }}
@@ -937,11 +940,14 @@ margin-bottom: 0; margin-right: 4px;
       <!-- 文档生成 -->
       <div v-if="activeWfTab === 'documents'">
         <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:12px">{{ t('wf_docs_desc') }}</div>
-        <div :class="['wf-upload-area', { 'has-file': wfDocFile }]" @click="$refs.wfDocInput.click()">
+        <div :class="['wf-upload-area', { 'has-file': wfDocFile }]" @click="$refs.wfDocInput.click()"
+             @dragenter="onWfDragEnter('doc', $event)" @dragleave="onWfDragLeave('doc', $event)"
+             @dragover="onWfDragOver" @drop="onWfDrop('doc', $event)">
           <input type="file" accept=".dwg,.dxf,.pdf" style="display:none" ref="wfDocInput" @change="onWfFileSelect('doc', $event)">
           <div class="wf-upload-icon">{{ wfDocFile ? '✅' : '📎' }}</div>
           <div class="wf-upload-text">{{ wfDocFile ? '已选择文件' : '点击或拖拽上传 DWG/DXF/PDF 图纸' }}</div>
           <div class="wf-file-name" v-if="wfDocFile">{{ wfDocFile.name }}</div>
+          <div v-if="!wfDocFile" style="font-size:10px;color:var(--text-dim);margin-top:4px">支持拖拽文件到此处</div>
         </div>
         <div style="margin-bottom:8px">
           <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">{{ t('select_doc_type') }}</div>
@@ -966,11 +972,14 @@ margin-bottom: 0; margin-right: 4px;
       <!-- 端到端流水线 -->
       <div v-if="activeWfTab === 'pipeline'">
         <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:12px">{{ t('wf_pipeline_desc') }}</div>
-        <div :class="['wf-upload-area', { 'has-file': wfPipeFile }]" @click="$refs.wfPipeInput.click()">
+        <div :class="['wf-upload-area', { 'has-file': wfPipeFile }]" @click="$refs.wfPipeInput.click()"
+             @dragenter="onWfDragEnter('pipeline', $event)" @dragleave="onWfDragLeave('pipeline', $event)"
+             @dragover="onWfDragOver" @drop="onWfDrop('pipeline', $event)">
           <input type="file" accept=".dwg,.dxf,.pdf" style="display:none" ref="wfPipeInput" @change="onWfFileSelect('pipeline', $event)">
           <div class="wf-upload-icon">{{ wfPipeFile ? '✅' : '📎' }}</div>
           <div class="wf-upload-text">{{ wfPipeFile ? '已选择文件' : '点击或拖拽上传 DWG/DXF/PDF 图纸' }}</div>
           <div class="wf-file-name" v-if="wfPipeFile">{{ wfPipeFile.name }}</div>
+          <div v-if="!wfPipeFile" style="font-size:10px;color:var(--text-dim);margin-top:4px">支持拖拽文件到此处</div>
         </div>
         <div v-if="!pipelineRunning && !pipelineResult" class="pipeline-container" style="margin-bottom:8px">
           <div class="pipeline-step"><span class="step-icon">1️⃣</span><span class="step-label">{{ t('pipeline_step1') }}</span><span class="step-pending">待执行</span></div>
@@ -1729,19 +1738,139 @@ createApp({
       else if (type === 'pipeline') wfPipeFile.value = f;
     }
 
-    async function uploadAndRun(file, endpoint, body) {
+    // ── 拖拽上传 ──
+    const dragCounter = { review: 0, doc: 0, pipeline: 0 };
+    function onWfDragEnter(type, e) {
+      e.preventDefault();
+      dragCounter[type]++;
+      const el = e.currentTarget;
+      el.style.borderColor = 'var(--accent)';
+      el.style.background = 'rgba(59,130,246,0.12)';
+      el.style.transform = 'scale(1.02)';
+    }
+    function onWfDragLeave(type, e) {
+      e.preventDefault();
+      dragCounter[type]--;
+      if (dragCounter[type] <= 0) {
+        dragCounter[type] = 0;
+        const el = e.currentTarget;
+        el.style.borderColor = '';
+        el.style.background = '';
+        el.style.transform = '';
+      }
+    }
+    function onWfDragOver(e) { e.preventDefault(); }
+    function onWfDrop(type, e) {
+      e.preventDefault();
+      dragCounter[type] = 0;
+      const el = e.currentTarget;
+      el.style.borderColor = '';
+      el.style.background = '';
+      el.style.transform = '';
+      const files = e.dataTransfer?.files;
+      if (files && files.length > 0) {
+        const f = files[0];
+        const valid = ['.dwg','.dxf','.pdf'];
+        const ext = '.' + f.name.split('.').pop().toLowerCase();
+        if (!valid.includes(ext)) {
+          showToast('仅支持 DWG/DXF/PDF 格式', 'error');
+          return;
+        }
+        if (type === 'review') wfFile.value = f;
+        else if (type === 'doc') wfDocFile.value = f;
+        else if (type === 'pipeline') wfPipeFile.value = f;
+        showToast('已选择: ' + f.name, 'success');
+      }
+    }
+
+    // ── Toast 通知系统 ──
+    const toastQueue = [];
+    let toastTimer = null;
+    function showToast(msg, type='info', duration=3000) {
+      const colors = { info:'var(--accent)', success:'#34d399', error:'var(--danger)', warning:'var(--warning)' };
+      const icons = { info:'ℹ️', success:'✅', error:'❌', warning:'⚠️' };
+      const id = Date.now() + Math.random();
+      const el = document.createElement('div');
+      el.id = 'toast-' + id;
+      el.style.cssText = 'position:fixed;top:60px;right:16px;z-index:9999;padding:10px 16px;border-radius:8px;font-size:13px;color:#fff;background:' + colors[type] + ';box-shadow:0 4px 12px rgba(0,0,0,0.3);opacity:0;transform:translateX(100px);transition:all .3s;pointer-events:auto;max-width:320px';
+      el.textContent = (icons[type] || '') + ' ' + msg;
+      document.body.appendChild(el);
+      requestAnimationFrame(() => { el.style.opacity = '1'; el.style.transform = 'translateX(0)'; });
+      setTimeout(() => {
+        el.style.opacity = '0'; el.style.transform = 'translateX(100px)';
+        setTimeout(() => el.remove(), 300);
+      }, duration);
+    }
+
+    // ── 导出功能 ──
+    function exportReviewResult() {
+      if (!reviewResult.value) { showToast('暂无审查结果', 'warning'); return; }
+      const r = reviewResult.value;
+      let md = '# 智能审查报告\n\n';
+      md += '**质量评分**: ' + (r.score * 100).toFixed(0) + '分  \n';
+      md += '**问题总数**: ' + r.total_issues + '  \n';
+      md += '- 严重: ' + r.critical + '  \n';
+      md += '- 警告: ' + r.warning + '  \n';
+      md += '- 建议: ' + r.info + '  \n\n';
+      md += '## 审查问题\n\n';
+      r.issues.forEach((issue, i) => {
+        md += '### ' + (i+1) + '. ' + issue.rule_name + ' [' + issue.severity + ']\n';
+        md += issue.description + '\n';
+        if (issue.suggestion) md += '> 💡 ' + issue.suggestion + '\n';
+        md += '\n';
+      });
+      downloadFile('审查报告_' + new Date().toISOString().slice(0,10) + '.md', md);
+      showToast('审查报告已导出', 'success');
+    }
+
+    function exportDocResults() {
+      if (!docResults.value.length) { showToast('暂无文档', 'warning'); return; }
+      let md = '# 工程文档\n\n';
+      docResults.value.forEach(doc => {
+        md += '## ' + doc.icon + ' ' + doc.type + '\n\n';
+        md += doc.content + '\n\n---\n\n';
+      });
+      downloadFile('工程文档_' + new Date().toISOString().slice(0,10) + '.md', md);
+      showToast('文档已导出', 'success');
+    }
+
+    function downloadFile(filename, content) {
+      const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ── 上传进度 ──
+    async function uploadAndRun(file, endpoint, body, onProgress) {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('user_id', 'web_user');
       for (const [k,v] of Object.entries(body || {})) {
         formData.append(k, typeof v === 'object' ? JSON.stringify(v) : v);
       }
-      const resp = await fetch(`${API_BASE}${endpoint}`, {
-        method: 'POST',
-        body: formData,
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${API_BASE}${endpoint}`);
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try { resolve(JSON.parse(xhr.responseText)); }
+            catch(e) { reject(new Error('JSON解析失败')); }
+          } else {
+            let msg = `HTTP ${xhr.status}`;
+            try { msg = JSON.parse(xhr.responseText).detail || msg; } catch(e) {}
+            reject(new Error(msg));
+          }
+        };
+        xhr.onerror = () => reject(new Error('网络请求失败'));
+        xhr.ontimeout = () => reject(new Error('请求超时，请检查网络'));
+        xhr.timeout = 300000; // 5分钟超时
+        if (onProgress) xhr.upload.addEventListener('progress', onProgress);
+        xhr.send(formData);
       });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      return await resp.json();
     }
 
     async function runReview() {

@@ -51,8 +51,9 @@ def test_review_dwg():
     assert r.status_code == 200, f"HTTP {r.status_code}: {r.text[:200]}"
     d = r.json()
     assert d.get("success"), f"review failed: {d}"
-    out = d.get("output", {})
-    assert "summary" in out, "missing summary"
+    # review_output 可能嵌套在 output 里，也可能是顶层
+    out = d.get("output") or d
+    assert isinstance(out, dict) and "summary" in out, f"missing summary, got keys: {list(out.keys()) if isinstance(out, dict) else type(out)}"
     assert "issues" in out, "missing issues"
 
 def test_documents_dwg():

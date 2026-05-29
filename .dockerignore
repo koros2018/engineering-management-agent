@@ -1,0 +1,52 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+docker-entrypoint.sh
+
+# Docs
+docs/
+
+# Tests
+tests/
+*.test.py
+
+# Data（不打包进镜像，用volume挂载）
+data/
+
+# 临时文件
+*.log
+*.tmp
+/tmp/
