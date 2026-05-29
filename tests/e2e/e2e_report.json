@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-05-28 12:41:31",
+  "api": "http://127.0.0.1:6188",
+  "results": [
+    {
+      "name": "P&ID管道仪表图",
+      "parse": true,
+      "ai": false,
+      "review": false,
+      "documents": false,
+      "total_ms": 172
+    },
+    {
+      "name": "总平面布置图",
+      "parse": true,
+      "ai": false,
+      "review": false,
+      "documents": false,
+      "total_ms": 1280
+    },
+    {
+      "name": "凝结水管道布置图",
+      "parse": true,
+      "ai": false,
+      "review": false,
+      "documents": false,
+      "total_ms": 328
+    }
+  ],
+  "all_passed": false
+}

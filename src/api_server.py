@@ -989,6 +989,189 @@ async def blueprint_document_types():
 
 # ─── Agent 工作流 API ─────────────────────────────────────────────
 
+@app.post("/api/v1/agent/review")
+async def agent_review(
+    file: UploadFile = File(...),
+    user_id: str = Form("guest"),
+    use_llm: bool = Form(False),
+):
+    """上传图纸并执行智能审查"""
+    import tempfile
+    from pathlib import Path
+
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in ['.dwg', '.dxf', '.pdf']:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+
+    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    safe_name = f"review_{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
+    save_path = UPLOAD_DIR / safe_name
+    content = await file.read()
+    save_path.write_bytes(content)
+
+    try:
+        from src.sub_agents.tech_rd_agent import TechRdAgent
+        from src.agent.base_agent import Task
+
+        agent = TechRdAgent()
+        # 先解析
+        parse_task = Task(
+            task_id="api_review_parse",
+            agent_id="tech_rd",
+            task_type="parse",
+            params={"file_path": str(save_path), "use_ai": False},
+            context={"task_id": "api_review_parse"},
+        )
+        parse_result = await agent.run_with_retry(parse_task)
+        if parse_result.status != "success":
+            return {"success": False, "error": parse_result.errors or ["解析失败"]}
+
+        parsed = parse_result.output
+        layers = parsed.get("layers", []) if isinstance(parsed, dict) else []
+        layer_names = [l.get("name", "") if isinstance(l, dict) else str(l) for l in layers]
+        geometry = parsed.get("geometry", {})
+        layer_stats = parsed.get("layer_stats", {})
+
+        # 分类
+        from src.blueprint.ai.classifier import smart_classify
+        cls = smart_classify(layer_names, file.filename, parsed.get("raw_text", ""), use_llm=False)
+        drawing_type = cls.get("primary_type", "建筑") if isinstance(cls, dict) else "建筑"
+
+        # AI分析
+        from src.blueprint.ai.extractor import smart_extract
+        analysis = smart_extract(parsed, drawing_type, use_llm=False)
+
+        review_analysis = {
+            "file_name": file.filename,
+            "drawing_type": {"primary": drawing_type, "confidence": 0.85},
+            "layers": layer_names,
+            "layer_stats": layer_stats,
+            "entities": [],
+            "geometry": geometry,
+            "ai_analysis": analysis,
+        }
+
+        # 审查
+        from src.blueprint.review.engine import review_analysis as do_review
+        review_output = do_review(review_analysis)
+
+        return {
+            "success": True,
+            "output": review_output,
+            "file_name": file.filename,
+            "drawing_type": drawing_type,
+        }
+    except Exception as e:
+        logger.error(f"[Agent Review Error] {file.filename}: {e}")
+        raise HTTPException(status_code=500, detail=f"审查失败: {str(e)}")
+
+
+@app.post("/api/v1/agent/documents")
+async def agent_documents(
+    file: UploadFile = File(...),
+    user_id: str = Form("guest"),
+    doc_types: str = Form("design_spec"),
+    use_llm: bool = Form(False),
+):
+    """上传图纸并生成工程文档"""
+    import json as _json
+    from pathlib import Path
+
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in ['.dwg', '.dxf', '.pdf']:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+
+    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    safe_name = f"doc_{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
+    save_path = UPLOAD_DIR / safe_name
+    content = await file.read()
+    save_path.write_bytes(content)
+
+    try:
+        from src.sub_agents.tech_rd_agent import TechRdAgent
+        from src.agent.base_agent import Task
+
+        agent = TechRdAgent()
+        # 解析
+        parse_task = Task(
+            task_id="api_doc_parse",
+            agent_id="tech_rd",
+            task_type="parse",
+            params={"file_path": str(save_path), "use_ai": False},
+            context={"task_id": "api_doc_parse"},
+        )
+        parse_result = await agent.run_with_retry(parse_task)
+        if parse_result.status != "success":
+            return {"success": False, "error": parse_result.errors or ["解析失败"]}
+
+        parsed = parse_result.output
+        layers = parsed.get("layers", []) if isinstance(parsed, dict) else []
+        layer_names = [l.get("name", "") if isinstance(l, dict) else str(l) for l in layers]
+        geometry = parsed.get("geometry", {})
+        layer_stats = parsed.get("layer_stats", {})
+
+        # 分类
+        from src.blueprint.ai.classifier import smart_classify
+        cls = smart_classify(layer_names, file.filename, parsed.get("raw_text", ""), use_llm=False)
+        drawing_type = cls.get("primary_type", "建筑") if isinstance(cls, dict) else "建筑"
+
+        # AI分析
+        from src.blueprint.ai.extractor import smart_extract
+        analysis = smart_extract(parsed, drawing_type, use_llm=False)
+
+        review_analysis = {
+            "file_name": file.filename,
+            "drawing_type": {"primary": drawing_type, "confidence": 0.85},
+            "layers": layer_names,
+            "layer_stats": layer_stats,
+            "entities": [],
+            "geometry": geometry,
+            "ai_analysis": analysis,
+        }
+
+        # 文档生成
+        from src.blueprint.documents.generator import generate_full_document_set
+        doc_output = generate_full_document_set(review_analysis)
+
+        # 转换为前端友好格式
+        documents = []
+        if isinstance(doc_output, dict):
+            docs_dict = doc_output.get("documents", doc_output)
+            type_names = {
+                "design_description": "设计说明",
+                "quantity_list": "工程量清单",
+                "technical_disclosure": "施工技术交底",
+                "change_request": "技术核定单",
+                "bid_document": "招投标文件",
+            }
+            type_icons = {
+                "design_description": "📋",
+                "quantity_list": "📊",
+                "technical_disclosure": "📝",
+                "change_request": "✅",
+                "bid_document": "📑",
+            }
+            for dtype, content in docs_dict.items():
+                if isinstance(content, str) and content:
+                    documents.append({
+                        "type": type_names.get(dtype, dtype),
+                        "icon": type_icons.get(dtype, "📄"),
+                        "content": content,
+                        "summary": "",
+                    })
+
+        return {
+            "success": True,
+            "output": {"documents": documents},
+            "file_name": file.filename,
+            "drawing_type": drawing_type,
+        }
+    except Exception as e:
+        logger.error(f"[Agent Documents Error] {file.filename}: {e}")
+        raise HTTPException(status_code=500, detail=f"文档生成失败: {str(e)}")
+
 @app.post("/api/v1/agent/pipeline")
 async def agent_pipeline(request: Request):
     """端到端Agent工作流：解析→分类→AI分析→审查→文档

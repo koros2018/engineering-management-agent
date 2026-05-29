@@ -126,6 +126,52 @@
     /* ── 弹窗 ── */
     .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: flex; align-items: center; justify-content: center; }
     .popup { background: var(--sidebar); border: 1px solid var(--border); border-radius: 12px; width: 560px; max-height: 80vh; overflow-y: auto; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+
+    /* === Phase 9: Agent工作流UI === */
+    .wf-tabs { display:flex; border-bottom:1px solid var(--border); margin-bottom:12px; }
+    .wf-tab { flex:1; padding:8px 4px; text-align:center; font-size:11px; color:var(--text-dim); cursor:pointer; border-bottom:2px solid transparent; transition:all .15s; }
+    .wf-tab:hover { color:var(--text); }
+    .wf-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+    .review-card { background:rgba(248,113,113,0.05); border:1px solid rgba(248,113,113,0.15); border-radius:8px; padding:12px; margin-bottom:8px; }
+    .review-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .review-score { font-size:20px; font-weight:700; }
+    .review-score.good { color:#34d399; }
+    .review-score.warn { color:var(--warning); }
+    .review-score.bad { color:var(--danger); }
+    .sev-badge { display:inline-block; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:600; margin-right:4px; }
+    .sev-critical { background:rgba(248,113,113,0.2); color:var(--danger); border:1px solid rgba(248,113,113,0.3); }
+    .sev-warning { background:rgba(251,191,36,0.2); color:var(--warning); border:1px solid rgba(251,191,36,0.3); }
+    .sev-info { background:rgba(59,130,246,0.2); color:var(--accent); border:1px solid rgba(59,130,246,0.3); }
+    .issue-item { padding:6px 8px; border-left:3px solid var(--border); margin:4px 0; background:rgba(255,255,255,0.02); border-radius:0 4px 4px 0; font-size:12px; }
+    .issue-item.critical { border-left-color:var(--danger); }
+    .issue-item.warning { border-left-color:var(--warning); }
+    .issue-item.info { border-left-color:var(--accent); }
+    .doc-card { background:rgba(52,211,153,0.05); border:1px solid rgba(52,211,153,0.15); border-radius:8px; padding:12px; margin-bottom:8px; }
+    .doc-type-badge { display:inline-block; padding:3px 8px; border-radius:10px; font-size:10px; background:rgba(52,211,153,0.15); color:#34d399; border:1px solid rgba(52,211,153,0.3); margin-bottom:6px; }
+    .doc-content { font-size:12px; color:var(--text); white-space:pre-wrap; max-height:200px; overflow-y:auto; line-height:1.6; }
+    .pipeline-container { background:rgba(59,130,246,0.05); border:1px solid rgba(59,130,246,0.15); border-radius:8px; padding:12px; }
+    .pipeline-step { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+    .pipeline-step:last-child { border-bottom:none; }
+    .step-icon { font-size:16px; width:24px; text-align:center; }
+    .step-label { font-size:12px; color:var(--text); flex:1; }
+    .step-done { color:#34d399; font-size:12px; }
+    .step-running { color:var(--warning); font-size:12px; }
+    .step-pending { color:var(--text-dim); font-size:12px; }
+    .step-error { color:var(--danger); font-size:12px; }
+    .pipe-progress { height:3px; background:var(--border); border-radius:2px; margin:8px 0; overflow:hidden; }
+    .pipe-progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),#34d399); transition:width .5s; }
+    .wf-upload-area { border:2px dashed var(--border); border-radius:8px; padding:20px; text-align:center; cursor:pointer; transition:border-color .15s; margin-bottom:12px; }
+    .wf-upload-area:hover { border-color:var(--accent); }
+    .wf-upload-area.has-file { border-color:#34d399; background:rgba(52,211,153,0.05); }
+    .wf-upload-icon { font-size:28px; margin-bottom:6px; }
+    .wf-upload-text { font-size:12px; color:var(--text-dim); }
+    .wf-file-name { font-size:13px; color:var(--accent); margin-top:4px; }
+    .wf-run-btn { width:100%; padding:10px; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; margin-top:8px; }
+    .wf-run-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .wf-run-btn:hover:not(:disabled) { filter:brightness(1.1); }
+    .rule-item { display:flex; align-items:center; gap:6px; padding:4px 0; font-size:11px; }
+    .rule-pass { color:#34d399; }
+    .rule-fail { color:var(--danger); }
     .popup-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
     .popup-title { font-size: 16px; font-weight: 600; }
     .popup-close { cursor: pointer; font-size: 18px; color: var(--text-dim); background: none; border: none; }
@@ -387,6 +433,16 @@
                 <span style="margin-right:6px">✨</span> 全生命周期体验
         <span v-if="lifecycleStage>0" style="font-size:10px;color:var(--dim);margin-left:auto">{{ lifecycleStage }}/7</span>
       </div>
+      <!-- Phase 9: 工作流快捷入口 -->
+      <div :class="['nav-item', { active: activeWfTab === 'review' }]" @click="switchWfTab('review')">
+        <span style="margin-right:6px">🔍</span> 智能审查
+      </div>
+      <div :class="['nav-item', { active: activeWfTab === 'documents' }]" @click="switchWfTab('documents')">
+        <span style="margin-right:6px">📄</span> 文档生成
+      </div>
+      <div :class="['nav-item', { active: activeWfTab === 'pipeline' }]" @click="switchWfTab('pipeline')">
+        <span style="margin-right:6px">⚡</span> 端到端流水线
+      </div>
       <div v-if="showTour" class="tour-panel">
         <div v-if="lifecycleStage===0" style="padding:6px 8px">
           <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">📋 选择阶段，体验全流程</div>
@@ -642,6 +698,135 @@
       </div>
     </div>
 
+    <!-- Phase 9: Agent工作流面板 -->
+    <div class="wf-panel" v-if="activeWfTab" style="flex:1;overflow-y:auto;padding:16px;">
+      <!-- 智能审查 -->
+      <div v-if="activeWfTab === 'review'">
+        <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:12px">🔍 智能审查 — 上传图纸自动检测国标合规问题</div>
+        <div :class="['wf-upload-area', { 'has-file': wfFile }]" @click="$refs.wfReviewInput.click()">
+          <input type="file" accept=".dwg,.dxf,.pdf" style="display:none" ref="wfReviewInput" @change="onWfFileSelect('review', $event)">
+          <div class="wf-upload-icon">{{ wfFile ? '✅' : '📎' }}</div>
+          <div class="wf-upload-text">{{ wfFile ? '已选择文件' : '点击或拖拽上传 DWG/DXF/PDF 图纸' }}</div>
+          <div class="wf-file-name" v-if="wfFile">{{ wfFile.name }}</div>
+        </div>
+        <button class="wf-run-btn" :disabled="!wfFile || wfRunning" @click="runReview">
+          {{ wfRunning ? '⏳ 审查中...' : '🔍 开始审查' }}
+        </button>
+        <div v-if="reviewResult" style="margin-top:12px">
+          <div class="review-card">
+            <div class="review-header">
+              <span class="review-score" :class="reviewResult.score >= 0.8 ? 'good' : reviewResult.score >= 0.5 ? 'warn' : 'bad'">{{ (reviewResult.score * 100).toFixed(0) }}</span>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--text-bright)">质量评分</div>
+                <div style="font-size:11px;color:var(--text-dim)">{{ reviewResult.total_issues || 0 }} 个问题</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:8px">
+              <span class="sev-badge sev-critical">严重 {{ reviewResult.critical || 0 }}</span>
+              <span class="sev-badge sev-warning">警告 {{ reviewResult.warning || 0 }}</span>
+              <span class="sev-badge sev-info">建议 {{ reviewResult.info || 0 }}</span>
+            </div>
+            <div v-if="reviewResult.issues && reviewResult.issues.length">
+              <div v-for="(issue, idx) in reviewResult.issues.slice(0,20)" :key="idx" :class="['issue-item', issue.severity === '严重' ? 'critical' : issue.severity === '警告' ? 'warning' : 'info']">
+                <div style="font-weight:600;margin-bottom:2px">{{ issue.rule_name || issue.rule_id || '未知规则' }}</div>
+                <div style="color:var(--text-dim);font-size:11px">{{ issue.description }}</div>
+                <div v-if="issue.suggestion" style="color:var(--accent);font-size:11px;margin-top:2px">💡 {{ issue.suggestion }}</div>
+              </div>
+            </div>
+            <div v-if="reviewResult.passed_rules && reviewResult.passed_rules.length" style="margin-top:8px">
+              <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">✅ 通过的规则 ({{ reviewResult.passed_rules.length }})</div>
+              <div class="rule-list">
+                <div v-for="(rule, idx) in reviewResult.passed_rules.slice(0,10)" :key="idx" class="rule-item">
+                  <span class="rule-pass">✓</span> {{ rule.rule_name || rule.rule_id }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 文档生成 -->
+      <div v-if="activeWfTab === 'documents'">
+        <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:12px">📄 文档生成 — 从图纸自动生成工程文档</div>
+        <div :class="['wf-upload-area', { 'has-file': wfDocFile }]" @click="$refs.wfDocInput.click()">
+          <input type="file" accept=".dwg,.dxf,.pdf" style="display:none" ref="wfDocInput" @change="onWfFileSelect('doc', $event)">
+          <div class="wf-upload-icon">{{ wfDocFile ? '✅' : '📎' }}</div>
+          <div class="wf-upload-text">{{ wfDocFile ? '已选择文件' : '点击或拖拽上传 DWG/DXF/PDF 图纸' }}</div>
+          <div class="wf-file-name" v-if="wfDocFile">{{ wfDocFile.name }}</div>
+        </div>
+        <div style="margin-bottom:8px">
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">选择文档类型：</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <label v-for="dt in docTypes" :key="dt.id" style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer">
+              <input type="checkbox" :value="dt.id" v-model="selectedDocTypes" style="accent-color:var(--accent)">
+              <span>{{ dt.icon }} {{ dt.name }}</span>
+            </label>
+          </div>
+        </div>
+        <button class="wf-run-btn" :disabled="!wfDocFile || !selectedDocTypes.length || wfRunning" @click="runDocuments">
+          {{ wfRunning ? '⏳ 生成中...' : '📄 生成文档' }}
+        </button>
+        <div v-if="docResults.length" style="margin-top:12px">
+          <div v-for="(doc, idx) in docResults" :key="idx" class="doc-card">
+            <span class="doc-type-badge">{{ doc.icon }} {{ doc.type }}</span>
+            <div v-if="doc.summary" style="font-size:11px;color:var(--text-dim);margin-bottom:6px">{{ doc.summary }}</div>
+            <div class="doc-content" v-if="doc.content">{{ doc.content }}</div>
+          </div>
+        </div>
+      </div>
+      <!-- 端到端流水线 -->
+      <div v-if="activeWfTab === 'pipeline'">
+        <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:12px">⚡ 端到端流水线 — 解析→分类→分析→审查→文档</div>
+        <div :class="['wf-upload-area', { 'has-file': wfPipeFile }]" @click="$refs.wfPipeInput.click()">
+          <input type="file" accept=".dwg,.dxf,.pdf" style="display:none" ref="wfPipeInput" @change="onWfFileSelect('pipeline', $event)">
+          <div class="wf-upload-icon">{{ wfPipeFile ? '✅' : '📎' }}</div>
+          <div class="wf-upload-text">{{ wfPipeFile ? '已选择文件' : '点击或拖拽上传 DWG/DXF/PDF 图纸' }}</div>
+          <div class="wf-file-name" v-if="wfPipeFile">{{ wfPipeFile.name }}</div>
+        </div>
+        <div v-if="!pipelineRunning && !pipelineResult" class="pipeline-container" style="margin-bottom:8px">
+          <div class="pipeline-step"><span class="step-icon">1️⃣</span><span class="step-label">图纸解析</span><span class="step-pending">待执行</span></div>
+          <div class="pipeline-step"><span class="step-icon">2️⃣</span><span class="step-label">类型识别</span><span class="step-pending">待执行</span></div>
+          <div class="pipeline-step"><span class="step-icon">3️⃣</span><span class="step-label">AI分析</span><span class="step-pending">待执行</span></div>
+          <div class="pipeline-step"><span class="step-icon">4️⃣</span><span class="step-label">合规审查</span><span class="step-pending">待执行</span></div>
+          <div class="pipeline-step"><span class="step-icon">5️⃣</span><span class="step-label">文档生成</span><span class="step-pending">待执行</span></div>
+        </div>
+        <div v-if="pipelineRunning || pipelineResult" class="pipeline-container" style="margin-bottom:8px">
+          <div class="pipe-progress"><div class="pipe-progress-fill" :style="{width: pipelineProgress + '%'}"></div></div>
+          <div v-for="(step, idx) in pipelineSteps" :key="idx" class="pipeline-step">
+            <span class="step-icon">{{ step.icon }}</span>
+            <span class="step-label">{{ step.label }}</span>
+            <span :class="['step-' + step.status]">{{ step.status === 'done' ? '✅' : step.status === 'running' ? '⏳' : step.status === 'error' ? '❌' : '待执行' }}</span>
+          </div>
+        </div>
+        <button class="wf-run-btn" :disabled="!wfPipeFile || pipelineRunning" @click="runPipeline">
+          {{ pipelineRunning ? '⏳ 流水线执行中...' : '▶ 启动流水线' }}
+        </button>
+        <div v-if="pipelineResult" style="margin-top:12px">
+          <div v-if="pipelineResult.drawing_type" class="review-card">
+            <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:6px">📊 图纸识别结果</div>
+            <div style="font-size:13px">类型：<strong>{{ pipelineResult.drawing_type }}</strong>（置信度 {{ (pipelineResult.confidence * 100).toFixed(0) }}%）</div>
+          </div>
+          <div v-if="pipelineResult.review && pipelineResult.review.issues" class="review-card">
+            <div style="font-size:12px;font-weight:600;color:var(--danger);margin-bottom:6px">🔍 审查结果</div>
+            <div style="font-size:12px;margin-bottom:6px">发现 {{ pipelineResult.review.issues.length }} 个问题
+              <span v-if="pipelineResult.review.summary">（评分 {{ (pipelineResult.review.summary.confidence * 100).toFixed(0) }}）</span>
+            </div>
+            <div v-for="(issue, idx) in pipelineResult.review.issues.slice(0,10)" :key="idx" :class="['issue-item', issue.severity === '严重' ? 'critical' : issue.severity === '警告' ? 'warning' : 'info']">
+              <div style="font-weight:600;font-size:11px">{{ issue.rule_name || issue.rule_id }}</div>
+              <div style="color:var(--text-dim);font-size:11px">{{ issue.description }}</div>
+            </div>
+          </div>
+          <div v-if="pipelineResult.documents && Object.keys(pipelineResult.documents).length" class="doc-card">
+            <div style="font-size:12px;font-weight:600;color:#34d399;margin-bottom:6px">📄 生成文档（{{ Object.keys(pipelineResult.documents).length }}份）</div>
+            <div v-for="(doc, dtype) in (typeof pipelineResult.documents === 'object' && !Array.isArray(pipelineResult.documents) ? pipelineResult.documents : {})" :key="dtype" style="margin-bottom:8px">
+              <span class="doc-type-badge">{{ dtype }}</span>
+              <div class="doc-content" v-if="typeof doc === 'string'">{{ doc }}</div>
+              <div class="doc-content" v-else-if="doc && doc.content">{{ doc.content }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="input-area">
       <!-- 文件 -->
       <div class="file-row" v-if="selectedFile">
@@ -660,7 +845,7 @@
         <textarea
           class="input-box"
           v-model="input"
-          :placeholder="`向 ${currentAgent.name} 描述您的需求...`"
+          :placeholder="activeWfTab ? '工作流模式下请在上方上传图纸...' : `向 ${currentAgent.name} 描述您的需求...`"
           rows="1"
           @keydown.enter.exact.prevent="send"
           @input="autoGrow"
@@ -1230,6 +1415,190 @@ createApp({
       window.location.href = '/ui/login.html';
     }
 
+    // ═══ Phase 9: Agent工作流 ═══
+    const activeWfTab = ref(null);
+    const wfFile = ref(null);
+    const wfDocFile = ref(null);
+    const wfPipeFile = ref(null);
+    const wfRunning = ref(false);
+    const reviewResult = ref(null);
+    const docResults = ref([]);
+    const pipelineResult = ref(null);
+    const pipelineRunning = ref(false);
+    const pipelineProgress = ref(0);
+    const pipelineSteps = ref([
+      { icon:'1️⃣', label:'图纸解析', status:'pending' },
+      { icon:'2️⃣', label:'类型识别', status:'pending' },
+      { icon:'3️⃣', label:'AI分析', status:'pending' },
+      { icon:'4️⃣', label:'合规审查', status:'pending' },
+      { icon:'5️⃣', label:'文档生成', status:'pending' },
+    ]);
+    const docTypes = ref([
+      { id:'design_spec', name:'设计说明', icon:'📋' },
+      { id:'construction_handover', name:'施工技术交底', icon:'📝' },
+      { id:'bill_of_quantities', name:'工程量清单', icon:'📊' },
+      { id:'technical_approval', name:'技术核定单', icon:'✅' },
+      { id:'bidding_doc', name:'招投标文件', icon:'📑' },
+    ]);
+    const selectedDocTypes = ref(['design_spec']);
+
+    function switchWfTab(tab) {
+      activeWfTab.value = activeWfTab.value === tab ? null : tab;
+      // 重置状态
+      wfFile.value = null;
+      wfDocFile.value = null;
+      wfPipeFile.value = null;
+      wfRunning.value = false;
+      reviewResult.value = null;
+      docResults.value = [];
+      pipelineResult.value = null;
+      pipelineRunning.value = false;
+      pipelineProgress.value = 0;
+      pipelineSteps.value.forEach(s => s.status = 'pending');
+    }
+
+    function onWfFileSelect(type, e) {
+      const f = e.target.files[0] || null;
+      if (type === 'review') wfFile.value = f;
+      else if (type === 'doc') wfDocFile.value = f;
+      else if (type === 'pipeline') wfPipeFile.value = f;
+    }
+
+    async function uploadAndRun(file, endpoint, body) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('user_id', 'web_user');
+      for (const [k,v] of Object.entries(body || {})) {
+        formData.append(k, typeof v === 'object' ? JSON.stringify(v) : v);
+      }
+      const resp = await fetch(`${API_BASE}${endpoint}`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return await resp.json();
+    }
+
+    async function runReview() {
+      if (!wfFile.value) return;
+      wfRunning.value = true;
+      reviewResult.value = null;
+      try {
+        const data = await uploadAndRun(wfFile.value, '/api/v1/agent/review', { use_llm: false });
+        if (data.success && data.output) {
+          const out = data.output;
+          const summary = out.summary || {};
+          const issues = out.issues || [];
+          // severity 可能是 Severity.CRITICAL/枚举值或中文字符串
+          const sevStr = (s) => {
+            if (!s) return '建议';
+            const v = typeof s === 'string' ? s : String(s);
+            if (v.includes('CRITICAL') || v === '严重') return '严重';
+            if (v.includes('WARNING') || v === '警告') return '警告';
+            return '建议';
+          };
+          reviewResult.value = {
+            score: summary.confidence || 0,
+            total_issues: summary.total_issues || issues.length || 0,
+            critical: summary.critical_count || issues.filter(i => sevStr(i.severity) === '严重').length,
+            warning: summary.warning_count || issues.filter(i => sevStr(i.severity) === '警告').length,
+            info: summary.suggest_count || issues.filter(i => sevStr(i.severity) === '建议').length,
+            issues: issues.map(i => ({
+              rule_id: i.rule_id || '',
+              rule_name: i.rule_name || i.spec_name || i.rule_id || '未知规则',
+              description: i.description || i.message || '',
+              severity: sevStr(i.severity),
+              suggestion: i.suggestion || i.fix || '',
+              layer: i.layer || '',
+              spec_code: i.spec_code || '',
+            })),
+            passed_rules: (out.specs_lookup ? Object.keys(out.specs_lookup) : []).map(k => ({ rule_id: k, rule_name: k })),
+            drawing_type: summary.drawing_type || data.drawing_type || '',
+            kb_requirements: out.kb_requirements || [],
+          };
+        } else {
+          reviewResult.value = { score: 0, total_issues: 0, critical: 0, warning: 0, info: 0, issues: [], passed_rules: [] };
+        }
+      } catch (e) {
+        alert('审查失败：' + e.message);
+      }
+      wfRunning.value = false;
+    }
+
+    async function runDocuments() {
+      if (!wfDocFile.value || !selectedDocTypes.value.length) return;
+      wfRunning.value = true;
+      docResults.value = [];
+      try {
+        const data = await uploadAndRun(wfDocFile.value, '/api/v1/agent/documents', {
+          doc_types: selectedDocTypes.value,
+          use_llm: false,
+        });
+        if (data.success && data.output) {
+          const out = data.output;
+          const docs = out.documents || [];
+          docResults.value = docs.map(d => {
+            const dt = docTypes.value.find(t => t.id === d.type || t.name === d.type);
+            return {
+              type: d.type || '未知',
+              icon: dt ? dt.icon : '📄',
+              content: d.content || d.text || '',
+              summary: d.summary || '',
+            };
+          });
+        }
+      } catch (e) {
+        alert('文档生成失败：' + e.message);
+      }
+      wfRunning.value = false;
+    }
+
+    function updatePipelineStep(idx, status) {
+      if (idx >= 0 && idx < pipelineSteps.value.length) {
+        pipelineSteps.value[idx].status = status;
+      }
+      pipelineProgress.value = pipelineSteps.value.filter(s => s.status === 'done').length * 20;
+    }
+
+    async function runPipeline() {
+      if (!wfPipeFile.value) return;
+      pipelineRunning.value = true;
+      pipelineResult.value = null;
+      pipelineProgress.value = 0;
+      pipelineSteps.value.forEach(s => s.status = 'pending');
+
+      // Step 1: 上传并解析
+      updatePipelineStep(0, 'running');
+      try {
+        const data = await uploadAndRun(wfPipeFile.value, '/api/v1/agent/pipeline', {
+          use_llm: false,
+          doc_types: ['all'],
+        });
+        if (data.success && data.output) {
+          const out = data.output;
+          pipelineResult.value = {
+            drawing_type: out.drawing_type || '',
+            confidence: out.confidence || 0,
+            parse: out.parse || {},
+            review: out.review || {},
+            documents: out.documents || {},
+            ai_analysis: out.ai_analysis || {},
+            _raw: out,
+          };
+          // 标记所有步骤完成
+          pipelineSteps.value.forEach(s => s.status = 'done');
+          pipelineProgress.value = 100;
+        } else {
+          updatePipelineStep(0, 'error');
+          pipelineResult.value = { error: data.error || '流水线执行失败' };
+        }
+      } catch (e) {
+        updatePipelineStep(0, 'error');
+        pipelineResult.value = { error: e.message };
+      }
+      pipelineRunning.value = false;
+    }
+
     return {
       messages, input, loading, selectedFile, chatArea, inputBox,
       agents, currentAgent, availableModels, selectedModel,
@@ -1244,6 +1613,12 @@ createApp({
       startOnboarding, nextOnboarding, prevOnboarding, skipOnboarding,
       openSubscribe, openNotifications, doSubscribe, loadNotificationsList, markAllRead, readNotif, formatNotifTime,
       logout,
+      // Phase 9
+      activeWfTab, wfFile, wfDocFile, wfPipeFile, wfRunning,
+      reviewResult, docResults,
+      pipelineResult, pipelineRunning, pipelineProgress, pipelineSteps,
+      docTypes, selectedDocTypes,
+      switchWfTab, onWfFileSelect, runReview, runDocuments, runPipeline,
     };
   }
 }).mount('#app');
