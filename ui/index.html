@@ -1174,13 +1174,19 @@ margin-bottom: 0; margin-right: 4px;
       <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:6px">🤖 多Agent协同审查</div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">上传图纸后，技术研发/安全合规/成本效益三路Agent并行审查，结果融合</div>
 
-      <!-- 上传区 -->
-      <div :class="['wf-upload-area', { 'has-file': multiFile }]" @click="$refs.multiInput.click()"
+      <!-- 上传区（支持多文件拖拽） -->
+      <div :class="['wf-upload-area', { 'has-file': multiFiles.length > 0, 'drag-over': multiDragOver }]"
+           @click="$refs.multiInput.click()"
            @dragenter="onMultiDragEnter" @dragleave="onMultiDragLeave" @dragover="onWfDragOver" @drop="onMultiDrop">
-        <input type="file" accept=".dwg,.dxf,.pdf" style="display:none" ref="multiInput" @change="onMultiFileSelect">
-        <div class="wf-upload-icon">{{ multiFile ? '✅' : '📎' }}</div>
-        <div class="wf-upload-text">{{ multiFile ? '已选择文件' : '点击或拖拽上传 DWG/DXF/PDF 图纸' }}</div>
-        <div class="wf-file-name" v-if="multiFile">{{ multiFile.name }}</div>
+        <input type="file" accept=".dwg,.dxf,.pdf" multiple style="display:none" ref="multiInput" @change="onMultiFileSelect">
+        <div class="wf-upload-icon">{{ multiFiles.length > 0 ? '✅' : '📎' }}</div>
+        <div class="wf-upload-text">{{ multiFiles.length > 0 ? '已选择 ' + multiFiles.length + ' 个文件' : '点击或拖拽上传 DWG/DXF/PDF 图纸（支持多选）' }}</div>
+        <div v-if="multiFiles.length > 0" style="margin-top:6px;max-height:80px;overflow-y:auto">
+          <div v-for="(f,fi) in multiFiles" :key="fi" class="wf-file-name" style="display:flex;justify-content:space-between;align-items:center">
+            <span>📄 {{ f.name }}</span>
+            <span style="color:var(--text-dim);font-size:10px;cursor:pointer" @click.stop="multiFiles.splice(fi,1)">✕</span>
+          </div>
+        </div>
       </div>
 
       <!-- Agent选择 -->
@@ -1193,13 +1199,16 @@ margin-bottom: 0; margin-right: 4px;
       </div>
 
       <!-- 执行按钮 -->
-      <button class="wf-run-btn" :disabled="!multiFile || multiRunning || !multiAgents.some(a=>a.active)" @click="runMultiReview">
-        {{ multiRunning ? '⏳ 三路Agent并行审查中...' : '🚀 启动多Agent协同审查' }}
+      <button class="wf-run-btn" :disabled="multiFiles.length === 0 || multiRunning || !multiAgents.some(a=>a.active)" @click="runMultiReview">
+        {{ multiRunning ? '⏳ 批量审查中...' : (multiFiles.length > 1 ? '🚀 批量审查 (' + multiFiles.length + '个文件)' : '🚀 启动多Agent协同审查') }}
       </button>
 
       <!-- 进度条 -->
       <div v-if="multiRunning" style="margin-top:12px">
         <div class="pipe-progress"><div class="pipe-progress-fill" :style="{width: multiProgress+'%'}"></div></div>
+        <div v-if="multiFiles.length > 1" style="font-size:11px;color:var(--text-dim);margin-bottom:4px">
+          文件 {{ Math.min(multiFiles.length, multiProgress >= 100 ? multiFiles.length : Math.floor(multiProgress / 100 * multiFiles.length) + 1) }} / {{ multiFiles.length }}
+        </div>
         <div v-for="a in multiAgents.filter(x=>x.active)" :key="a.id" class="pipeline-step">
           <span class="step-icon">{{ a.icon }}</span>
           <span class="step-label">{{ a.name }}</span>
@@ -1207,8 +1216,45 @@ margin-bottom: 0; margin-right: 4px;
         </div>
       </div>
 
-      <!-- 结果 -->
-      <div v-if="multiResult" style="margin-top:12px">
+      <!-- 结果（批量模式：每个文件一个卡片） -->
+      <div v-if="batchResults.length > 0" style="margin-top:12px">
+        <div v-for="(br, bi) in batchResults" :key="bi" style="margin-bottom:16px">
+          <div style="font-size:13px;font-weight:600;color:var(--accent);margin-bottom:8px;padding:6px 10px;background:var(--bg-hover);border-radius:6px">
+            📄 {{ br.filename }} <span style="font-size:10px;color:var(--text-dim);font-weight:400">{{ br.execution_time?.toFixed(2) }}s | {{ br.issues_count || 0 }}个问题</span>
+          </div>
+          <!-- 各Agent结果 -->
+          <div v-for="a in multiAgents.filter(x=>x.active)" :key="a.id" class="review-card" style="margin-top:4px">
+            <div style="font-size:12px;font-weight:600;margin-bottom:4px">{{ a.icon }} {{ a.name }}</div>
+            <div v-if="br.agent_results && br.agent_results[a.id]" style="font-size:11px">
+              状态: {{ br.agent_results[a.id].status }} | 置信度: {{ ((br.agent_results[a.id].confidence||0)*100).toFixed(0) }}%
+            </div>
+            <!-- 安全审查问题 -->
+            <div v-if="a.id==='safety_compliance' && br.outputs?.safety_compliance?.issues">
+              <div v-for="(issue, idx) in br.outputs.safety_compliance.issues.slice(0,5)" :key="idx" :class="['issue-item', issue.severity==='严重'?'critical':issue.severity==='警告'?'warning':'info']">
+                <div style="font-weight:600">{{ issue.rule_name || issue.rule_id }}</div>
+                <div style="color:var(--text-dim)">{{ issue.description }}</div>
+              </div>
+            </div>
+            <!-- 工程量 -->
+            <div v-if="a.id==='cost_benefit' && br.outputs?.cost_benefit">
+              <div style="font-size:11px;color:var(--text-dim);margin-top:4px">{{ br.outputs.cost_benefit.summary }}</div>
+              <div v-if="br.outputs.cost_benefit.quantities" style="margin-top:4px">
+                <div v-for="(q, qi) in br.outputs.cost_benefit.quantities.slice(0,5)" :key="qi" style="font-size:11px;display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid var(--border)">
+                  <span>{{ q.item }}</span>
+                  <span style="color:var(--accent)">{{ q.quantity }} {{ q.unit }}</span>
+                </div>
+              </div>
+            </div>
+            <!-- 技术研发 -->
+            <div v-if="a.id==='tech_rd' && br.outputs?.tech_rd" style="font-size:11px">
+              <div v-if="br.outputs.tech_rd.drawing_type">📐 图纸类型: <b>{{ br.outputs.tech_rd.drawing_type }}</b></div>
+              <div v-if="br.outputs.tech_rd.layer_count">📊 图层: {{ br.outputs.tech_rd.layer_count }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 单文件结果（兼容旧模式） -->
+      <div v-if="batchResults.length === 0 && multiResult" style="margin-top:12px">
         <!-- 综合报告 -->
         <div class="review-card" style="border-left-color:var(--accent)">
           <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:6px">📋 综合审查报告</div>
@@ -1233,6 +1279,7 @@ margin-bottom: 0; margin-right: 4px;
             {{ multiResult.outputs.cost_benefit.summary }}
           </div>
         </div>
+      </div>
       </div>
     </div>
 
@@ -1974,12 +2021,14 @@ createApp({
     const reviewResult = ref(null);
     const docResults = ref([]);
 
-    // Phase 17: 多Agent协同审查
-    const multiFile = ref(null);
+    // Phase 19: 多Agent协同审查（支持批量多文件）
+    const multiFiles = ref([]);       // 多文件数组
+    const multiIsBatch = ref(false);  // 是否批量模式
     const multiRunning = ref(false);
     const multiProgress = ref(0);
     const multiResult = ref(null);
     const multiDragOver = ref(false);
+    const batchResults = ref([]);     // 批量结果数组
     const multiAgents = ref([
       { id:'tech_rd', icon:'🔧', name:'技术研发', active:true, status:'pending' },
       { id:'safety_compliance', icon:'🛡️', name:'安全合规', active:true, status:'pending' },
@@ -2325,38 +2374,50 @@ createApp({
       feedbackSubmitting.value = false;
     }
 
-    // ═══ Phase 17: 多Agent协同审查 ═══
+    // ═══ Phase 19: 多Agent协同审查（批量多文件） ═══
     function onMultiFileSelect(e) {
-      const f = e.target.files[0];
-      if (f) { multiFile.value = f; multiResult.value = null; }
+      const files = Array.from(e.target.files || []);
+      if (files.length > 0) {
+        multiFiles.value = files.slice(0, 10); // 最多10个
+        multiIsBatch.value = files.length > 1;
+        multiResult.value = null;
+        batchResults.value = [];
+      }
     }
     function onMultiDragEnter(e) { e.preventDefault(); multiDragOver.value = true; }
     function onMultiDragLeave(e) { e.preventDefault(); multiDragOver.value = false; }
     function onMultiDrop(e) {
       e.preventDefault(); multiDragOver.value = false;
-      const f = e.dataTransfer?.files[0];
-      if (f) { multiFile.value = f; multiResult.value = null; }
+      const files = Array.from(e.dataTransfer?.files || []).filter(f =>
+        f.name.match(/\.(dwg|dxf|pdf)$/i)
+      );
+      if (files.length > 0) {
+        multiFiles.value = files.slice(0, 10);
+        multiIsBatch.value = files.length > 1;
+        multiResult.value = null;
+        batchResults.value = [];
+      }
     }
 
     async function runMultiReview() {
-      if (!multiFile.value || !multiAgents.value.some(a => a.active)) return;
+      if (multiFiles.value.length === 0 || !multiAgents.value.some(a => a.active)) return;
       multiRunning.value = true;
       multiResult.value = null;
+      batchResults.value = [];
       multiProgress.value = 0;
       multiAgents.value.forEach(a => { if (a.active) a.status = 'pending'; });
 
       const activeAgents = multiAgents.value.filter(a => a.active);
-      const totalSteps = activeAgents.length;
-      let completed = 0;
+      const isBatch = multiFiles.value.length > 1;
 
       // 模拟进度
       const progressTimer = setInterval(() => {
-        if (multiProgress.value < 90) multiProgress.value += Math.random() * 15;
-      }, 300);
+        if (multiProgress.value < 90) multiProgress.value += Math.random() * 10;
+      }, 400);
 
       try {
         const formData = new FormData();
-        formData.append('file', multiFile.value);
+        multiFiles.value.forEach(f => formData.append('files', f));
         formData.append('message', '全面审查这份图纸');
         formData.append('user_id', 'web_user');
         const agentIds = activeAgents.map(a => a.id).join(',');
@@ -2364,10 +2425,8 @@ createApp({
 
         activeAgents.forEach(a => { a.status = 'running'; });
 
-        const res = await fetch('/api/v1/agent/multi-review', {
-          method: 'POST',
-          body: formData,
-        });
+        const endpoint = isBatch ? '/api/v1/agent/batch-review' : '/api/v1/agent/multi-review';
+        const res = await fetch(endpoint, { method: 'POST', body: formData });
         const data = await res.json();
 
         clearInterval(progressTimer);
@@ -2375,9 +2434,14 @@ createApp({
 
         if (data.success) {
           activeAgents.forEach(a => { a.status = 'done'; });
-          multiResult.value = data;
+          if (isBatch && data.results) {
+            batchResults.value = data.results;
+          } else {
+            multiResult.value = data;
+          }
         } else {
           activeAgents.forEach(a => { a.status = 'error'; });
+          multiResult.value = { summary: data.error || '审查失败', agent_results: {}, outputs: {} };
         }
       } catch (err) {
         clearInterval(progressTimer);
