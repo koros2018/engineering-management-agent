@@ -25,7 +25,7 @@ FROM python:3.12-slim AS runtime
 
 LABEL maintainer="EMA Team"
 LABEL description="工程管理智能体 (Engineering Management Agent)"
-LABEL version="2.9.0"
+LABEL version="3.2.0"
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
