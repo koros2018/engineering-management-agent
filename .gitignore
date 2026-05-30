@@ -32,3 +32,5 @@ data/users.json
 data/tenants.json
 data/tenant_users.json
 data/tenants/
+data/uploads/*
+data/cache/*

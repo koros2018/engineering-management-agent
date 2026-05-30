@@ -275,7 +275,7 @@ async def startup_event():
 async def root():
     return {
         "name": "工程管理智能体 (EMA)",
-        "version": "1.0.0",
+        "version": "2.7.0",
         "status": "running",
         "timestamp": datetime.now().isoformat(),
     }

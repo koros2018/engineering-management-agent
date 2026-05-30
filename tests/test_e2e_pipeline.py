@@ -8,6 +8,7 @@ import sys
 import json
 import time
 import requests
+import pytest
 
 API = "http://127.0.0.1:6188"
 E2E_DIR = os.path.join(os.path.dirname(__file__), "e2e")
@@ -27,8 +28,10 @@ def test_api_health():
     d = r.json()
     assert d["status"] == "running"
     print(f"  ✅ API健康: {d['name']} v{d['version']}")
-    return d
 
+@pytest.mark.parametrize("filepath,name", [
+    (os.path.join(E2E_DIR, f), n) for f, n in TEST_FILES
+])
 def test_upload_and_analyze(filepath, name):
     """测试上传+分析"""
     print(f"\n  📄 测试文件: {name}")
@@ -71,6 +74,9 @@ def test_upload_and_analyze(filepath, name):
     
     return result
 
+@pytest.mark.parametrize("filepath,name", [
+    (os.path.join(E2E_DIR, f), n) for f, n in TEST_FILES
+])
 def test_ai_analyze(filepath, name):
     """测试AI分析"""
     print(f"\n  🤖 AI分析: {name}")
@@ -100,6 +106,9 @@ def test_ai_analyze(filepath, name):
     
     return result
 
+@pytest.mark.parametrize("analysis_data,name", [
+    ({"analysis": {"layers": {}, "entities": {}}}, n) for _, n in TEST_FILES
+])
 def test_review(analysis_data, name):
     """测试智能审查"""
     print(f"\n  🔍 智能审查: {name}")
@@ -126,6 +135,9 @@ def test_review(analysis_data, name):
     
     return result
 
+@pytest.mark.parametrize("analysis_data,name", [
+    ({"analysis": {"layers": {}, "entities": {}}}, n) for _, n in TEST_FILES
+])
 def test_documents(analysis_data, name):
     """测试文档生成"""
     print(f"\n  📝 文档生成: {name}")
@@ -153,6 +165,9 @@ def test_documents(analysis_data, name):
     
     return result
 
+@pytest.mark.parametrize("filepath,name", [
+    (os.path.join(E2E_DIR, f), n) for f, n in TEST_FILES
+])
 def test_full_pipeline(filepath, name):
     """测试完整流水线"""
     print(f"\n{'='*60}")
