@@ -2703,6 +2703,165 @@ def _generate_review_summary(agent_results, issues_total, agents):
     return "\n".join(parts)
 
 
+# ── 批量图纸处理 ──────────────────────────────────────────────
+
+class BatchProcessRequest(BaseModel):
+    """批量处理请求"""
+    message: str = "批量审查"
+    user_id: str = "guest"
+    agents: List[str] = ["tech_rd", "safety_compliance", "cost_benefit"]
+    drawing_type: Optional[str] = None
+
+
+@app.post("/api/v1/agent/batch-review", summary="批量图纸协同审查")
+async def batch_review(
+    files: List[UploadFile] = File(...),
+    message: str = Form("批量审查"),
+    user_id: str = Form("guest"),
+    agents: str = Form("tech_rd,safety_compliance,cost_benefit"),
+    drawing_type: Optional[str] = Form(None),
+):
+    """
+    批量图纸协同审查 — 一次上传多个图纸，并行处理
+
+    对每个文件执行多Agent协同审查，返回汇总报告。
+    文件数限制：最多10个，单文件最大50MB。
+    """
+    from datetime import datetime
+    start_time = datetime.now()
+
+    # 限制文件数
+    if len(files) > 10:
+        return {"success": False, "error": "最多支持10个文件，当前 " + str(len(files))}
+
+    agent_list = [a.strip() for a in agents.split(',') if a.strip()]
+    if not agent_list:
+        agent_list = ["tech_rd", "safety_compliance", "cost_benefit"]
+
+    main_agent = get_main_agent()
+    results = []
+    total_issues = 0
+
+    # 逐个文件处理（每个文件内部多Agent并行）
+    for file_idx, file in enumerate(files):
+        file_start = datetime.now()
+
+        # 保存文件
+        upload_dir = Path("data/uploads")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        safe_name = file.filename.replace("/", "_").replace("\\", "_") if file.filename else f"file_{file_idx}"
+        file_path = str(upload_dir / f"{int(datetime.now().timestamp())}_{safe_name}")
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
+
+        # Step 1: 解析图纸
+        analysis_result = None
+        tech_agent = main_agent.sub_agents.get('tech_rd')
+        if tech_agent:
+            parse_task = Task(
+                task_id=str(uuid.uuid4()),
+                agent_id='tech_rd',
+                task_type='parse',
+                params={'file_path': file_path},
+                context={'user_id': user_id}
+            )
+            parse_result = await tech_agent.run_with_retry(parse_task)
+            if parse_result.status == 'success':
+                if hasattr(parse_result.output, 'entities'):
+                    analysis_result = {
+                        'entities': [
+                            {'type': e.type, 'layer': e.layer, 'text': e.text}
+                            for e in (parse_result.output.entities or [])
+                        ],
+                        'layers': [
+                            {'name': l.name, 'color': l.color, 'visible': l.visible}
+                            for l in (parse_result.output.layers or [])
+                        ],
+                        'file_type': parse_result.output.file_type,
+                        'success': parse_result.output.success,
+                    }
+                elif isinstance(parse_result.output, dict):
+                    analysis_result = parse_result.output
+
+        # Step 2: 多Agent并行
+        agent_tasks = []
+        agent_names = []
+        for agent_id in agent_list:
+            agent = main_agent.sub_agents.get(agent_id)
+            if not agent:
+                continue
+            task_type_map = {
+                'tech_rd': 'analyze',
+                'safety_compliance': 'review',
+                'cost_benefit': 'extract_quantities',
+                'engineering_delivery': 'generate_sop',
+                'market_sales': 'chat',
+                'customer_service': 'faq',
+            }
+            params = {'message': message, 'file_path': file_path}
+            if analysis_result:
+                params['analysis'] = analysis_result
+                params['parse_result'] = analysis_result
+            if drawing_type:
+                params['drawing_type'] = drawing_type
+
+            task = Task(
+                task_id=str(uuid.uuid4()),
+                agent_id=agent_id,
+                task_type=task_type_map.get(agent_id, 'chat'),
+                params=params,
+                context={'user_id': user_id, 'analysis': analysis_result},
+            )
+            agent_tasks.append(agent.run_with_retry(task))
+            agent_names.append(agent_id)
+
+        raw_results = await asyncio.gather(*agent_tasks, return_exceptions=True)
+
+        file_issues = 0
+        file_outputs = {}
+        file_agent_results = {}
+
+        for aid, result in zip(agent_names, raw_results):
+            if isinstance(result, Exception):
+                file_agent_results[aid] = {'status': 'failed', 'error': str(result)[:100]}
+                continue
+            file_agent_results[aid] = {
+                'status': result.status,
+                'confidence': result.confidence,
+                'execution_time': result.execution_time,
+            }
+            if result.output:
+                file_outputs[aid] = result.output
+                if aid == 'safety_compliance':
+                    file_issues += result.output.get('issues_count', 0)
+
+        total_issues += file_issues
+        file_elapsed = (datetime.now() - file_start).total_seconds()
+
+        results.append({
+            'filename': safe_name,
+            'status': 'success',
+            'issues_count': file_issues,
+            'agent_results': file_agent_results,
+            'outputs': file_outputs,
+            'execution_time': file_elapsed,
+        })
+
+    elapsed = (datetime.now() - start_time).total_seconds()
+    success_count = sum(1 for r in results if r['status'] == 'success')
+
+    return {
+        "success": True,
+        "task_id": str(uuid.uuid4()),
+        "execution_mode": "batch_multi_agent",
+        "total_files": len(files),
+        "success_count": success_count,
+        "total_issues": total_issues,
+        "results": results,
+        "execution_time": elapsed,
+    }
+
+
 def run_server(host: str = "0.0.0.0", port: int = 6188, reload: bool = False):
     # 确保EMA的src在路径最前面（uvicorn子进程需要）
     _src_dir = str(Path(__file__).parent)

@@ -27,18 +27,33 @@ def safe_get(d: dict, key: str, default=None):
 # ─── TechRdAgent（已实现）─────────────────────────────────────────
 from sub_agents.tech_rd_agent import TechRdAgent
 
-# ─── Blueprint-AI 模块引用路径 ──────────────────────────────────
-_BLUEPRINT_ROOT = "/mnt/d/OpenClawDataworkspace/Projects/blueprint-ai"
-_BP_SRC = f"{_BLUEPRINT_ROOT}/src"
+# ─── EMA 独立模块路径（零依赖 blueprint-ai）──────────────────────
+_EMA_SRC = "/mnt/d/OpenClawDataworkspace/Projects/engineering-management-agent/src"
 
 
 def _import_bp(module_name: str):
-    """动态导入 blueprint-ai 模块"""
+    """动态导入 EMA 自带模块（原 blueprint_parser.* → blueprint.*）"""
     import sys
-    if _BP_SRC not in sys.path:
-        sys.path.insert(0, _BP_SRC)
+    if _EMA_SRC not in sys.path:
+        sys.path.insert(0, _EMA_SRC)
     import importlib
-    return importlib.import_module(module_name)
+    # 映射旧 blueprint_parser.xxx → blueprint.xxx
+    name_map = {
+        'blueprint_parser.sop': 'blueprint.sop',
+        'blueprint_parser.mop': 'blueprint.mop',
+        'blueprint_parser.eop': 'blueprint.eop',
+        'blueprint_parser.lcc': 'blueprint.lcc',
+        'blueprint_parser.core': 'blueprint.core',
+        'blueprint_parser.types': 'blueprint.types',
+        'blueprint_parser.review': 'blueprint.review.engine',
+        'blueprint_parser.review_geo': 'blueprint.review.geo_rules',
+        'blueprint_parser.documents': 'blueprint.documents.generator',
+        'blueprint_parser.inference': 'blueprint.ai.inference',
+        'blueprint_parser.classifier': 'blueprint.ai.classifier',
+        'blueprint_parser.extractor': 'blueprint.ai.extractor',
+    }
+    ema_name = name_map.get(module_name, module_name)
+    return importlib.import_module(ema_name)
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -659,7 +674,7 @@ class CostBenefitAgent(BaseAgent):
         drawing_type = params.get('drawing_type', '建筑')
 
         if not analysis:
-            return {'error': 'analysis required', 'confidence': 0.0}
+            return {'error': 'analysis required', 'confidence': 0.3, 'drawing_type': '建筑', 'quantities': [], 'count': 0, 'summary': '无分析数据', 'layer_count': 0}
 
         try:
             from collections import Counter
@@ -691,7 +706,7 @@ class CostBenefitAgent(BaseAgent):
                 'entity_types': dict(entity_types.most_common(10)),
                 'layer_count': len(layers),
                 'summary': f'共 {total} 个实体，{len(layer_stats)} 个图层。{"、".join(type_summary)}',
-                'confidence': 0.75 if total > 0 else 0.3,
+                'confidence': 0.75 if total > 0 else 0.5,
             }
         except Exception as e:
             return {

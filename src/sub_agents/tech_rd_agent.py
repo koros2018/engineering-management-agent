@@ -254,9 +254,9 @@ class EMAAIAnalyzerTool:
         )
 
         # 设计原则和施工要求
-        semantics = infer_layer_semantics(layer_names)
-        principles = infer_design_principles(layer_names, drawing_type)
-        requirements = infer_construction_requirements(layer_names, drawing_type)
+        semantics = [infer_layer_semantics(str(ln)) for ln in layer_names] if layer_names else []
+        principles = infer_design_principles(drawing_type, layer_names)
+        requirements = infer_construction_requirements(drawing_type, layer_names)
 
         return {
             "extraction": extraction,
