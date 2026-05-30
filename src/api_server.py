@@ -253,6 +253,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Performance tracking middleware
+_metrics = {
+    "requests_total": 0,
+    "errors_total": 0,
+    "latencies": [],
+    "endpoint_stats": {},
+}
+
+@app.middleware("http")
+async def performance_tracker(request, call_next):
+    import time
+    start = time.time()
+    endpoint = request.url.path
+    try:
+        response = await call_next(request)
+        status = response.status_code
+    except Exception:
+        status = 500
+        raise
+    finally:
+        elapsed = (time.time() - start) * 1000
+        _metrics["requests_total"] += 1
+        if status >= 400:
+            _metrics["errors_total"] += 1
+        _metrics["latencies"].append(elapsed)
+        if len(_metrics["latencies"]) > 100:
+            _metrics["latencies"] = _metrics["latencies"][-100:]
+        if endpoint not in _metrics["endpoint_stats"]:
+            _metrics["endpoint_stats"][endpoint] = {"count": 0, "errors": 0, "total_ms": 0, "max_ms": 0}
+        ep = _metrics["endpoint_stats"][endpoint]
+        ep["count"] += 1
+        ep["total_ms"] += elapsed
+        if elapsed > ep["max_ms"]:
+            ep["max_ms"] = elapsed
+        if status >= 400:
+            ep["errors"] += 1
+    return response
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -2859,6 +2897,129 @@ async def batch_review(
         "total_issues": total_issues,
         "results": results,
         "execution_time": elapsed,
+    }
+
+
+# Alert API
+@app.get("/api/v1/system/alerts")
+async def system_alerts():
+    import time
+    alerts = []
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+    latencies = _metrics.get("latencies", [])
+    if latencies:
+        avg_lat = sum(latencies) / len(latencies)
+        max_lat = max(latencies)
+        p95_idx = int(len(latencies) * 0.95)
+        p95 = sorted(latencies)[p95_idx] if len(latencies) >= 20 else max_lat
+        if avg_lat > 1000:
+            alerts.append({"level": "warning", "type": "latency", "msg": "Average response " + str(int(avg_lat)) + "ms > 1000ms"})
+        if max_lat > 5000:
+            alerts.append({"level": "critical", "type": "latency", "msg": "Max response " + str(int(max_lat)) + "ms > 5000ms"})
+        if p95 > 2000:
+            alerts.append({"level": "warning", "type": "latency", "msg": "P95 response " + str(int(p95)) + "ms > 2000ms"})
+    total = _metrics.get("requests_total", 0)
+    errors = _metrics.get("errors_total", 0)
+    if total > 10:
+        error_rate = errors / total
+        if error_rate > 0.1:
+            alerts.append({"level": "critical", "type": "error_rate", "msg": "Error rate {:.1%} > 10%".format(error_rate)})
+        elif error_rate > 0.05:
+            alerts.append({"level": "warning", "type": "error_rate", "msg": "Error rate {:.1%} > 5%".format(error_rate)})
+    for ep, stats in _metrics.get("endpoint_stats", {}).items():
+        if stats["count"] > 5:
+            ep_avg = stats["total_ms"] / stats["count"]
+            ep_err_rate = stats["errors"] / stats["count"]
+            if ep_avg > 3000:
+                alerts.append({"level": "warning", "type": "endpoint_slow", "msg": ep + " avg " + str(int(ep_avg)) + "ms"})
+            if ep_err_rate > 0.2:
+                alerts.append({"level": "critical", "type": "endpoint_error", "msg": ep + " error rate {:.1%}".format(ep_err_rate)})
+    er_str = "{:.1f}%".format(errors/total*100) if total > 0 else "N/A"
+    avg_str = "{:.1f}".format(sum(latencies)/len(latencies)) if latencies else "N/A"
+    max_str = "{:.1f}".format(max(latencies)) if latencies else "N/A"
+    return {"success": True, "timestamp": now, "alerts": alerts, "alert_count": len(alerts), "has_critical": any(a["level"] == "critical" for a in alerts), "metrics_summary": {"requests_total": total, "errors_total": errors, "error_rate": er_str, "avg_latency_ms": avg_str, "max_latency_ms": max_str}}
+
+@app.get("/api/v1/system/metrics")
+async def system_metrics():
+    latencies = _metrics.get("latencies", [])
+    total = _metrics.get("requests_total", 0)
+    errors = _metrics.get("errors_total", 0)
+    p95 = 0
+    if len(latencies) >= 20:
+        p95 = sorted(latencies)[int(len(latencies)*0.95)]
+    avg = round(sum(latencies)/len(latencies), 1) if latencies else 0
+    mx = round(max(latencies), 1) if latencies else 0
+    eps = {}
+    for ep, s in _metrics.get("endpoint_stats", {}).items():
+        c = s["count"]
+        avg_ms = round(s["total_ms"]/c, 1) if c > 0 else 0
+        er = "{:.1f}%".format(s["errors"]/c*100) if c > 0 else "0%"
+        eps[ep] = {"count": c, "avg_ms": avg_ms, "error_rate": er}
+    return {"requests_total": total, "errors_total": errors, "avg_ms": avg, "max_ms": mx, "p95_ms": round(p95, 1), "endpoints": eps}
+
+
+# Alert API
+@app.get("/api/v1/system/alerts")
+async def system_alerts():
+    import time
+    alerts = []
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+    latencies = _metrics.get("latencies", [])
+    if latencies:
+        avg_lat = sum(latencies) / len(latencies)
+        max_lat = max(latencies)
+        p95 = sorted(latencies)[int(len(latencies) * 0.95)] if len(latencies) >= 20 else max_lat
+        if avg_lat > 1000:
+            alerts.append({"level": "warning", "type": "latency", "msg": f"Avg response {avg_lat:.0f}ms > 1000ms"})
+        if max_lat > 5000:
+            alerts.append({"level": "critical", "type": "latency", "msg": f"Max response {max_lat:.0f}ms > 5000ms"})
+        if p95 > 2000:
+            alerts.append({"level": "warning", "type": "latency", "msg": f"P95 response {p95:.0f}ms > 2000ms"})
+    total = _metrics.get("requests_total", 0)
+    errors = _metrics.get("errors_total", 0)
+    if total > 10:
+        error_rate = errors / total
+        if error_rate > 0.1:
+            alerts.append({"level": "critical", "type": "error_rate", "msg": f"Error rate {error_rate:.1%} > 10%"})
+        elif error_rate > 0.05:
+            alerts.append({"level": "warning", "type": "error_rate", "msg": f"Error rate {error_rate:.1%} > 5%"})
+    for ep, stats in _metrics.get("endpoint_stats", {}).items():
+        if stats["count"] > 5:
+            ep_avg = stats["total_ms"] / stats["count"]
+            ep_err_rate = stats["errors"] / stats["count"]
+            if ep_avg > 3000:
+                alerts.append({"level": "warning", "type": "endpoint_slow", "msg": f"{ep} avg {ep_avg:.0f}ms"})
+            if ep_err_rate > 0.2:
+                alerts.append({"level": "critical", "type": "endpoint_error", "msg": f"{ep} error rate {ep_err_rate:.1%}"})
+    return {
+        "success": True, "timestamp": now, "alerts": alerts, "alert_count": len(alerts),
+        "has_critical": any(a["level"] == "critical" for a in alerts),
+        "metrics_summary": {
+            "requests_total": total, "errors_total": errors,
+            "error_rate": f"{(errors/total*100):.1f}%" if total > 0 else "N/A",
+            "avg_latency_ms": f"{sum(latencies)/len(latencies):.1f}" if latencies else "N/A",
+            "max_latency_ms": f"{max(latencies):.1f}" if latencies else "N/A",
+        }
+    }
+
+@app.get("/api/v1/system/metrics")
+async def system_metrics():
+    latencies = _metrics.get("latencies", [])
+    total = _metrics.get("requests_total", 0)
+    errors = _metrics.get("errors_total", 0)
+    return {
+        "requests_total": total, "errors_total": errors,
+        "avg_ms": round(sum(latencies) / len(latencies), 1) if latencies else 0,
+        "max_ms": round(max(latencies), 1) if latencies else 0,
+        "p95_ms": round(sorted(latencies)[int(len(latencies) * 0.95)], 1) if len(latencies) >= 20 else 0,
+        "endpoints": {
+            ep: {
+                "count": s["count"],
+                "avg_ms": round(s["total_ms"] / s["count"], 1) if s["count"] > 0 else 0,
+                "error_rate": f"{(s['errors']/s['count']*100):.1f}%" if s["count"] > 0 else "0%",
+            }
+            for ep, s in _metrics.get("endpoint_stats", {}).items()
+        }
     }
 
 
