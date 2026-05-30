@@ -654,7 +654,7 @@ class CostBenefitAgent(BaseAgent):
             }
 
     async def _extract_quantities(self, params: Dict, context: Dict) -> Dict:
-        """从图纸提取工程量"""
+        """从图纸提取工程量（基于实体统计+图层语义）"""
         analysis = params.get('analysis')
         drawing_type = params.get('drawing_type', '建筑')
 
@@ -662,29 +662,53 @@ class CostBenefitAgent(BaseAgent):
             return {'error': 'analysis required', 'confidence': 0.0}
 
         try:
-            dm = _import_bp('blueprint_parser.documents')
-            est_fn = getattr(dm, 'estimate_drawing_quantities', None)
-            if est_fn:
-                result = await asyncio.to_thread(est_fn, analysis, drawing_type)
-                quantities = result if isinstance(result, list) else result.get('quantities', [])
-            else:
-                quantities = []
+            from collections import Counter
+            entities = analysis.get('entities', [])
+            layers = analysis.get('layers', [])
+
+            layer_stats = Counter()
+            entity_types = Counter()
+            for e in entities:
+                ln = e.get('layer', '未知') if isinstance(e, dict) else getattr(e, 'layer', '未知')
+                et = e.get('type', 'UNKNOWN') if isinstance(e, dict) else getattr(e, 'type', 'UNKNOWN')
+                layer_stats[ln] += 1
+                entity_types[et] += 1
+
+            quantities = []
+            for ln, cnt in layer_stats.most_common(20):
+                quantities.append({
+                    'item': f'{ln} 图层', 'quantity': cnt, 'unit': '个实体',
+                    'category': self._categorize_layer(ln),
+                })
+
+            type_summary = [f'{t}: {c}' for t, c in entity_types.most_common(5)]
+            total = sum(entity_types.values())
 
             return {
                 'drawing_type': drawing_type,
-                'quantities': quantities[:20],
-                'count': len(quantities),
-                'summary': f'提取到 {len(quantities)} 项工程量',
-                'confidence': 0.78,
+                'quantities': quantities,
+                'count': total,
+                'entity_types': dict(entity_types.most_common(10)),
+                'layer_count': len(layers),
+                'summary': f'共 {total} 个实体，{len(layer_stats)} 个图层。{"、".join(type_summary)}',
+                'confidence': 0.75 if total > 0 else 0.3,
             }
         except Exception as e:
             return {
                 'drawing_type': drawing_type,
                 'quantities': [],
+                'count': 0,
                 'error': str(e),
                 'summary': f'工程量提取完成（fallback）: {str(e)[:80]}',
                 'confidence': 0.5,
             }
+
+    @staticmethod
+    def _categorize_layer(layer_name: str) -> str:
+        prefix_map = {'A':'建筑','S':'结构','E':'电气','M':'暖通','P':'给排水','G':'总图','W':'给排水','D':'标注','X':'标注'}
+        if layer_name:
+            return prefix_map.get(layer_name[0].upper(), '其他')
+        return '其他'
 
     async def _cost_analysis(self, params: Dict, context: Dict) -> Dict:
         """成本对比分析（目标成本 vs 实际成本）"""

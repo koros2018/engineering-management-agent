@@ -728,12 +728,12 @@ async def main_agent_chat(
 
     result = await main_agent._chat(
         params={
-            'message': req.message,
-            'file_path': req.file_path,
+            'message': message,
+            'file_path': file_path,
         },
         context={
-            'user_id': req.user_id,
-            'project_id': req.project_id,
+            'user_id': user_id,
+            'project_id': project_id,
             'task_id': str(uuid.uuid4()),
             'model': req.model,
             'model_chain': req.model_chain,
@@ -742,7 +742,7 @@ async def main_agent_chat(
 
     return {
         "success": result.get('success', False),
-        "task_id": req.project_id or str(uuid.uuid4()),
+        "task_id": project_id or str(uuid.uuid4()),
         "intent": result.get('intent'),
         "plan": result.get('plan'),
         "confidence": result.get('confidence', 0.0),
@@ -776,10 +776,10 @@ async def agent_chat(req: AgentChatRequest):
         task_id=task_id,
         agent_id=agent_id,
         task_type=req.task_type,
-        params={"file_path": req.file_path, "message": req.message},
+        params={"file_path": file_path, "message": message},
         context={
-            "user_id": req.user_id,
-            "project_id": req.project_id,
+            "user_id": user_id,
+            "project_id": project_id,
             "task_id": task_id,
         }
     )
@@ -2485,6 +2485,222 @@ async def analytics_summary(days: int = 7):
     }
 
     return {"stats": stats, "recent_events": events[-20:]}
+
+
+
+# ── 多 Agent 协同审查 ─────────────────────────────────────────
+
+class MultiAgentReviewRequest(BaseModel):
+    """多 Agent 协同审查请求"""
+    message: str = "全面审查这份图纸"
+    file_path: Optional[str] = None
+    project_id: Optional[str] = None
+    user_id: str = "guest"
+    agents: List[str] = ["tech_rd", "safety_compliance", "cost_benefit"]
+    drawing_type: Optional[str] = None
+
+
+@app.post("/api/v1/agent/multi-review", summary="多Agent协同审查")
+async def multi_agent_review(
+    message: str = Form("全面审查这份图纸"),
+    user_id: str = Form("guest"),
+    agents: str = Form("tech_rd,safety_compliance,cost_benefit"),
+    drawing_type: Optional[str] = Form(None),
+    project_id: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None),
+):
+    """
+    多 Agent 协同审查 — 一个图纸，三路并行
+
+    支持 multipart 文件上传 + JSON 参数。
+    agents 参数用逗号分隔的 agent_id 列表。
+    """
+    main_agent = get_main_agent()
+    start_time = datetime.now()
+
+    # 解析 agents 列表
+    agent_list = [a.strip() for a in agents.split(',') if a.strip()]
+    req_agents = agent_list if agent_list else ["tech_rd", "safety_compliance", "cost_benefit"]
+
+    # Step 0: 保存上传的文件
+    file_path = None
+    if file:
+        upload_dir = Path("data/uploads")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        safe_name = file.filename.replace("/", "_").replace("\\", "_")
+        file_path = str(upload_dir / f"{int(datetime.now().timestamp())}_{safe_name}")
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
+
+    # Step 1: 先做图纸解析（前置步骤，所有Agent都需要）
+    analysis_result = None
+    if file_path:
+        tech_agent = main_agent.sub_agents.get('tech_rd')
+        if tech_agent:
+            parse_task = Task(
+                task_id=str(uuid.uuid4()),
+                agent_id='tech_rd',
+                task_type='parse',
+                params={'file_path': file_path},
+                context={'user_id': user_id}
+            )
+            parse_result = await tech_agent.run_with_retry(parse_task)
+            if parse_result.status == 'success':
+                # 兼容 dict 和 ParseResult 对象
+                if hasattr(parse_result.output, 'entities'):
+                    analysis_result = {
+                        'entities': [
+                            {'type': e.type, 'layer': e.layer, 'text': e.text}
+                            for e in (parse_result.output.entities or [])
+                        ],
+                        'layers': [
+                            {'name': l.name, 'color': l.color, 'visible': l.visible}
+                            for l in (parse_result.output.layers or [])
+                        ],
+                        'file_type': parse_result.output.file_type,
+                        'success': parse_result.output.success,
+                    }
+                elif isinstance(parse_result.output, dict):
+                    analysis_result = parse_result.output
+
+    # Step 2: 并行调度多个 Agent
+    agent_tasks = []
+    agent_names = []
+
+    for agent_id in req_agents:
+        agent = main_agent.sub_agents.get(agent_id)
+        if not agent:
+            continue
+
+        task_type_map = {
+            'tech_rd': 'parse',
+            'safety_compliance': 'review',
+            'cost_benefit': 'extract_quantities',
+            'engineering_delivery': 'generate_sop',
+            'market_sales': 'chat',
+            'customer_service': 'faq',
+        }
+        task_type = task_type_map.get(agent_id, 'chat')
+
+        params = {'message': message}
+        if file_path:
+            params['file_path'] = file_path
+        if analysis_result:
+            params['analysis'] = analysis_result
+            # tech_rd analyzer 需要 parse_result 参数
+            if agent_id == 'tech_rd' and analysis_result:
+                params['parse_result'] = analysis_result
+            if file_path and agent_id == 'tech_rd':
+                params['file_path'] = file_path
+            params['file_path'] = file_path
+        if drawing_type or '建筑':
+            params['drawing_type'] = drawing_type or '建筑'
+
+        task = Task(
+            task_id=str(uuid.uuid4()),
+            agent_id=agent_id,
+            task_type=task_type,
+            params=params,
+            context={
+                'user_id': user_id,
+                'project_id': project_id,
+                'analysis': analysis_result,
+            }
+        )
+
+        agent_tasks.append(agent.run_with_retry(task))
+        agent_names.append(agent_id)
+
+    # 并行执行
+    raw_results = await asyncio.gather(*agent_tasks, return_exceptions=True)
+
+    # Step 3: 结果融合
+    agent_results = {}
+    issues_total = 0
+    suggestions = []
+    outputs = {}
+
+    for agent_id, result in zip(agent_names, raw_results):
+        if isinstance(result, Exception):
+            agent_results[agent_id] = {
+                'status': 'failed',
+                'error': str(result)[:200],
+            }
+            continue
+
+        agent_results[agent_id] = {
+            'status': result.status,
+            'confidence': result.confidence,
+            'execution_time': result.execution_time,
+        }
+
+        if result.output:
+            outputs[agent_id] = result.output
+
+            if agent_id == 'safety_compliance':
+                issues_count = result.output.get('issues_count', 0)
+                issues_total += issues_count
+                if result.output.get('issues'):
+                    suggestions.extend([
+                        f"[{issue.get('severity', '建议')}] {issue.get('description', '')}"
+                        for issue in result.output.get('issues', [])[:5]
+                    ])
+
+            if agent_id == 'cost_benefit':
+                if result.output.get('budget'):
+                    agent_results[agent_id]['budget_summary'] = result.output.get('summary', '')
+
+    elapsed = (datetime.now() - start_time).total_seconds()
+
+    # Step 4: 综合报告
+    review_summary = _generate_review_summary(agent_results, issues_total, req_agents)
+
+    return {
+        "success": True,
+        "task_id": str(uuid.uuid4()),
+        "execution_mode": "multi_agent_parallel",
+        "agents_used": req_agents,
+        "agent_results": agent_results,
+        "outputs": outputs,
+        "summary": review_summary,
+        "issues_total": issues_total,
+        "key_suggestions": suggestions[:10],
+        "analysis": analysis_result,
+        "execution_time": elapsed,
+    }
+
+
+def _generate_review_summary(agent_results, issues_total, agents):
+    """生成多Agent协同审查综合报告"""
+    parts = []
+    parts.append(f"多Agent协同审查完成（{len(agents)}个Agent并行）")
+
+    agent_names = {
+        'tech_rd': '技术研发中心',
+        'safety_compliance': '安全与合规中心',
+        'cost_benefit': '成本效益中心',
+        'engineering_delivery': '工程交付中心',
+        'market_sales': '市场与销售中心',
+        'customer_service': '客户服务中心',
+    }
+
+    for agent_id, result in agent_results.items():
+        name = agent_names.get(agent_id, agent_id)
+        status = result.get('status', 'unknown')
+        conf = result.get('confidence', 0)
+        parts.append(f"  {name}: {status} (置信度{conf:.0%})")
+
+    if issues_total > 0:
+        parts.append(f"共发现 {issues_total} 个合规问题")
+
+    success_count = sum(1 for r in agent_results.values() if r.get('status') == 'success')
+    if success_count > 0:
+        avg_conf = sum(
+            r.get('confidence', 0) for r in agent_results.values() if r.get('status') == 'success'
+        ) / success_count
+        parts.append(f"平均置信度: {avg_conf:.0%}")
+
+    return "\n".join(parts)
 
 
 def run_server(host: str = "0.0.0.0", port: int = 6188, reload: bool = False):

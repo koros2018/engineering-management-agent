@@ -201,10 +201,13 @@ def check_network() -> Dict[str, bool]:
         except Exception:
             _network_ok["ollama_com"] = False
 
-        # 检测 NVIDIA API
+        # 检测 NVIDIA API（401=可达需认证，不算不可达）
+        import urllib.error
         try:
             urllib.request.urlopen("https://integrate.api.nvidia.com/v1/models", timeout=4)
             _network_ok["nvidia_api"] = True
+        except urllib.error.HTTPError as e:
+            _network_ok["nvidia_api"] = e.code in (401, 403)
         except Exception:
             _network_ok["nvidia_api"] = False
 

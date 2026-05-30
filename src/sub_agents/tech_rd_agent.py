@@ -528,7 +528,9 @@ class TechRdAgent(BaseAgent):
                 "layers": layer_names, "filename": filename,
                 "raw_text": raw_text, "use_llm": use_llm,
             }, context)
-            return r.data.get("primary_type", "建筑") if r.success else "建筑"
+            if r.success and isinstance(r.data, dict):
+                return r.data.get("primary", r.data.get("primary_type", "建筑"))
+            return "建筑"
 
         async def _analyze(drawing_type):
             try:
@@ -542,6 +544,8 @@ class TechRdAgent(BaseAgent):
 
         # 先分类，AI分析依赖分类结果
         drawing_type = await _classify()
+        if isinstance(drawing_type, dict):
+            drawing_type = drawing_type.get("primary", "建筑")
         analysis_result = await _analyze(drawing_type)
 
         # 构建审查+文档共用的analysis dict
@@ -647,7 +651,7 @@ class TechRdAgent(BaseAgent):
             "filename": filename,
             "raw_text": parsed.get("raw_text", ""),
         }, context)
-        drawing_type = type_result.data.get("primary_type", "建筑") if type_result.success else "建筑"
+        drawing_type = type_result.data.get("primary", type_result.data.get("primary_type", "建筑")) if type_result.success else "建筑"
 
         # Step 3: AI分析
         analysis_result = {}
