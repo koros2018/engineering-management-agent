@@ -9,6 +9,8 @@ import json
 import time
 from pathlib import Path
 from typing import Dict, Optional, Any
+from utils import load_json as _load_json, save_json as _save_json
+
 
 
 # ── 配置 ──────────────────────────────────────────────────────
@@ -20,17 +22,6 @@ CACHE_MAX_SIZE_MB = 500  # 最大缓存 500MB
 CACHE_TTL_SECONDS = 86400 * 7  # 7天过期
 
 
-def _load_json(path: Path) -> dict:
-    if path.exists():
-        with open(path) as f:
-            return json.load(f)
-    return {}
-
-
-def _save_json(path: Path, data: dict):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
 
 
 # ── 文件哈希 ──────────────────────────────────────────────────
@@ -151,7 +142,7 @@ def get_cache_stats() -> Dict:
 
 def preload_cache(file_paths: list) -> Dict:
     """预加载缓存（批量解析图纸后缓存结果）"""
-    from blueprint_parser.core import BlueprintParser
+    from blueprint.core import BlueprintParser
     parser = BlueprintParser()
     results = {"cached": 0, "skipped": 0, "errors": 0}
 

@@ -9,7 +9,7 @@ auth_extended.py - 认证扩展 v3
 
 import os, json, hashlib, secrets, time, re, io, base64
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional, Tuple
 
 EMA_DATA_DIR = Path(__file__).parent.parent / "data"
@@ -249,3 +249,80 @@ def validate_username(u: str) -> Optional[str]:
     if len(u)>30: return "用户名不能超过30个字符"
     if not re.match(r'^[a-zA-Z0-9_]+$',u): return "用户名只能包含字母、数字和下划线"
     return None
+
+# ── JWT Token 功能（标准库实现，无额外依赖） ──────────────────
+import base64
+import hmac
+import json as _json
+from datetime import datetime as _dt, timedelta as _td
+
+_JWT_SECRET = os.environ.get("EMA_JWT_SECRET", "ema-dev-secret-key-2025")
+_JWT_ALGORITHM = "HS256"
+
+
+def _jwt_b64encode(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+
+def _jwt_b64decode(s: str) -> bytes:
+    s += "=" * (4 - len(s) % 4)
+    return base64.urlsafe_b64decode(s)
+
+
+def create_access_token(user_id: str, username: str, role: str = "", expires_minutes=1440) -> str:
+    """创建 JWT access token"""
+
+    if hasattr(expires_minutes, "total_seconds"):
+        delta = expires_minutes
+    else:
+        delta = _td(minutes=int(expires_minutes))
+    header = _jwt_b64encode(_json.dumps({"alg": _JWT_ALGORITHM, "typ": "JWT"}).encode())
+    now = _dt.now(timezone.utc)
+    payload_data = {
+        "sub": user_id, "username": username, "role": role,
+        "iat": int(now.timestamp()), "exp": int((now + delta).timestamp()),
+    }
+    payload = _jwt_b64encode(_json.dumps(payload_data).encode())
+    sig_input = f"{header}.{payload}"
+    signature = _jwt_b64encode(hmac.new(_JWT_SECRET.encode(), sig_input.encode(), "sha256").digest())
+    return f"{sig_input}.{signature}"
+
+
+def create_refresh_token(user_id: str, expires_days: int = 30) -> str:
+    """创建 JWT refresh token"""
+    header = _jwt_b64encode(_json.dumps({"alg": _JWT_ALGORITHM, "typ": "JWT"}).encode())
+    now = _dt.now(timezone.utc)
+    payload_data = {
+        "sub": user_id, "type": "refresh",
+        "iat": int(now.timestamp()), "exp": int((now + _td(days=expires_days)).timestamp()),
+    }
+    payload = _jwt_b64encode(_json.dumps(payload_data).encode())
+    sig_input = f"{header}.{payload}"
+    signature = _jwt_b64encode(hmac.new(_JWT_SECRET.encode(), sig_input.encode(), "sha256").digest())
+    return f"{sig_input}.{signature}"
+
+
+def decode_token(token: str) -> dict:
+    """解码并验证 JWT token，失败返回空 dict"""
+    try:
+        parts = token.split(".")
+        if len(parts) != 3:
+            return {}
+        sig_input = f"{parts[0]}.{parts[1]}"
+        expected_sig = _jwt_b64encode(hmac.new(_JWT_SECRET.encode(), sig_input.encode(), "sha256").digest())
+        if not hmac.compare_digest(parts[2], expected_sig):
+            return {}
+        payload = _json.loads(_jwt_b64decode(parts[1]))
+        if payload.get("exp", 0) < _dt.now(timezone.utc).timestamp():
+            return {}
+        return payload
+    except Exception:
+        return {}
+
+
+def get_current_user_info(token: str) -> dict:
+    """从 token 提取用户信息"""
+    payload = decode_token(token)
+    if not payload:
+        return {}
+    return {"user_id": payload.get("sub"), "username": payload.get("username"), "role": payload.get("role", "")}

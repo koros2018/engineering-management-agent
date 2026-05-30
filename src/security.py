@@ -18,6 +18,8 @@ import time
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
+from utils import load_json as _load_json, save_json as _save_json
+
 
 
 # ── 配置 ──────────────────────────────────────────────────────
@@ -42,17 +44,6 @@ RATE_LIMIT_WINDOW_S = 60      # 窗口
 BLOCK_THRESHOLD = 50          # 阈值: 超过此请求数则拉黑IP
 
 
-def _load_json(path: Path) -> dict:
-    if path.exists():
-        with open(path) as f:
-            return json.load(f)
-    return {}
-
-
-def _save_json(path: Path, data: dict):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
 
 
 # ── JWT 安全检查 ──────────────────────────────────────────────
@@ -372,7 +363,7 @@ def run_security_baseline_check() -> Dict:
 
     # JWT 配置检查
     try:
-        from blueprint_parser.auth import create_access_token
+        from auth_extended import create_access_token
         token = create_access_token("test_user", "test", "editor")
         jwt_result = check_jwt_strength(token)
         if jwt_result["recommendations"] and jwt_result["recommendations"][0] != "JWT安全基线合规":

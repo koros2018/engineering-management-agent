@@ -12,6 +12,8 @@ import uuid
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, Optional
+from utils import load_json as _load_json, save_json as _save_json
+
 
 
 # ── 配置 ──────────────────────────────────────────────────────
@@ -28,17 +30,6 @@ ALIPAY_APP_ID = "mock_alipay_app_id"
 ALIPAY_PRIVATE_KEY = "mock_private_key"
 
 
-def _load_json(path: Path) -> dict:
-    if path.exists():
-        with open(path) as f:
-            return json.load(f)
-    return {}
-
-
-def _save_json(path: Path, data: dict):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
 
 
 # ── 订单管理 ──────────────────────────────────────────────────

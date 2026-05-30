@@ -24,8 +24,8 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 # 复用 blueprint-ai 的 JWT 实现
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "../blueprint-ai" / "src"))
-from blueprint_parser.auth import (
+# EMA independent auth
+from auth_extended import (
     create_access_token,
     create_refresh_token,
     decode_token,
@@ -79,16 +79,6 @@ class Role:
 
 
 # ── 数据存储（Phase 4 用 JSON 文件，后续迁移 PostgreSQL）────────────────
-
-def _load_json(path: Path) -> dict:
-    if path.exists():
-        with open(path) as f:
-            return json.load(f)
-    return {}
-
-def _save_json(path: Path, data: dict):
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
 
 
 # 密码哈希
@@ -308,6 +298,8 @@ def get_user_project_dir(tenant_id: str, project_id: str) -> Path:
 
 from fastapi import HTTPException, Request, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from utils import load_json as _load_json, save_json as _save_json
+
 
 security_scheme = HTTPBearer(auto_error=False)
 

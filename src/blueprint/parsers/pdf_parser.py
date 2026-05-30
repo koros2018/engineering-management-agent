@@ -86,7 +86,7 @@ class PDFParser:
             proc = subprocess.run(
                 ['node', '-e', node_script],
                 capture_output=True, text=True, timeout=120,
-                cwd='/mnt/d/OpenClawDataworkspace/Projects/blueprint-ai'
+                cwd='/mnt/d/OpenClawDataworkspace/Projects/engineering-management-agent'
             )
 
             if proc.returncode == 0 and proc.stdout.strip():

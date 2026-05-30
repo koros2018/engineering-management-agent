@@ -72,7 +72,8 @@ def test_upload_and_analyze(filepath, name):
         if "drawing_type" in a:
             print(f"     图纸类型: {a['drawing_type']}")
     
-    return result
+    assert result is not None, f"upload_and_analyze failed for {name}"
+    return None
 
 @pytest.mark.parametrize("filepath,name", [
     (os.path.join(E2E_DIR, f), n) for f, n in TEST_FILES
@@ -104,7 +105,8 @@ def test_ai_analyze(filepath, name):
         if "confidence" in ai:
             print(f"     置信度: {ai['confidence']}")
     
-    return result
+    assert result is not None, f"{name} failed"
+    return None
 
 @pytest.mark.parametrize("analysis_data,name", [
     ({"analysis": {"layers": {}, "entities": {}}}, n) for _, n in TEST_FILES
@@ -133,7 +135,8 @@ def test_review(analysis_data, name):
         print(f"     严重: {s.get('critical',0)}, 警告: {s.get('warning',0)}, 建议: {s.get('suggestion',0)}")
         print(f"     质量评分: {s.get('quality_score', 'N/A')}")
     
-    return result
+    assert result is not None, f"{name} failed"
+    return None
 
 @pytest.mark.parametrize("analysis_data,name", [
     ({"analysis": {"layers": {}, "entities": {}}}, n) for _, n in TEST_FILES
@@ -163,7 +166,8 @@ def test_documents(analysis_data, name):
         for doc_name in list(docs.keys())[:5]:
             print(f"       - {doc_name}")
     
-    return result
+    assert result is not None, f"upload_and_analyze failed for {name}"
+    return None
 
 @pytest.mark.parametrize("filepath,name", [
     (os.path.join(E2E_DIR, f), n) for f, n in TEST_FILES
@@ -196,14 +200,12 @@ def test_full_pipeline(filepath, name):
     
     print(f"\n  ⏱️  总耗时: {total_time*1000:.0f}ms")
     
-    return {
-        "name": name,
-        "parse": result is not None,
-        "ai": ai_result is not None,
-        "review": review_result is not None,
-        "documents": doc_result is not None,
-        "total_ms": round(total_time * 1000)
-    }
+    # Verify all steps passed
+    assert result is not None, f"parse failed for {name}"
+    assert ai_result is not None, f"ai analyze failed for {name}"
+    assert review_result is not None, f"review failed for {name}"
+    assert doc_result is not None, f"documents failed for {name}"
+    assert total_time < 30, f"pipeline too slow: {total_time:.1f}s for {name}"
 
 def main():
     print("=" * 60)

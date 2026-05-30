@@ -14,6 +14,8 @@ import time
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
+from utils import load_json as _load_json, save_json as _save_json
+
 
 
 # ── 数据文件 ──────────────────────────────────────────────────
@@ -24,17 +26,6 @@ ALERTS_FILE = EMA_DATA_DIR / "alerts.json"
 CHECKPOINTS_FILE = EMA_DATA_DIR / "checkpoints.json"
 
 
-def _load_json(path: Path) -> dict:
-    if path.exists():
-        with open(path) as f:
-            return json.load(f)
-    return {}
-
-
-def _save_json(path: Path, data: dict):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
 
 
 # ── 通知类型 ──────────────────────────────────────────────────

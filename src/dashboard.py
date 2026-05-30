@@ -9,17 +9,13 @@ import time
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List
+from utils import load_json as _load_json, save_json as _save_json
+
 
 
 EMA_DATA_DIR = Path(__file__).parent.parent / "data"
 OUTPUT_DIR = Path(__file__).parent.parent / "output"
 
-
-def _load_json(path: Path) -> dict:
-    if path.exists():
-        with open(path) as f:
-            return json.load(f)
-    return {}
 
 
 # ── 项目统计 ──────────────────────────────────────────────────

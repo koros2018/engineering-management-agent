@@ -578,22 +578,34 @@ async def list_llm_models():
     列出所有可用的 LLM 模型（本地 Ollama + 云端）
     """
     try:
-        from blueprint_parser.llm_service import llm
-        available = llm.get_available_models()
+        from model_registry import get_all_models, check_network
+        regs = get_all_models()
+        models = []
+        for r in regs:
+            models.append({
+                "model_id": r.model_id,
+                "name": r.name,
+                "provider": r.provider,
+                "status": "available" if r.enabled else "disabled",
+                "description": r.description,
+            })
+        if not models:
+            models = [
+                {"model_id": "nvidia/deepseek-v4-pro", "name": "DeepSeek V4 Pro", "provider": "nvidia", "status": "unknown", "description": "云端最强模型"},
+            ]
         return {
             "success": True,
-            "default_chain": llm.default_chain,
-            "models": available,
+            "models": models,
+            "default_chain": [m["model_id"] for m in models if m["status"] == "available"][:3],
         }
     except Exception as e:
         return {
             "success": False,
             "error": str(e),
             "models": [
-                {"model_id": "ollama:qwen3.5:9b", "name": "Qwen 3.5 9B", "provider": "ollama", "status": "unknown", "description": "默认本地模型"},
-                {"model_id": "cloud:gpt-4o-mini", "name": "GPT-4o Mini", "provider": "cloud", "status": "unknown", "description": "云端模型（需配置API Key）"},
+                {"model_id": "nvidia/deepseek-v4-pro", "name": "DeepSeek V4 Pro", "provider": "nvidia", "status": "unknown", "description": "云端模型"},
             ],
-            "default_chain": ["ollama:qwen3.5:9b", "cloud:gpt-4o-mini"],
+            "default_chain": ["nvidia/deepseek-v4-pro"],
         }
 
 
@@ -610,21 +622,20 @@ async def test_llm_model(request: Request):
     if not model_id:
         raise HTTPException(status_code=400, detail="model parameter required")
     try:
-        from blueprint_parser.llm_service import LLMService, OllamaService
-        
-        if model_id.startswith("cloud:"):
-            model = model_id[6:]
-            svc = LLMService(model=model, timeout=30)
-        else:
-            model = model_id.replace("ollama:", "")
-            svc = OllamaService(model=model, timeout=30)
-        
-        available = svc.is_available()
+        from model_registry import get_model, check_network
+        from llm_supervisor import supervisor
+        reg = get_model(model_id)
+        if not reg:
+            return {"success": True, "model_id": model_id, "available": False, "error": "Model not registered"}
+        net = check_network()
+        stats = supervisor.get_model_stats(model_id)
         return {
             "success": True,
             "model_id": model_id,
-            "available": available,
-            "error": getattr(svc, 'last_error', None),
+            "available": reg.enabled and not stats.get("disabled", False),
+            "provider": reg.provider,
+            "network_ok": net.get("nvidia_api", True) if reg.provider == "nvidia" else True,
+            "stats": stats,
         }
     except Exception as e:
         return {"success": False, "error": str(e), "model_id": model_id, "available": False}

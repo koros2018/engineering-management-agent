@@ -95,7 +95,7 @@ class BlueprintParser:
         
         # Method 2: libredwg Node.js WASM (fallback)
         try:
-            project_root = "/mnt/d/OpenClawDataworkspace/Projects/blueprint-ai"
+            project_root = "/mnt/d/OpenClawDataworkspace/Projects/engineering-management-agent"
             wasm_dir = os.path.join(project_root, "node_modules/@mlightcad/libredwg-web/wasm")
             if os.path.exists(wasm_dir):
                 import subprocess

@@ -261,9 +261,9 @@ class SafetyComplianceAgent(BaseAgent):
 
         # 调用国标知识库
         try:
-            from blueprint_parser.knowledge_base import KnowledgeBase
-            kb = KnowledgeBase()
-            specs = kb.get_specs_for_drawing_type(drawing_type)
+            from tools.specs_adapter import SpecsAdapter
+            kb = SpecsAdapter()
+            specs = kb.recommend(drawing_type)
             return {
                 'review_type': 'compliance',
                 'applicable_specs': [s.get('code') for s in specs[:10]],
@@ -584,7 +584,10 @@ class CostBenefitAgent(BaseAgent):
     @property
     def _budget(self):
         if self._budget_module is None:
-            self._budget_module = _import_bp('blueprint_parser.budget')
+            try:
+                self._budget_module = _import_bp('blueprint.budget')
+            except Exception:
+                self._budget_module = None  # EMA uses cost_benefit agent for budget
         return self._budget_module
 
     async def execute(self, task: Task) -> AgentResult:

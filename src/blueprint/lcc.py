@@ -305,7 +305,7 @@ def _estimate_area(analysis: Dict) -> float:
     if 'area' in metadata:
         try:
             return float(metadata['area'])
-        except:
+        except Exception:
             pass
 
     # 根据图层数量估算

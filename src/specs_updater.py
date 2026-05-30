@@ -22,6 +22,8 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field, asdict
+from utils import load_json as _load_json, save_json as _save_json
+
 
 EMA_DATA_DIR = Path(__file__).parent.parent / "data"
 SPECS_INDEX_FILE = EMA_DATA_DIR / "specs_index.json"
@@ -94,17 +96,6 @@ SPEC_SOURCES = {
 }
 
 # ── 数据操作 ──────────────────────────────────────────────────
-
-def _load_json(path: Path):
-    if path.exists():
-        with open(path) as f:
-            return json.load(f)
-    return {}
-
-def _save_json(path: Path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
 
 
 def get_specs_index() -> Dict:

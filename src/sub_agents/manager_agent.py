@@ -147,7 +147,7 @@ class ManagerAgent(BaseAgent):
                         alerts.append({'level': 'danger', 'type': 'subscription_expired', 'tenant': sub.get('plan_name', tid[-8:]), 'msg': f'订阅已过期', 'days': days})
                     elif days <= 7:
                         alerts.append({'level': 'warning', 'type': 'subscription_expiring', 'tenant': sub.get('plan_name', tid[-8:]), 'msg': f'还剩{days}天到期', 'days': days})
-                except:
+                except Exception:
                     pass
         
         # 使用量异常
