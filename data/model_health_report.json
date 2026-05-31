@@ -1,0 +1,141 @@
+{
+  "timestamp": "2026-05-31 12:40:37",
+  "network": {
+    "ollama_com": true,
+    "nvidia_api": true
+  },
+  "summary": {
+    "total": 7,
+    "ok": 0,
+    "slow": 0,
+    "unstable": 0,
+    "dead": 7
+  },
+  "results": [
+    {
+      "id": "ollama/qwen3.5:9b",
+      "name": "Qwen 3.5 9B",
+      "provider": "ollama",
+      "base_url": "http://127.0.0.1:11434",
+      "enabled": true,
+      "reachable": false,
+      "avg_ms": 30022.0,
+      "min_ms": 30002.0,
+      "max_ms": 30031.0,
+      "stability": "0/3",
+      "quality": "none",
+      "error": "timed out",
+      "status": "dead",
+      "detail": ""
+    },
+    {
+      "id": "ollama/deepseek-r1:7b",
+      "name": "DeepSeek R1 7B",
+      "provider": "ollama",
+      "base_url": "http://127.0.0.1:11434",
+      "enabled": true,
+      "reachable": false,
+      "avg_ms": 30029.0,
+      "min_ms": 30028.0,
+      "max_ms": 30031.0,
+      "stability": "0/3",
+      "quality": "none",
+      "error": "timed out",
+      "status": "dead",
+      "detail": ""
+    },
+    {
+      "id": "ollama/minimax-m2.7:cloud",
+      "name": "MiniMax M2.7 (Cloud)",
+      "provider": "ollama",
+      "base_url": "http://127.0.0.1:11434",
+      "enabled": true,
+      "reachable": false,
+      "avg_ms": 5.0,
+      "min_ms": 3.0,
+      "max_ms": 7.0,
+      "stability": "0/3",
+      "quality": "none",
+      "error": "HTTP Error 400: Bad Request",
+      "status": "dead",
+      "detail": ""
+    },
+    {
+      "id": "ollama/qwen3.5:cloud",
+      "name": "Qwen 3.5 Cloud",
+      "provider": "ollama",
+      "base_url": "http://127.0.0.1:11434",
+      "enabled": true,
+      "reachable": false,
+      "avg_ms": 5.0,
+      "min_ms": 4.0,
+      "max_ms": 5.0,
+      "stability": "0/3",
+      "quality": "none",
+      "error": "HTTP Error 400: Bad Request",
+      "status": "dead",
+      "detail": ""
+    },
+    {
+      "id": "nvidia/deepseek-v4-pro",
+      "name": "DeepSeek V4 Pro (NVIDIA)",
+      "provider": "nvidia",
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "enabled": true,
+      "reachable": false,
+      "avg_ms": 394.0,
+      "min_ms": 383.0,
+      "max_ms": 406.0,
+      "stability": "0/3",
+      "quality": "none",
+      "error": "HTTP Error 403: Forbidden",
+      "status": "dead",
+      "detail": ""
+    },
+    {
+      "id": "Nvidia/deepseek-v4-pro",
+      "name": "deepseek-v4-pro",
+      "provider": "nvidia",
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "enabled": true,
+      "reachable": false,
+      "avg_ms": 372.0,
+      "min_ms": 362.0,
+      "max_ms": 379.0,
+      "stability": "0/3",
+      "quality": "none",
+      "error": "HTTP Error 404: Not Found",
+      "status": "dead",
+      "detail": ""
+    },
+    {
+      "id": "nvidia/minimax-m2.7",
+      "name": "nvidia/minimax-m2.7",
+      "provider": "nvidia",
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "enabled": true,
+      "reachable": false,
+      "avg_ms": 386.0,
+      "min_ms": 359.0,
+      "max_ms": 412.0,
+      "stability": "0/3",
+      "quality": "none",
+      "error": "HTTP Error 404: Not Found",
+      "status": "dead",
+      "detail": ""
+    }
+  ],
+  "recommendations": {
+    "disable": [
+      "ollama/qwen3.5:9b",
+      "ollama/deepseek-r1:7b",
+      "ollama/minimax-m2.7:cloud",
+      "ollama/qwen3.5:cloud",
+      "nvidia/deepseek-v4-pro",
+      "Nvidia/deepseek-v4-pro",
+      "nvidia/minimax-m2.7"
+    ],
+    "mark_slow": [],
+    "recommended": []
+  }
+}

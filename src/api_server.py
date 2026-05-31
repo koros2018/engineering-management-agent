@@ -3095,6 +3095,57 @@ async def knowledge_mandatory(code: str = ""):
     return {"success": True, "code": code, "total": len(reqs), "requirements": reqs}
 
 
+# ═══════════════════════════════════════════════════════════════
+# 成本预算 API
+# ═══════════════════════════════════════════════════════════════
+
+@app.post("/api/v1/budget/calculate", summary="计算工程预算")
+async def budget_calculate(request: Dict = None):
+    """从图纸分析结果计算工程预算"""
+    request = request or {}
+    analysis = request.get('analysis', {})
+    city = request.get('city', '')
+    project_name = request.get('project_name', '')
+    if not analysis:
+        raise HTTPException(status_code=400, detail="请提供图纸分析结果(analysis)")
+    from tools.budget_engine import generate_budget_from_analysis
+    budget = generate_budget_from_analysis(analysis, city=city, project_name=project_name)
+    return {"success": True, "budget": budget}
+
+
+@app.get("/api/v1/budget/unit-prices", summary="获取单价库")
+async def budget_unit_prices(category: str = ""):
+    """获取工程单价库（可按类别筛选）"""
+    from tools.budget_engine import load_unit_prices
+    prices = load_unit_prices()
+    if category:
+        filtered = {k: v for k, v in prices.items() if k == category}
+        return {"success": True, "category": category, "prices": filtered}
+    return {"success": True, "prices": prices}
+
+
+@app.get("/api/v1/budget/regions", summary="获取地区系数")
+async def budget_regions():
+    """获取地区造价系数列表"""
+    from tools.budget_engine import REGION_FACTOR
+    return {"success": True, "regions": [{"city": k, "factor": v} for k, v in REGION_FACTOR.items()]}
+
+
+@app.post("/api/v1/budget/report", summary="生成预算报告")
+async def budget_report(request: Dict = None):
+    """生成预算报告文本或JSON"""
+    request = request or {}
+    budget_data = request.get('budget', {})
+    fmt = request.get('format', 'text')
+    if not budget_data:
+        raise HTTPException(status_code=400, detail="请提供预算数据(budget)")
+    from tools.budget_engine import generate_budget_report
+    if fmt == 'text':
+        report = generate_budget_report(budget_data)
+        return {"success": True, "format": "text", "report": report}
+    return {"success": True, "format": "json", "budget": budget_data}
+
+
 def run_server(host: str = "0.0.0.0", port: int = 6188, reload: bool = False):
     # 确保EMA的src在路径最前面（uvicorn子进程需要）
     _src_dir = str(Path(__file__).parent)

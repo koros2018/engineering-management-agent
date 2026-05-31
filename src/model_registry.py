@@ -405,9 +405,10 @@ def get_model(model_id: str) -> Optional[ModelConfig]:
 # ── 预设默认配置 ──────────────────────────────────────────────
 
 def ensure_default_models():
-    """初始化默认模型（如果为空）"""
-    if MODELS_FILE.exists():
-        return
+    """初始化默认模型（如果 registry 为空则写入本地ollama模型）"""
+    reg = _load_registry()
+    if reg.get("models"):
+        return  # 已有配置，不覆盖
 
     defaults = [
         ModelConfig(
@@ -420,7 +421,7 @@ def ensure_default_models():
             cost_input=0, cost_output=0,
             enabled=True,
             tags=["free", "local", "reasoning"],
-            description="本地 Qwen 3.5 9B（免费）",
+            description="本地 Qwen 3.5 9B（免费，需先 ollama pull qwen3.5:9b）",
         ),
         ModelConfig(
             id="ollama/deepseek-r1:7b", name="DeepSeek R1 7B",
@@ -432,41 +433,13 @@ def ensure_default_models():
             cost_input=0, cost_output=0,
             enabled=True,
             tags=["free", "local", "reasoning"],
-            description="本地 DeepSeek R1 7B（免费）",
-        ),
-        ModelConfig(
-            id="ollama/minimax-m2.7:cloud", name="MiniMax M2.7 (Cloud)",
-            provider="ollama",
-            base_url="http://127.0.0.1:11434", api_key="",
-            model_name="minimax-m2.7:cloud",
-            context_window=196608,
-            reasoning=True,
-            cost_input=0, cost_output=0,
-            enabled=True,
-            tags=["free", "cloud", "reasoning"],
-            description="MiniMax Cloud (通过 ollama.com 中转，免费额度）",
-        ),
-        ModelConfig(
-            id="ollama/qwen3.5:cloud", name="Qwen 3.5 Cloud",
-            provider="ollama",
-            base_url="http://127.0.0.1:11434", api_key="",
-            model_name="qwen3.5:cloud",
-            context_window=262144,
-            reasoning=True,
-            cost_input=0, cost_output=0,
-            enabled=True,
-            tags=["free", "cloud", "vision"],
-            description="通义千问 Cloud（免费额度）",
+            description="本地 DeepSeek R1 7B（免费，需先 ollama pull deepseek-r1:7b）",
         ),
     ]
 
-    # 保存到 registry（不是 models.json）
-    reg = {"providers": {"ollama": {"name": "Ollama", "base_url": "http://127.0.0.1:11434"}}, "models": [asdict(m) for m in defaults]}
+    reg["providers"] = {"ollama": {"name": "Ollama", "base_url": "http://127.0.0.1:11434"}}
+    reg["models"] = [asdict(m) for m in defaults]
     _save_registry(reg)
-
-    # 同时写 models.json 供兼容
-    MODELS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    json.dump({"default_models": [asdict(m) for m in defaults]}, open(MODELS_FILE, "w"), ensure_ascii=False, indent=2)
 
 
 ensure_default_models()

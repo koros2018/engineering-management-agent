@@ -3,10 +3,6 @@
     "ollama": {
       "name": "Ollama",
       "base_url": "http://127.0.0.1:11434"
-    },
-    "nvidia": {
-      "name": "nvidia",
-      "base_url": "https://integrate.api.nvidia.com/v1"
     }
   },
   "models": [
@@ -22,12 +18,8 @@
       "cost_input": 0,
       "cost_output": 0,
       "enabled": true,
-      "tags": [
-        "free",
-        "local",
-        "reasoning"
-      ],
-      "description": "本地 Qwen 3.5 9B（免费）"
+      "tags": ["free", "local", "reasoning"],
+      "description": "本地 Qwen 3.5 9B（免费，需先 ollama pull qwen3.5:9b）"
     },
     {
       "id": "ollama/deepseek-r1:7b",
@@ -41,100 +33,8 @@
       "cost_input": 0,
       "cost_output": 0,
       "enabled": true,
-      "tags": [
-        "free",
-        "local",
-        "reasoning"
-      ],
-      "description": "本地 DeepSeek R1 7B（免费）"
-    },
-    {
-      "id": "ollama/minimax-m2.7:cloud",
-      "name": "MiniMax M2.7 (Cloud)",
-      "provider": "ollama",
-      "base_url": "http://127.0.0.1:11434",
-      "api_key": "",
-      "model_name": "minimax-m2.7:cloud",
-      "context_window": 196608,
-      "reasoning": true,
-      "cost_input": 0,
-      "cost_output": 0,
-      "enabled": true,
-      "tags": [
-        "free",
-        "cloud",
-        "reasoning"
-      ],
-      "description": "MiniMax Cloud (通过 ollama.com 中转，免费额度）"
-    },
-    {
-      "id": "ollama/qwen3.5:cloud",
-      "name": "Qwen 3.5 Cloud",
-      "provider": "ollama",
-      "base_url": "http://127.0.0.1:11434",
-      "api_key": "",
-      "model_name": "qwen3.5:cloud",
-      "context_window": 262144,
-      "reasoning": true,
-      "cost_input": 0,
-      "cost_output": 0,
-      "enabled": true,
-      "tags": [
-        "free",
-        "cloud",
-        "vision"
-      ],
-      "description": "通义千问 Cloud（免费额度）"
-    },
-    {
-      "id": "nvidia/deepseek-v4-pro",
-      "name": "DeepSeek V4 Pro (NVIDIA)",
-      "provider": "nvidia",
-      "base_url": "https://integrate.api.nvidia.com/v1",
-      "api_key": "nvapi-kBfC2_WXhmSHPvZ3Y7Qe9zPVEyR5hKm4Tt7F",
-      "model_name": "deepseek-ai/deepseek-v4-pro",
-      "context_window": 128000,
-      "reasoning": true,
-      "cost_input": 0.0,
-      "cost_output": 0.0,
-      "enabled": true,
-      "tags": [
-        "nvidia",
-        "free",
-        "reasoning",
-        "cloud"
-      ],
-      "description": "DeepSeek V4 Pro via NVIDIA 免费额度"
-    },
-    {
-      "id": "Nvidia/deepseek-v4-pro",
-      "name": "deepseek-v4-pro",
-      "provider": "nvidia",
-      "base_url": "https://integrate.api.nvidia.com/v1",
-      "api_key": "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",
-      "model_name": "Nvidia/deepseek-v4-pro",
-      "context_window": 128000,
-      "reasoning": false,
-      "cost_input": 0.0,
-      "cost_output": 0.0,
-      "enabled": true,
-      "tags": [],
-      "description": ""
-    },
-    {
-      "id": "nvidia/minimax-m2.7",
-      "name": "nvidia/minimax-m2.7",
-      "provider": "nvidia",
-      "base_url": "https://integrate.api.nvidia.com/v1",
-      "api_key": "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",
-      "model_name": "nvidia/minimax-m2.7",
-      "context_window": 128000,
-      "reasoning": false,
-      "cost_input": 0.0,
-      "cost_output": 0.0,
-      "enabled": true,
-      "tags": [],
-      "description": ""
+      "tags": ["free", "local", "reasoning"],
+      "description": "本地 DeepSeek R1 7B（免费，需先 ollama pull deepseek-r1:7b）"
     }
   ]
 }
