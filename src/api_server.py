@@ -3034,6 +3034,67 @@ async def system_metrics():
     }
 
 
+# ═══════════════════════════════════════════════════════════════
+# 知识库搜索 API
+# ═══════════════════════════════════════════════════════════════
+
+@app.get("/api/v1/knowledge/search", summary="搜索国标规范")
+async def knowledge_search(q: str = "", category: str = "", limit: int = 20):
+    """全文搜索国标规范（按编号/名称/关键词）"""
+    from tools.specs_adapter import get_specs_adapter
+    adapter = get_specs_adapter()
+    cat = category if category else None
+    results = adapter.search(q, category=cat, limit=limit)
+    return {"success": True, "query": q, "category": category, "total": len(results), "results": results}
+
+
+@app.get("/api/v1/knowledge/spec", summary="获取规范详情")
+async def knowledge_spec(code: str = ""):
+    """获取完整规范内容（含章节和强制条款）"""
+    if not code:
+        raise HTTPException(status_code=400, detail="请提供规范编号(code)")
+    from tools.specs_adapter import get_specs_adapter
+    adapter = get_specs_adapter()
+    spec = adapter.get_spec(code)
+    if not spec:
+        raise HTTPException(status_code=404, detail=f"规范 {code} 不存在")
+    return {"success": True, "spec": spec}
+
+
+@app.get("/api/v1/knowledge/recommend", summary="推荐规范")
+async def knowledge_recommend(drawing_type: str = "", drawing_category: str = ""):
+    """根据图纸类型推荐相关国标"""
+    from tools.specs_adapter import get_specs_adapter
+    adapter = get_specs_adapter()
+    results = adapter.recommend(drawing_type, drawing_category or None)
+    return {"success": True, "drawing_type": drawing_type, "total": len(results), "results": results}
+
+
+@app.get("/api/v1/knowledge/stats", summary="知识库统计")
+async def knowledge_stats():
+    """获取知识库统计信息"""
+    from tools.specs_adapter import get_specs_adapter
+    adapter = get_specs_adapter()
+    stats = adapter.get_stats()
+    return {"success": True, **stats}
+
+
+@app.get("/api/v1/knowledge/mandatory", summary="强制条款查询")
+async def knowledge_mandatory(code: str = ""):
+    """获取规范的强制条款"""
+    from tools.specs_adapter import get_specs_adapter
+    adapter = get_specs_adapter()
+    if code:
+        reqs = adapter.get_mandatory_requirements(code)
+    else:
+        # 返回所有规范的强制条款
+        reqs = []
+        for item in adapter._index:
+            r = adapter.get_mandatory_requirements(item["code"])
+            reqs.extend(r[:3])  # 每个规范最多3条
+    return {"success": True, "code": code, "total": len(reqs), "requirements": reqs}
+
+
 def run_server(host: str = "0.0.0.0", port: int = 6188, reload: bool = False):
     # 确保EMA的src在路径最前面（uvicorn子进程需要）
     _src_dir = str(Path(__file__).parent)

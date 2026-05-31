@@ -1,0 +1,63 @@
+{
+  "_meta": {
+    "description": "EMA 工程单价库（基于 2025 年全国平均造价数据，单位：元）",
+    "version": "1.0",
+    "source": "建设工程工程量清单计价规范 GB 50500-2013 + 市场询价",
+    "last_updated": "2026-05",
+    "note": "单价为综合单价（含人工+材料+机械+管理费+利润），实际造价以当地定额为准"
+  },
+  "土建工程": {
+    "墙体砌筑": {"unit": "m³", "unit_price": 420, "category": "土建", "note": "240mm 砖墙，含砂浆"},
+    "墙体抹灰": {"unit": "㎡", "unit_price": 35, "category": "土建", "note": "双面抹灰"},
+    "混凝土浇筑": {"unit": "m³", "unit_price": 680, "category": "土建", "note": "C30 商品混凝土，含泵送"},
+    "钢筋制安": {"unit": "t", "unit_price": 5800, "category": "土建", "note": "HRB400，含绑扎连接"},
+    "模板工程": {"unit": "㎡", "unit_price": 65, "category": "土建", "note": "木模板，含支撑"},
+    "楼板浇筑": {"unit": "m³", "unit_price": 720, "category": "土建", "note": "C30 现浇板"},
+    "基础开挖": {"unit": "m³", "unit_price": 85, "category": "土建", "note": "机械开挖，普通土"},
+    "基础浇筑": {"unit": "m³", "unit_price": 750, "category": "土建", "note": "C30 混凝土基础"},
+    "土方回填": {"unit": "m³", "unit_price": 45, "category": "土建", "note": "素土夯实"},
+    "脚手架": {"unit": "㎡", "unit_price": 28, "category": "土建", "note": "综合脚手架，按建筑面积"}
+  },
+  "门窗工程": {
+    "铝合金窗": {"unit": "㎡", "unit_price": 520, "category": "门窗", "note": "断桥铝合金，中空玻璃"},
+    "塑钢窗": {"unit": "㎡", "unit_price": 320, "category": "门窗", "note": "UPVC，中空玻璃"},
+    "钢质防火门": {"unit": "㎡", "unit_price": 680, "category": "门窗", "note": "甲级防火门"},
+    "木门": {"unit": "樘", "unit_price": 1200, "category": "门窗", "note": "实木复合门，含五金"},
+    "防盗门": {"unit": "樘", "unit_price": 2800, "category": "门窗", "note": "甲级防盗门"},
+    "玻璃幕墙": {"unit": "㎡", "unit_price": 1200, "category": "门窗", "note": "隐框幕墙，中空玻璃"}
+  },
+  "装饰工程": {
+    "内墙涂料": {"unit": "㎡", "unit_price": 28, "category": "装饰", "note": "乳胶漆两遍"},
+    "外墙涂料": {"unit": "㎡", "unit_price": 55, "category": "装饰", "note": "弹性涂料"},
+    "地砖铺贴": {"unit": "㎡", "unit_price": 95, "category": "装饰", "note": "800x800 瓷砖，含辅材"},
+    "地板铺贴": {"unit": "㎡", "unit_price": 120, "category": "装饰", "note": "复合木地板"},
+    "吊顶": {"unit": "㎡", "unit_price": 85, "category": "装饰", "note": "矿棉板吊顶"},
+    "外墙保温": {"unit": "㎡", "unit_price": 110, "category": "装饰", "note": "EPS 板 80mm"},
+    "石材幕墙": {"unit": "㎡", "unit_price": 680, "category": "装饰", "note": "干挂石材 25mm"}
+  },
+  "安装工程": {
+    "给排水管道": {"unit": "m", "unit_price": 180, "category": "安装", "note": "PPR 给水管，含管件"},
+    "排水管道": {"unit": "m", "unit_price": 95, "category": "安装", "note": "UPVC 排水管"},
+    "电气配管": {"unit": "m", "unit_price": 45, "category": "安装", "note": "JDG 镀锌钢管"},
+    "电气配线": {"unit": "m", "unit_price": 25, "category": "安装", "note": "BV 铜芯线"},
+    "配电箱": {"unit": "台", "unit_price": 3500, "category": "安装", "note": "标准配电箱"},
+    "灯具安装": {"unit": "套", "unit_price": 280, "category": "安装", "note": "LED 面板灯"},
+    "开关插座": {"unit": "个", "unit_price": 45, "category": "安装", "note": "86 型面板"},
+    "消防喷淋": {"unit": "个", "unit_price": 350, "category": "安装", "note": "标准喷淋头"},
+    "消防管道": {"unit": "m", "unit_price": 220, "category": "安装", "note": "热镀锌钢管"},
+    "通风管道": {"unit": "㎡", "unit_price": 180, "category": "安装", "note": "镀锌钢板风管"}
+  },
+  "措施费": {
+    "安全文明施工": {"unit": "%", "unit_price": 3.5, "category": "措施费", "note": "按分部分项工程费的 3.5%"},
+    "夜间施工": {"unit": "%", "unit_price": 1.5, "category": "措施费", "note": "按人工费的 1.5%"},
+    "二次搬运": {"unit": "%", "unit_price": 1.0, "category": "措施费", "note": "按分部分项工程费的 1%"},
+    "冬雨季施工": {"unit": "%", "unit_price": 1.2, "category": "措施费", "note": "按人工费的 1.2%"},
+    "大型机械进出场": {"unit": "台次", "unit_price": 8000, "category": "措施费", "note": "塔吊/施工电梯"},
+    "施工降水": {"unit": "天", "unit_price": 500, "category": "措施费", "note": "井点降水"}
+  },
+  "规费税金": {
+    "规费": {"unit": "%", "unit_price": 6.0, "category": "规费税金", "note": "按人工费的 6%（含社保/公积金等）"},
+    "增值税": {"unit": "%", "unit_price": 9.0, "category": "规费税金", "note": "建筑业增值税率 9%"},
+    "附加税": {"unit": "%", "unit_price": 12.0, "category": "规费税金", "note": "城建税+教育附加，按增值税的 12%"}
+  }
+}

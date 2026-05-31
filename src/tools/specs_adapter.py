@@ -1,8 +1,8 @@
 """
-specs_adapter.py - EMA 国标知识库适配器
+specs_adapter.py - EMA 国标知识库适配器（完全独立，零外部依赖）
 
 功能：
-1. 索引并加载蓝图AI已有国标 + EMA新增国标
+1. 索引并加载 EMA 自有国标知识库
 2. 全文搜索（按规范编号/名称/类别/关键词）
 3. 智能推荐（根据图纸类型推荐相关规范）
 4. 规范条款提取（按章节号精确查询）
@@ -12,8 +12,7 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
-# 知识库路径
-BLUEPRINT_KB = Path(__file__).parent.parent.parent.parent / "blueprint-ai" / "docs" / "01-知识库"
+# EMA 自有知识库路径
 EMA_KB = Path(__file__).parent.parent.parent / "data" / "standards"
 
 
@@ -32,31 +31,30 @@ class SpecsAdapter:
         self._loaded = True
 
     def _load_all(self):
-        """加载所有知识库"""
+        """加载 EMA 自有知识库"""
         self._cache = {}
         self._index = []
 
-        for kb_dir in [BLUEPRINT_KB, EMA_KB]:
-            if not kb_dir.exists():
+        if not EMA_KB.exists():
+            return
+        for f in sorted(EMA_KB.glob("kb_*.json")):
+            if f.name == "kb_index.json":
                 continue
-            for f in kb_dir.glob("kb_*.json"):
-                if f.name == "kb_index.json":
-                    continue
-                try:
-                    with open(f, encoding="utf-8") as fh:
-                        data = json.load(fh)
-                    code = data.get("spec_code", "")
-                    self._cache[code] = data
-                    self._index.append({
-                        "code": code,
-                        "name": data.get("spec_name", ""),
-                        "category": data.get("category", ""),
-                        "version": data.get("version", ""),
-                        "sections_count": len(data.get("sections", [])),
-                        "requirements_count": len(data.get("key_requirements", [])),
-                    })
-                except Exception:
-                    continue
+            try:
+                with open(f, encoding="utf-8") as fh:
+                    data = json.load(fh)
+                code = data.get("spec_code", "")
+                self._cache[code] = data
+                self._index.append({
+                    "code": code,
+                    "name": data.get("spec_name", ""),
+                    "category": data.get("category", ""),
+                    "version": data.get("version", ""),
+                    "sections_count": len(data.get("sections", [])),
+                    "requirements_count": len(data.get("key_requirements", [])),
+                })
+            except Exception:
+                continue
 
     def get_stats(self) -> Dict:
         """获取知识库统计"""
@@ -87,24 +85,19 @@ class SpecsAdapter:
 
         for code, data in self._cache.items():
             score = 0
-            # 编号匹配（最高权重）
             if any(kw in code.lower() for kw in keywords):
                 score += 15
-            # 名称匹配
             name = data.get("spec_name", "").lower()
             for kw in keywords:
                 if kw in name:
                     score += 8
-            # 类别筛选
             if category and data.get("category") != category:
                 continue
-            # 章节内容匹配
             for section in data.get("sections", []):
                 text = (section.get("title", "") + " " + section.get("summary", "")).lower()
                 for kw in keywords:
                     if kw in text:
                         score += 3
-            # 强制条款匹配
             for req in data.get("key_requirements", []):
                 text = (req.get("title", "") + " " + req.get("requirement", "")).lower()
                 for kw in keywords:
@@ -134,7 +127,6 @@ class SpecsAdapter:
         """根据图纸类型推荐规范"""
         self._ensure_loaded()
 
-        # 图纸类型→规范类别映射
         TYPE_TO_CATEGORY = {
             "建筑": ["建筑", "消防工程", "绿色建筑", "建筑节能", "施工管理", "质量管理"],
             "结构": ["结构工程", "质量管理", "安全管理"],
@@ -174,15 +166,12 @@ class SpecsAdapter:
         spec = self.get_spec(code)
         if not spec:
             return None
-
         for s in spec.get("sections", []):
             if s.get("section_num") == section_num:
                 return {"code": code, "spec_name": spec["spec_name"], **s}
-
         for r in spec.get("key_requirements", []):
             if r.get("section", "").startswith(section_num):
                 return {"code": code, "spec_name": spec["spec_name"], "type": "requirement", **r}
-
         return None
 
     def get_mandatory_requirements(self, code: str) -> List[Dict]:
