@@ -152,12 +152,52 @@ def check_spec_updates() -> List[Dict]:
 def _fetch_remote_version(spec_id: str, url: str) -> Optional[str]:
     """
     从官网获取最新版本号
-    生产环境：requests + BeautifulSoup 解析HTML
-    当前：返回模拟数据
+    使用 requests + 正则解析，不依赖 bs4
+    返回版本号字符串（如 "2024"），无法获取返回 None
     """
-    # TODO: 实现真实爬取
-    # 示例：requests.get(url) → 解析版本号
-    return None  # 无更新
+    import requests as _req
+
+    HEADERS = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    }
+
+    try:
+        resp = _req.get(url, headers=HEADERS, timeout=10, allow_redirects=True)
+        resp.raise_for_status()
+        html = resp.text
+
+        # 策略1：匹配 "GB XXXXX-20XX" 或 "GB/T XXXXX-20XX" 中的年份
+        m = re.search(r'GB[/T]?\s*\d{4,5}[—\-](\d{4})', html)
+        if m:
+            return m.group(1)
+
+        # 策略2：匹配 "20XX年版" 或 "20XX版"
+        m = re.search(r'(20\d{2})[\u5e74]?\u7248', html)
+        if m:
+            return m.group(1)
+
+        # 策略3：匹配发布日期中的年份 "20XX-XX-XX"
+        m = re.search(r'发布\u65e5\u671f[\uff1a:]\s*(\d{4})[\-/]', html)
+        if m:
+            year = int(m.group(1))
+            if 2000 <= year <= 2030:
+                return str(year)
+
+        # 策略4：匹配 "公告" 或 "通知" 标题中的年份
+        m = re.search(r'(20\d{2})\u5e74\u5ea6?', html)
+        if m:
+            return m.group(1)
+
+    except _req.exceptions.RequestException:
+        pass  # 网络错误，返回 None（视为无更新）
+
+    return None
 
 
 def initialize_specs_index():
