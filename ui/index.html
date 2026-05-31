@@ -498,22 +498,26 @@ margin-bottom: 0; margin-right: 4px;
       </div>
       <!-- Phase 9: 工作流快捷入口 -->
       <div :class="['nav-item', { active: activeWfTab === 'review' }]" @click="switchWfTab('review')">
-        <span style="margin-right:6px">🔍</span> 智能审查
+        <span style="margin-right:6px">🔍</span> 审查
       </div>
       <div :class="['nav-item', { active: activeWfTab === 'documents' }]" @click="switchWfTab('documents')">
-        <span style="margin-right:6px">📄</span> {{ t('doc_generation') }}
-      </div>
-      <div :class="['nav-item', { active: activeWfTab === 'pipeline' }]" @click="switchWfTab('pipeline')">
-        <span style="margin-right:6px">⚡</span> 端到端流水线
-      </div>
-      <div :class="['nav-item', { active: activeWfTab === 'multi' }]" @click="switchWfTab('multi')">
-        <span style="margin-right:6px">🤖</span> 多Agent协同
+        <span style="margin-right:6px">📄</span> 文档
       </div>
       <div :class="['nav-item', { active: activeWfTab === 'budget' }]" @click="switchWfTab('budget')">
-        <span style="margin-right:6px">💰</span> 工程预算
+        <span style="margin-right:6px">💰</span> 预算
       </div>
-      <div :class="['nav-item', { active: activeWfTab === 'lcc' }]" @click="switchWfTab('lcc')">
-        <span style="margin-right:6px">📈</span> 生命周期成本
+      <div :class="['nav-item', { active: activeWfTab === 'multi' }]" @click="switchWfTab('multi')">
+        <span style="margin-right:6px">🤖</span> 多Agent
+      </div>
+      <!-- 更多功能下拉 -->
+      <div style="position:relative" v-click-outside="()=>moreMenuOpen=false">
+        <div :class="['nav-item', { active: moreMenuOpen }]" @click="moreMenuOpen=!moreMenuOpen" style="padding:4px 8px">
+          <span style="font-size:12px">⋯</span>
+        </div>
+        <div v-if="moreMenuOpen" style="position:absolute;top:100%;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:100;min-width:140px">
+          <div :class="['nav-item', { active: activeWfTab === 'pipeline' }]" @click="switchWfTab('pipeline');moreMenuOpen=false" style="padding:8px 12px;font-size:11px">⚡ 端到端流水线</div>
+          <div :class="['nav-item', { active: activeWfTab === 'lcc' }]" @click="switchWfTab('lcc');moreMenuOpen=false" style="padding:8px 12px;font-size:11px">📈 生命周期成本</div>
+        </div>
       </div>
       <div v-if="showTour" class="tour-panel">
         <div v-if="lifecycleStage===0" style="padding:6px 8px">
@@ -2164,6 +2168,7 @@ createApp({
     }
 
     // ═══ i18n ═══
+    const moreMenuOpen = ref(false);
     const savedLang = localStorage.getItem('ema_lang') || 'zh';
     const lang = ref(savedLang);
     const t = (key) => (I18N[lang.value] || I18N.zh)[key] || key;
@@ -2865,7 +2870,20 @@ createApp({
       showFeedback, feedbackText, feedbackType, feedbackScore,
       feedbackSubmitting, feedbackResult, feedbackTypes, submitFeedback,
     };
-  }
+  },
+  directives: {
+    'click-outside': {
+      mounted(el, binding) {
+        el._clickOutside = (e) => {
+          if (!el.contains(e.target)) binding.value();
+        };
+        document.addEventListener('click', el._clickOutside);
+      },
+      unmounted(el) {
+        document.removeEventListener('click', el._clickOutside);
+      },
+    },
+  },
 }).mount('#app');
 </script>
 <script>
