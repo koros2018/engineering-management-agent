@@ -52,6 +52,10 @@ class DWGParser:
             for layer_name in info.get('layers', []):
                 result.layers.append(LayerInfo(name=layer_name, color='', visible=True))
 
+            # 图块列表
+            for block_name in info.get('blocks', []):
+                result.blocks.append(block_name)
+
             result.metadata['entity_count'] = info.get('metadata', {}).get('total_strings', 0)
 
             if info.get('errors'):

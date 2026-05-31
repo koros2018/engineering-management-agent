@@ -172,7 +172,7 @@ class BlueprintParser:
         # 图纸类型识别
         drawing_type = smart_classify(
             layers=layers,
-            blocks=[],  # TODO: 从解析结果中提取blocks
+            blocks=result.blocks,
             raw_text=raw_text,
             file_name=file_name,
             use_llm=self.use_llm,

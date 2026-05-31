@@ -46,6 +46,7 @@ class ParseResult:
     raw_text: str = ""
     entities: List[EntityInfo] = field(default_factory=list)
     layers: List[LayerInfo] = field(default_factory=list)
+    blocks: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
     errors: List[str] = field(default_factory=list)
     ocr_confidence: Optional[float] = None
