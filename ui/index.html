@@ -1221,6 +1221,16 @@ margin-bottom: 0; margin-right: 4px;
     <div class="wf-panel" v-if="activeWfTab === 'budget'" style="flex:1;overflow-y:auto;padding:16px;">
       <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:6px">💰 工程预算</div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">上传图纸 → 分析 → 自动生成工程量清单和造价</div>
+      <!-- 文件上传 -->
+      <div v-if="!wfFile" :class="['wf-upload-area']" @click="$refs.budgetFileInput.click()" style="margin-bottom:12px">
+        <input type="file" accept=".dwg,.dxf,.pdf" style="display:none" ref="budgetFileInput" @change="wfFile=$event.target.files[0]">
+        <div class="wf-upload-icon">📎</div>
+        <div class="wf-upload-text">点击上传 DWG/DXF/PDF 图纸</div>
+      </div>
+      <div v-if="wfFile" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px">
+        <span style="font-size:12px;flex:1">📄 {{ wfFile.name }}</span>
+        <button @click="wfFile=null" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px">✕</button>
+      </div>
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <input v-model="budgetCity" placeholder="城市（如：北京、上海）" style="flex:1;padding:8px 10px;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text);outline:none">
         <input v-model="budgetProjectName" placeholder="项目名称（可选）" style="flex:1;padding:8px 10px;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text);outline:none">
@@ -1263,6 +1273,16 @@ margin-bottom: 0; margin-right: 4px;
     <div class="wf-panel" v-if="activeWfTab === 'lcc'" style="flex:1;overflow-y:auto;padding:16px;">
       <div style="font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:6px">📈 全生命周期成本（LCC）</div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">从建设到报废的全周期费用分析</div>
+      <!-- 文件上传 -->
+      <div v-if="!wfFile" :class="['wf-upload-area']" @click="$refs.lccFileInput.click()" style="margin-bottom:12px">
+        <input type="file" accept=".dwg,.dxf,.pdf" style="display:none" ref="lccFileInput" @change="wfFile=$event.target.files[0]">
+        <div class="wf-upload-icon">📎</div>
+        <div class="wf-upload-text">点击上传 DWG/DXF/PDF 图纸</div>
+      </div>
+      <div v-if="wfFile" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px">
+        <span style="font-size:12px;flex:1">📄 {{ wfFile.name }}</span>
+        <button @click="wfFile=null" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px">✕</button>
+      </div>
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <div style="flex:1">
           <div style="font-size:10px;color:var(--text-dim);margin-bottom:2px">设计寿命（年）</div>

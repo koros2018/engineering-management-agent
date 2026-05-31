@@ -1,0 +1,16 @@
+[Unit]
+Description=EMA Shadow Supervisor (守护进程)
+After=network.target
+
+[Service]
+Type=simple
+User=kezhigang
+WorkingDirectory=/mnt/d/OpenClawDataworkspace/Projects/engineering-management-agent
+ExecStart=/usr/bin/python3 /mnt/d/OpenClawDataworkspace/Projects/engineering-management-agent/supervisor_18789.py --daemon
+Restart=always
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

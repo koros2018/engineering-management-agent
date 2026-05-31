@@ -7,6 +7,9 @@ agent/intent_classifier.py - 意图识别
 3. 需要什么参数
 """
 
+import os
+import re
+from datetime import datetime
 from typing import Dict
 
 
@@ -199,9 +202,38 @@ class IntentClassifier:
         return self._default_task.get(agent_id, 'chat')
 
     def _extract_params(self, message: str) -> Dict:
-        """从消息中提取参数（预留）"""
-        params = {}
-        # TODO: 正则提取文件路径、日期、数量等
+        """从消息中提取参数：文件路径、日期、数量等"""
+        params: Dict = {}
+
+        # 提取文件路径（Unix/Windows 风格）
+        path_pattern = r"(?:[\\'\"]?)((?:/[\\w.\\-]+)+|(?:[A-Za-z]:\\\\[\\w .\\-]+(?:\\\\[\\w .\\-]+)*))"
+        paths = re.findall(path_pattern, message)
+        if paths:
+            params['file_paths'] = [p for p in paths if os.path.sep in p]
+
+        # 提取日期（YYYY-MM-DD / YYYY/MM/DD / YYYY年M月D日）
+        date_patterns = [
+            r'(\\d{4}[/-]\\d{1,2}[/-]\\d{1,2})',
+            r'(\\d{4}年\\d{1,2}月\\d{1,2}日?)',
+        ]
+        dates = []
+        for pat in date_patterns:
+            dates.extend(re.findall(pat, message))
+        if dates:
+            params['dates'] = dates
+
+        # 提取数量（数字+单位）
+        qty_pattern = r'(\\d+(?:\\.\\d+)?\\s*(?:个|件|份|套|台|kg|KG|吨|米|m|M|㎡|万元|元|%|天|周|月|年))'
+        quantities = re.findall(qty_pattern, message)
+        if quantities:
+            params['quantities'] = quantities
+
+        # 提取纯数字（可能是编号、ID等）
+        number_pattern = r'\\b(\\d{4,})\\b'
+        numbers = re.findall(number_pattern, message)
+        if numbers:
+            params['numbers'] = numbers
+
         return params
 
 

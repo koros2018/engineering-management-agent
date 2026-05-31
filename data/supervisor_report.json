@@ -1,0 +1,48 @@
+{
+  "timestamp": "2026-05-31 18:44:22",
+  "services": {
+    "api_6188": {
+      "status": "ok",
+      "ms": 20.0,
+      "error": null
+    },
+    "ollama_11434": {
+      "status": "ok",
+      "ms": 1.0,
+      "error": null
+    },
+    "nvidia_api": {
+      "status": "ok",
+      "ms": 579.0
+    }
+  },
+  "llm": {
+    "nvidia": {
+      "status": "no_key"
+    },
+    "ollama": {
+      "status": "timeout",
+      "threshold": 10
+    },
+    "openclaw_gw": {
+      "status": "ok",
+      "ms": 3.0
+    }
+  },
+  "sessions": {
+    "stalled_count": 0,
+    "stalled": [],
+    "lock_count": 0,
+    "locks": []
+  },
+  "project": {
+    "last_commit": "991db87 test(phase21): 预算引擎单元测试29/29 + 状态报告",
+    "idle_min": 0,
+    "uncommitted_files": 12,
+    "needs_push": true
+  },
+  "actions": [
+    "llm_timeout:ollama",
+    "uncommitted_files"
+  ]
+}

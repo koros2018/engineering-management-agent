@@ -597,6 +597,7 @@ def generate_budget_report(budget: Dict) -> str:
 
     # 总造价汇总
     s = budget['summary']
+    rates = budget.get('rates', {'measure_rate': 0.035, 'regulation_rate': 0.06, 'vat_rate': 0.09})
     lines.append("")
     lines.append("三、总造价汇总")
     lines.append("-" * 50)
