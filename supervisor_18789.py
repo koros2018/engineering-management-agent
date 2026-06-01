@@ -269,8 +269,10 @@ def cleanup_locks(locks):
 
 # ── 检查 3: 服务健康 ──────────────────────────────────────────
 
+UI_PORT = 6189
+
 def check_services():
-    """检查 API 6188、Ollama 11434 等服务"""
+    """检查 API 6188、UI 6189、Ollama 11434 等服务"""
     results = {}
 
     # API 6188
@@ -281,6 +283,16 @@ def check_services():
         "status": "ok" if ok_api else "down",
         "ms": round(ms_api, 0) if ok_api else 0,
         "error": err_api,
+    }
+
+    # UI 6189
+    ok_ui, code_ui, ms_ui, err_ui = http_check(
+        f"http://127.0.0.1:{UI_PORT}/", timeout=5
+    )
+    results["ui_6189"] = {
+        "status": "ok" if ok_ui else "down",
+        "ms": round(ms_ui, 0) if ok_ui else 0,
+        "error": err_ui,
     }
 
     # Ollama 11434
@@ -319,12 +331,32 @@ def restart_api():
     )
     time.sleep(5)
     # 验证
-    ok, _, ms, _ = http_check(f"http://127.0.0.1:{API_PORT}/health", timeout=5)
-    if ok:
+    _ok, _, _ms, _ = http_check(f"http://127.0.0.1:{API_PORT}/health", timeout=5)
+    if _ok:
         ok("API 重启成功")
         return True
     else:
         fail("API 重启失败")
+        return False
+
+
+def restart_ui():
+    """自动重启 UI 静态文件服务"""
+    log.info("尝试重启 UI 服务...")
+    run_cmd("pkill -f 'http.server.*6189'", timeout=5)
+    time.sleep(1)
+    run_cmd(
+        f"cd {PROJECT_DIR} && nohup python3 -m http.server {UI_PORT} "
+        f"--directory ui > /tmp/ema_ui.log 2>&1 &",
+        timeout=5
+    )
+    time.sleep(3)
+    _ok, _, _ms, _ = http_check(f"http://127.0.0.1:{UI_PORT}/", timeout=5)
+    if _ok:
+        ok("UI 重启成功")
+        return True
+    else:
+        fail("UI 重启失败")
         return False
 
 
@@ -335,8 +367,8 @@ def check_project_progress():
     检查项目是否有新进展。
     如果最近 N 分钟没有新 commit，则提醒需要推进。
     """
-    ok, stdout, _ = run_cmd("git log --oneline -1", timeout=10)
-    if not ok:
+    _ok, stdout, _ = run_cmd("git log --oneline -1", timeout=10)
+    if not _ok:
         return {"status": "git_error"}
 
     last_commit = stdout.strip()
@@ -397,6 +429,12 @@ def run_check():
         alert("API 6188 不可达，尝试自动重启")
         if restart_api():
             report["actions"].append("restarted_api")
+
+    # UI 挂了自动重启
+    if services.get("ui_6189", {}).get("status") != "ok":
+        alert("UI 6189 不可达，尝试自动重启")
+        if restart_ui():
+            report["actions"].append("restarted_ui")
 
     # 2. LLM 透测
     log.info("[2/4] LLM 透测...")
