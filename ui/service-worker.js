@@ -1,12 +1,12 @@
 // EMA Service Worker v1
 // 提供离线缓存 + 增量更新
 
-const CACHE_NAME = "ema-v2-20260520";
+const CACHE_NAME = "ema-v3-20260601";
 const STATIC_ASSETS = [
-  "/ui/index.html",
-  "/ui/admin.html",
-  "/ui/login.html",
-  "/ui/manifest.json",
+  "/index.html",
+  "/admin.html",
+  "/login.html",
+  "/manifest.json",
 ];
 
 // Install: 预缓存核心页面
