@@ -1,14 +1,14 @@
 {
-  "timestamp": "2026-06-01 16:43:59",
+  "timestamp": "2026-06-01 23:01:13",
   "services": {
     "api_6188": {
       "status": "ok",
-      "ms": 3.0,
+      "ms": 2.0,
       "error": null
     },
     "ui_6189": {
       "status": "ok",
-      "ms": 4.0,
+      "ms": 6.0,
       "error": null
     },
     "ollama_11434": {
@@ -18,7 +18,7 @@
     },
     "nvidia_api": {
       "status": "ok",
-      "ms": 1335.0
+      "ms": 451.0
     }
   },
   "llm": {
@@ -42,9 +42,9 @@
     "ctx_alerts": []
   },
   "project": {
-    "last_commit": "09fef0f fix(admin): 修复管理后台登录 + 标签页问题",
+    "last_commit": "a9220ff feat(wechat): 配置驱动微信登录模块重写",
     "idle_min": 0,
-    "uncommitted_files": 21,
+    "uncommitted_files": 13,
     "needs_push": true
   },
   "actions": [

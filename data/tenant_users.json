@@ -76,5 +76,23 @@
     "tenant_id": "tenant_88743df66358",
     "role": "tenant_admin",
     "joined_at": "2026-06-01T12:39:31.773385"
+  },
+  "user_cde73ea6d5d16210": {
+    "user_id": "user_cde73ea6d5d16210",
+    "tenant_id": "tenant_3c4d2a29f58c",
+    "role": "tenant_admin",
+    "joined_at": "2026-06-01T22:41:34.043564"
+  },
+  "user_b6ab5ae1a5bce881": {
+    "user_id": "user_b6ab5ae1a5bce881",
+    "tenant_id": "tenant_6b45aa480679",
+    "role": "tenant_admin",
+    "joined_at": "2026-06-01T22:45:46.882834"
+  },
+  "user_a1275a4a2e2e09b0": {
+    "user_id": "user_a1275a4a2e2e09b0",
+    "tenant_id": "tenant_2f654dae1704",
+    "role": "tenant_admin",
+    "joined_at": "2026-06-01T23:01:58.495282"
   }
 }

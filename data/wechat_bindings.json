@@ -1,8 +1,8 @@
 {
-  "wx_c0a44a2bc5ac4d2c": {
-    "openid": "wx_c0a44a2bc5ac4d2c",
-    "user_id": "user_3e739981cccfa90b",
-    "username": "testwx_user",
-    "bound_at": "2026-05-19T16:07:11.160024"
+  "wx_mock_user_001": {
+    "openid": "wx_mock_user_001",
+    "user_id": "user_a1275a4a2e2e09b0",
+    "username": "wx_demo2",
+    "bound_at": "2026-06-01T23:01:58.509683"
   }
 }
