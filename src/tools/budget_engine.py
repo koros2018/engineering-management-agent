@@ -149,15 +149,22 @@ def extract_quantities_from_analysis(analysis: Dict) -> List[Dict]:
     quantities = []
     prices = load_unit_prices()
 
-    # 获取分析数据
+    # 获取分析数据（兼容 ai_analysis 嵌套 和 扁平格式）
     ai_analysis = analysis.get('ai_analysis', {})
     parse_result = analysis.get('parse_result', {})
+    if not ai_analysis:
+        ai_analysis = analysis
+    if not parse_result:
+        parse_result = analysis
+
     drawing_type = ai_analysis.get('drawing_type', {})
     project_info = ai_analysis.get('project_info', {})
     layer_analysis = ai_analysis.get('layer_analysis', {})
 
     layers = parse_result.get('layers', [])
     entities = parse_result.get('entities', [])
+    if isinstance(entities, dict):
+        entities = entities.get('by_type', entities.get('items', []))
     metadata = parse_result.get('metadata', {})
 
     # 建筑面积
@@ -468,19 +475,31 @@ def generate_budget_from_analysis(
     
     一键流程：分析结果 → 工程量提取 → 单价匹配 → 造价计算
     """
+    # 兼容两种格式：ai_analysis 嵌套 和 扁平格式
     ai_analysis = analysis.get('ai_analysis', {})
+    if not ai_analysis:
+        ai_analysis = analysis  # 扁平格式 fallback
+
     drawing_type = ai_analysis.get('drawing_type', {})
     project_info = ai_analysis.get('project_info', {})
 
-    dtype = drawing_type.get('primary', '建筑') if isinstance(drawing_type, dict) else str(drawing_type)
+    if isinstance(drawing_type, dict):
+        dtype = drawing_type.get('primary', '建筑')
+    elif isinstance(drawing_type, str):
+        dtype = drawing_type if drawing_type not in ('待识别', '') else '建筑'
+    else:
+        dtype = '建筑'
+
     area_sqm = _parse_area(project_info.get('building_area', ''))
 
     # 如果面积未提取到，根据图层估算
     if area_sqm <= 0:
         parse_result = analysis.get('parse_result', {})
-        layers = parse_result.get('layers', [])
+        layers = parse_result.get('layers', analysis.get('layers', []))
         if isinstance(layers, list) and len(layers) > 0:
             area_sqm = max(1000, len(layers) * 100)
+        else:
+            area_sqm = 5000  # 默认 5000㎡
 
     pname = project_name or project_info.get('project_name', '') or analysis.get('file_name', '未命名项目')
 

@@ -424,14 +424,19 @@ function doWxReg(){
 }
 
 function clearPoll(){if(poll){clearInterval(poll);poll=null}}
-function go(p){window.location.href=(p==='admin')?'admin.html':'/'}
+function go(p){
+  // 始终跳转到当前 host+port 的根路径，避免端口丢失
+  var base = window.location.origin;
+  window.location.href = (p==='admin') ? base + '/admin.html' : base + '/';
+}
 
 // 快速体验：用 guest token 直接跳转
 function quickTry(){
   // 生成一个临时 guest token
   var guestToken = 'guest_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
   try { localStorage.setItem('ema_token', guestToken); localStorage.setItem('ema_guest_mode', '1'); } catch(e) {}
-  window.location.href = '/';
+  // 用 origin 保留端口号
+  window.location.href = window.location.origin + '/';
 }
 </script>
 </body>

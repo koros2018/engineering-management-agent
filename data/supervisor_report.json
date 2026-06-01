@@ -1,19 +1,24 @@
 {
-  "timestamp": "2026-06-01 10:17:49",
+  "timestamp": "2026-06-01 12:15:50",
   "services": {
     "api_6188": {
-      "status": "ok",
-      "ms": 3.0,
-      "error": null
-    },
-    "ollama_11434": {
       "status": "ok",
       "ms": 2.0,
       "error": null
     },
+    "ui_6189": {
+      "status": "ok",
+      "ms": 5.0,
+      "error": null
+    },
+    "ollama_11434": {
+      "status": "ok",
+      "ms": 3.0,
+      "error": null
+    },
     "nvidia_api": {
       "status": "ok",
-      "ms": 945.0
+      "ms": 5747.0
     }
   },
   "llm": {
@@ -33,12 +38,13 @@
     "stalled_count": 0,
     "stalled": [],
     "lock_count": 0,
-    "locks": []
+    "locks": [],
+    "ctx_alerts": []
   },
   "project": {
-    "last_commit": "7482f5d fix(ui): 导航栏折叠+修复语法错误+清理冗余cron",
+    "last_commit": "e250bb4 feat(supervisor): Session上下文监控 + compaction配置",
     "idle_min": 0,
-    "uncommitted_files": 11,
+    "uncommitted_files": 12,
     "needs_push": true
   },
   "actions": [

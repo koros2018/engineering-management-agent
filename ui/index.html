@@ -1490,7 +1490,7 @@ createApp({
       try { authToken = localStorage.getItem('ema_token'); } catch(e) {}
     }
     if (!authToken) {
-      window.location.href = '/ui/login.html';
+      window.location.href = window.location.origin + '/ui/login.html';
       return {};
     }
     // 存储到localStorage供后续使用

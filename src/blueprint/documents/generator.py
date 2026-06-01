@@ -349,8 +349,9 @@ def generate_design_description(analysis: Dict) -> str:
 
     categories: Dict[str, List[str]] = {}
     for layer in layers:
-        cat = get_layer_category(layer)
-        categories.setdefault(cat, []).append(layer)
+        layer_name = layer.get('name', '') if isinstance(layer, dict) else str(layer)
+        cat = get_layer_category(layer_name)
+        categories.setdefault(cat, []).append(layer_name)
 
     lines.append("  1) 专业图层分布：")
     for cat in sorted(categories.keys()):
@@ -715,8 +716,9 @@ def generate_quantity_list(analysis: Dict) -> str:
     # 按专业分类统计
     categories: Dict[str, List[str]] = {}
     for layer in layers:
-        cat = get_layer_category(layer)
-        categories.setdefault(cat, []).append(layer)
+        layer_name = layer.get('name', '') if isinstance(layer, dict) else str(layer)
+        cat = get_layer_category(layer_name)
+        categories.setdefault(cat, []).append(layer_name)
 
     lines.append("一、图层统计（按专业分类）")
     lines.append("-" * 40)
