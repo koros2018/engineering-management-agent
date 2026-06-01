@@ -1498,7 +1498,7 @@ createApp({
     // 存储到localStorage供后续使用
     try { localStorage.setItem('ema_token', authToken); } catch(e) {}
 
-    const API_BASE = window.location.protocol === 'https:' ? '' : 'http://127.0.0.1:6188';
+    const API_BASE = window.location.protocol === 'https:' ? '' : 'http://localhost:6188';
     const authHeaders = () => ({ 'Authorization': 'Bearer ' + authToken });
     const messages = ref([]);
     const input = ref('');

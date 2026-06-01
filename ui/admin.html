@@ -647,10 +647,10 @@ createApp({setup(){
   // Auth
   let token = new URLSearchParams(window.location.search).get('token');
   if (!token) { try { token = localStorage.getItem('ema_token'); } catch(e) {} }
-  if (!token) { window.location.href = '/ui/login.html'; return {}; }
+  if (!token) { window.location.href = '/login.html'; return {}; }
   try { localStorage.setItem('ema_token', token); } catch(e) {}
 
-  const API='http://127.0.0.1:6188';
+  const API='http://localhost:6188';
 
   // Toast 系统
   const toast = ref({show:false,msg:'',type:'info',timer:null});
@@ -1029,7 +1029,7 @@ createApp({setup(){
 
   onMounted(async()=>{ await loadCockpit(); });
 
-  function logout(){try{localStorage.removeItem('ema_token');}catch(e){}window.location.href='/ui/login.html';}
+  function logout(){try{localStorage.removeItem('ema_token');}catch(e){}window.location.href='/login.html';}
 
   return{
     tab,cockpit,tenants,alerts,report,suggestions,insights,logStats,userActivity,netStatus,netLoading,

@@ -276,7 +276,7 @@ body::after{
 </div></div>
 
 <script>
-var API_BASE = 'http://127.0.0.1:6188';
+var API_BASE = 'http://localhost:6188';
 function $(id){return document.getElementById(id)}
 function M(id,t,c){var e=$(id);e.textContent=t;e.className='msg '+c}
 function setBtnLoading(btn,loading){if(loading){btn.disabled=true;btn.innerHTML='<span class="spinner"></span>处理中...'}else{btn.disabled=false;btn.textContent=btn.dataset.orig||'登 录'}}

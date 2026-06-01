@@ -214,8 +214,8 @@ def _do_wechat_login(user_id: str, state: str) -> Dict:
 # ── 密码找回 ────────────────────────────────────────────────
 
 def request_password_reset(username: str, email: str) -> Dict:
-    from auth import _lj as al, USERS_FILE
-    users = al(USERS_FILE)
+    from auth import USERS_FILE
+    users = _lj(USERS_FILE)
     found = next((u for u in users.values() if u.get("username")==username and u.get("email")==email), None)
     if not found: return {"success":False,"message":"用户名或邮箱不匹配"}
     tokens = _lj(RESET_TOKENS_FILE)
@@ -230,11 +230,11 @@ def reset_password(token: str, new_pw: str) -> Dict:
         return {"success":False,"message":"重置链接无效或已过期"}
     if not validate_password_strength(new_pw):
         return {"success":False,"message":"密码需至少8位，含大小写字母和数字"}
-    from auth import _lj as al, _sj as a_s, USERS_FILE, hash_password
-    users = al(USERS_FILE); u = users.get(r["user_id"])
+    from auth import USERS_FILE, hash_password
+    users = _lj(USERS_FILE); u = users.get(r["user_id"])
     if not u: return {"success":False,"message":"用户不存在"}
     h, s = hash_password(new_pw); u["password_hash"]=h; u["salt"]=s
-    a_s(USERS_FILE, users); r["used"]=True
+    _sj(USERS_FILE, users); r["used"]=True
     _sj(RESET_TOKENS_FILE, tokens)
     return {"success":True,"message":"密码重置成功"}
 
