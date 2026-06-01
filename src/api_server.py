@@ -2175,13 +2175,11 @@ async def route_model_api(
     role = user.get("role", "free") if user else "free"
     request.state.user = user
     chosen, reason = route_model(role, task_type, request=request)
-    net = check_network()
     nvidia_stats = get_nvidia_stats()
     return {
         "success": True,
         "model": asdict(chosen),
         "reason": reason,
-        "network": net,
         "nvidia_rpm": nvidia_stats,
         "available_models": [asdict(c) for c in list_models() if c.enabled],
     }

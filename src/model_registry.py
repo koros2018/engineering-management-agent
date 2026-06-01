@@ -184,33 +184,27 @@ _network_lock = threading.Lock()
 
 
 def check_network() -> Dict[str, bool]:
-    """检测外网连通性（结果缓存5分钟）"""
+    """检测外网连通性（结果缓存60秒，超时2秒）"""
     global _network_ok
     now = _time.time()
 
-    if hasattr(check_network, "_last_check") and (now - check_network._last_check) < 300:
+    if hasattr(check_network, "_last_check") and (now - check_network._last_check) < 60:
         return _network_ok.copy()
 
     import urllib.request
 
-    with _network_lock:
-        # 检测 ollama.com
+    def _ping(url, timeout=2):
         try:
-            urllib.request.urlopen("https://ollama.com/api/version", timeout=4)
-            _network_ok["ollama_com"] = True
-        except Exception:
-            _network_ok["ollama_com"] = False
-
-        # 检测 NVIDIA API（401=可达需认证，不算不可达）
-        import urllib.error
-        try:
-            urllib.request.urlopen("https://integrate.api.nvidia.com/v1/models", timeout=4)
-            _network_ok["nvidia_api"] = True
+            urllib.request.urlopen(url, timeout=timeout)
+            return True
         except urllib.error.HTTPError as e:
-            _network_ok["nvidia_api"] = e.code in (401, 403)
+            return e.code in (401, 403)
         except Exception:
-            _network_ok["nvidia_api"] = False
+            return False
 
+    with _network_lock:
+        _network_ok["ollama_com"] = _ping("https://ollama.com/api/version")
+        _network_ok["nvidia_api"] = _ping("https://integrate.api.nvidia.com/v1/models")
         check_network._last_check = now
         return _network_ok.copy()
 
