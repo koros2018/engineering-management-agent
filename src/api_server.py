@@ -392,6 +392,49 @@ async def wechat_register(state: str = Form(...), username: str = Form(...), pas
         return {"success": True, **result}
     raise HTTPException(status_code=400, detail=result.get("error", "注册失败"))
 
+@app.get("/api/v1/auth/wechat-callback")
+async def wechat_callback(code: str = "", state: str = ""):
+    """
+    微信 OAuth 回调端点（真实模式）
+    微信用户扫码确认后，微信服务器重定向到此接口
+    """
+    from auth_extended import wechat_callback
+    import json
+    result = wechat_callback(code, state)
+    if result.get("success") and result.get("access_token"):
+        # 登录成功 → 重定向到前端带 token
+        from fastapi.responses import RedirectResponse
+        import urllib.parse
+        token = result["access_token"]
+        user_json = urllib.parse.quote(json.dumps(result.get("user", {}), ensure_ascii=False))
+        return RedirectResponse(url=f"/login.html?token={token}&user={user_json}&mode=wechat")
+    elif result.get("status") == "need_register":
+        # 未绑定 → 重定向到注册页
+        from fastapi.responses import RedirectResponse
+        import urllib.parse
+        params = urllib.parse.urlencode({"state": state, "openid": result.get("openid", ""), "mode": "wechat"})
+        return RedirectResponse(url=f"/login.html?{params}")
+    else:
+        raise HTTPException(status_code=400, detail=result.get("error", "微信授权失败"))
+
+
+@app.post("/api/v1/auth/wechat-bind")
+async def wechat_bind(state: str = Form(...), username: str = Form(...), password: str = Form(...)):
+    """
+    微信绑定已有账号
+    流程：扫码(绑定模式) → 输入账号密码 → 验证 → 绑定
+    """
+    from auth_extended import wechat_bind_account
+    from auth import verify_password as _verify_pw
+    user = _verify_pw(username, password)
+    if not user:
+        raise HTTPException(status_code=401, detail="用户名或密码错误")
+    result = wechat_bind_account(state, user["user_id"], username)
+    if result.get("success"):
+        return result
+    raise HTTPException(status_code=400, detail=result.get("error", "绑定失败"))
+
+
 
 @app.post("/api/v1/auth/forgot-password")
 async def forgot_password(username: str = Form(...), email: str = Form(...)):

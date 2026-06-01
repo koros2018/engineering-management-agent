@@ -97,104 +97,298 @@ def reset_login_attempts(ip: str, user: str):
     a = _lj(LOGIN_ATTEMPTS_FILE); k = f"{ip}:{user}"
     if k in a: del a[k]; _sj(LOGIN_ATTEMPTS_FILE, a)
 
+# ── 微信扫码登录（配置驱动）────────────────────────────────
+# 模式切换：设置环境变量 WECHAT_MODE=real 启用真实微信API
+# 默认 mock 模式：本地生成二维码 + 自动推进状态（演示用）
 
-# ── 微信扫码登录（完整流程）─────────────────────────────────
+import logging as _log
+_wechat_log = _log.getLogger("wechat")
 
-def generate_wechat_qr(mode: str = "login") -> Dict:
-    """
-    生成微信登录QR码
-    mode: "login"(扫码登录) / "bind"(绑定微信)
-    """
-    state = secrets.token_hex(16)
+# ── 微信配置 ────────────────────────────────────────────────
+# 模拟模式（默认）：无需任何配置，本地生成二维码
+# 真实模式：需要填写以下配置，并设置 WECHAT_MODE=real
+_WECHAT_MODE = os.environ.get("WECHAT_MODE", "mock")  # "mock" | "real"
+
+# 真实微信配置（WECHAT_MODE=real 时必填）
+_WECHAT_APP_ID = os.environ.get("WECHAT_APP_ID", "")      # 小程序/公众号 AppID
+_WECHAT_APP_SECRET = os.environ.get("WECHAT_APP_SECRET", "")  # 小程序/公众号 AppSecret
+_WECHAT_REDIRECT_URI = os.environ.get("WECHAT_REDIRECT_URI", "")  # OAuth 回调地址
+
+# ── 微信 API 常量 ───────────────────────────────────────────
+_WECHAT_API_BASE = "https://api.weixin.qq.com"
+_WECHAT_OAUTH_URL = "https://open.weixin.qq.com/connect/qrconnect"
+_WECHAT_MINIAPP_SESSION_URL = f"{_WECHAT_API_BASE}/sns/jscode2session"
+
+
+def _wechat_api(endpoint: str, params: dict) -> dict:
+    """调用真实微信 API"""
+    import urllib.request, urllib.parse, json as _json
+    url = f"{_WECHAT_API_BASE}{endpoint}?{urllib.parse.urlencode(params)}"
     try:
-        import qrcode
+        req = urllib.request.Request(url, headers={"User-Agent": "EMA/3.0"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return _json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        _wechat_log.error(f"微信API调用失败: {endpoint} → {e}")
+        return {"errcode": -1, "errmsg": str(e)}
+
+
+def _generate_real_wechat_qr(mode: str, state: str) -> dict:
+    """
+    生成真实微信二维码（OAuth2.0 网页授权）
+    流程：生成微信授权URL → 前端展示二维码 → 用户微信扫码 → 微信回调 → 后端换 openid
+    """
+    if not _WECHAT_APP_ID:
+        return {"state": state, "qr_base64": "", "auth_url": "", "error": "未配置 WECHAT_APP_ID"}
+
+    # 微信 OAuth 授权 URL（网页扫码登录）
+    import urllib.parse
+    params = {
+        "appid": _WECHAT_APP_ID,
+        "redirect_uri": _WECHAT_REDIRECT_URI or f"https://{os.environ.get('EMA_HOST', 'localhost:6189')}/api/v1/auth/wechat-callback",
+        "response_type": "code",
+        "scope": "snsapi_login",  # 扫码登录
+        "state": state,
+    }
+    auth_url = f"{_WECHAT_OAUTH_URL}?{urllib.parse.urlencode(params)}#wechat_redirect"
+
+    # 生成二维码图片
+    try:
+        import qrcode, io, base64
         qr = qrcode.QRCode(version=1, box_size=8, border=2)
-        qr.add_data(f"ema://wechat-{mode}?state={state}&t={int(time.time())}")
+        qr.add_data(auth_url)
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
-        buf = io.BytesIO(); img.save(buf, format='PNG')
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
         qr_b64 = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
     except ImportError:
         qr_b64 = ""
 
+    return {"state": state, "qr_base64": qr_b64, "auth_url": auth_url, "mode": mode}
+
+
+def _generate_mock_wechat_qr(mode: str, state: str) -> dict:
+    """生成模拟微信二维码（演示用，无需微信账号）"""
+    try:
+        import qrcode, io, base64
+        qr = qrcode.QRCode(version=1, box_size=8, border=2)
+        qr.add_data(f"ema://wechat-{mode}?state={state}&t={int(time.time())}")
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        qr_b64 = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
+    except ImportError:
+        qr_b64 = ""
+    return {"state": state, "qr_base64": qr_b64, "auth_url": "", "mode": mode}
+
+
+def generate_wechat_qr(mode: str = "login") -> dict:
+    """
+    生成微信登录二维码
+    mode: "login"(扫码登录) / "bind"(绑定微信)
+    返回: {state, qr_base64, auth_url, mode, expires_in}
+    """
+    state = secrets.token_hex(16)
+
+    if _WECHAT_MODE == "real":
+        result = _generate_real_wechat_qr(mode, state)
+    else:
+        result = _generate_mock_wechat_qr(mode, state)
+
+    # 保存会话
     sessions = _lj(WECHAT_SESSIONS_FILE)
-    sessions[state] = {"state":state,"mode":mode,"status":"pending","created_at":time.time(),"expires_at":time.time()+WECHAT_QR_EXPIRE_SECONDS,"user_id":None,"access_token":None}
+    sessions[state] = {
+        "state": state,
+        "mode": mode,
+        "status": "pending",
+        "created_at": time.time(),
+        "expires_at": time.time() + WECHAT_QR_EXPIRE_SECONDS,
+        "user_id": None,
+        "access_token": None,
+        "openid": None,
+        "wx_code": None,  # 微信回调的 code（真实模式）
+    }
     _sj(WECHAT_SESSIONS_FILE, sessions)
-    return {"state":state,"qr_base64":qr_b64,"expires_in":WECHAT_QR_EXPIRE_SECONDS,"mode":mode}
+
+    result["expires_in"] = WECHAT_QR_EXPIRE_SECONDS
+    _wechat_log.info(f"生成微信二维码: mode={mode}, state={state[:8]}..., mode_config={_WECHAT_MODE}")
+    return result
 
 
-def wechat_poll_status(state: str) -> Dict:
-    """轮询扫码/绑定状态"""
+def wechat_poll_status(state: str) -> dict:
+    """
+    轮询扫码状态
+    模拟模式：5秒自动 scanned → 7秒自动 confirmed
+    真实模式：等待微信回调后状态变为 confirmed
+    """
     sessions = _lj(WECHAT_SESSIONS_FILE)
     s = sessions.get(state)
-    if not s: return {"success":False,"status":"expired"}
-    if time.time() > s.get("expires_at",0):
-        s["status"] = "expired"; _sj(WECHAT_SESSIONS_FILE, sessions)
-        return {"success":True,"status":"expired"}
+    if not s:
+        return {"success": False, "status": "expired", "message": "会话不存在"}
 
-    # 模拟扫码推进
-    elapsed = time.time() - s["created_at"]
-    if s["status"] == "pending" and elapsed > 5:
-        s["status"] = "scanned"; _sj(WECHAT_SESSIONS_FILE, sessions)
-    if s["status"] == "scanned" and elapsed > 7:
-        s["status"] = "confirmed"; _sj(WECHAT_SESSIONS_FILE, sessions)
+    if time.time() > s.get("expires_at", 0):
+        s["status"] = "expired"
+        _sj(WECHAT_SESSIONS_FILE, sessions)
+        return {"success": True, "status": "expired", "message": "二维码已过期"}
 
+    # 模拟模式：自动推进状态
+    if _WECHAT_MODE == "mock":
+        elapsed = time.time() - s["created_at"]
+        if s["status"] == "pending" and elapsed > 5:
+            s["status"] = "scanned"
+            _sj(WECHAT_SESSIONS_FILE, sessions)
+            _wechat_log.info(f"模拟扫码: state={state[:8]}... → scanned")
+        if s["status"] == "scanned" and elapsed > 7:
+            s["status"] = "confirmed"
+            _sj(WECHAT_SESSIONS_FILE, sessions)
+            _wechat_log.info(f"模拟确认: state={state[:8]}... → confirmed")
+
+    # 已扫描
     if s["status"] == "scanned":
-        return {"success":True,"status":"scanned","mode":s.get("mode","login")}
+        return {"success": True, "status": "scanned", "mode": s.get("mode", "login")}
 
+    # 已确认 → 执行登录
     if s["status"] == "confirmed":
-        mode = s.get("mode","login")
-        bindings = _lj(WECHAT_BINDINGS_FILE)
+        mode = s.get("mode", "login")
 
+        # 绑定模式
         if mode == "bind":
-            # 绑定模式：创建关联
-            return {"success":True,"status":"confirmed","mode":"bind","state":state}
+            return {"success": True, "status": "confirmed", "mode": "bind", "state": state}
 
-        # 登录模式：检查是否已绑定
-        for openid, b in bindings.items():
-            if b.get("state") == state:
-                # 模拟：最近3秒内的绑定会话
-                return _do_wechat_login(b.get("user_id",""), state)
+        # 登录模式：检查是否已绑定微信
+        bindings = _lj(WECHAT_BINDINGS_FILE)
+        # 模拟模式：用固定测试 openid（真实模式从微信API获取）
+        openid = s.get("openid") or ("wx_mock_user_001" if _WECHAT_MODE == "mock" else f"wx_{state[-16:]}")
 
-        # 未绑定 → 模拟自动注册并登录（演示用）
-        # 生产环境：引导用户到注册页绑定微信
-        return _do_wechat_login("user_boss_ke", state)
+        # 查找已绑定的用户
+        for oid, b in bindings.items():
+            if oid == openid or b.get("state") == state:
+                return _do_wechat_login(b.get("user_id", ""), state)
+
+        # 未绑定 → 返回 need_register（前端引导注册）
+        return {"success": True, "status": "need_register", "openid": openid, "state": state}
+
+    # 等待中
+    return {"success": True, "status": "pending", "message": "等待扫码..."}
 
 
-def wechat_bind_account(state: str, user_id: str, username: str) -> Dict:
+def wechat_callback(code: str, state: str) -> dict:
+    """
+    微信 OAuth 回调处理（真实模式）
+    微信用户扫码确认后，微信服务器会回调此接口
+    参数：
+      code: 微信授权码（用于换 openid）
+      state: 会话 state
+    返回：{success, openid, access_token, user}
+    """
+    sessions = _lj(WECHAT_SESSIONS_FILE)
+    s = sessions.get(state)
+    if not s:
+        return {"success": False, "error": "会话不存在或已过期"}
+
+    if _WECHAT_MODE != "real":
+        return {"success": False, "error": "当前为模拟模式，不支持微信回调"}
+
+    # 用 code 换 access_token + openid
+    resp = _wechat_api("/sns/oauth2/access_token", {
+        "appid": _WECHAT_APP_ID,
+        "secret": _WECHAT_APP_SECRET,
+        "code": code,
+        "grant_type": "authorization_code",
+    })
+
+    if "errcode" in resp:
+        _wechat_log.error(f"微信换票失败: {resp}")
+        return {"success": False, "error": resp.get("errmsg", "微信授权失败")}
+
+    openid = resp.get("openid")
+    if not openid:
+        return {"success": False, "error": "未获取到 openid"}
+
+    # 更新会话
+    s["status"] = "confirmed"
+    s["openid"] = openid
+    s["wx_code"] = code
+    _sj(WECHAT_SESSIONS_FILE, sessions)
+
+    # 检查是否已绑定
+    bindings = _lj(WECHAT_BINDINGS_FILE)
+    if openid in bindings:
+        # 已绑定 → 直接登录
+        b = bindings[openid]
+        return _do_wechat_login(b["user_id"], state)
+
+    # 未绑定 → 返回 need_register
+    return {"success": True, "status": "need_register", "openid": openid, "state": state}
+
+
+def wechat_bind_account(state: str, user_id: str, username: str) -> dict:
     """
     微信绑定已有账号
-    流程：用户扫码(绑定模式) → 输入账号密码 → 绑定微信 → 以后可扫码登录
+    流程：用户扫码(绑定模式) → 输入账号密码 → 验证 → 绑定
     """
     bindings = _lj(WECHAT_BINDINGS_FILE)
-    openid = f"wx_{state[-16:]}"
-    bindings[openid] = {"openid":openid,"user_id":user_id,"username":username,"bound_at":datetime.now().isoformat()}
+    sessions = _lj(WECHAT_SESSIONS_FILE)
+    s = sessions.get(state, {})
+    openid = s.get("openid") or ("wx_mock_user_001" if _WECHAT_MODE == "mock" else f"wx_{state[-16:]}")
+
+    bindings[openid] = {
+        "openid": openid,
+        "user_id": user_id,
+        "username": username,
+        "bound_at": datetime.now().isoformat(),
+    }
     _sj(WECHAT_BINDINGS_FILE, bindings)
-    return {"success":True,"message":"微信绑定成功，以后可直接扫码登录","openid":openid}
+    _wechat_log.info(f"微信绑定: openid={openid[:12]}... → user={username}")
+
+    return {
+        "success": True,
+        "message": "微信绑定成功，以后可直接扫码登录",
+        "openid": openid,
+    }
 
 
-def wechat_register_and_bind(state: str, username: str, password: str, email: str = "") -> Dict:
-    """新用户扫码注册 + 绑定微信"""
-    from auth import register_user, get_user_tenant, create_access_token, create_refresh_token
+def wechat_register_and_bind(state: str, username: str, password: str, email: str = "") -> dict:
+    """
+    新用户扫码注册 + 绑定微信
+    流程：扫码 → 填写注册信息 → 创建账号 → 绑定微信 → 自动登录
+    """
+    from auth import register_user, get_user_tenant, create_access_token
+
     try:
         user = register_user(username, password, email)
     except ValueError as e:
-        return {"success":False,"error":str(e)}
+        return {"success": False, "error": str(e)}
 
     bindings = _lj(WECHAT_BINDINGS_FILE)
-    openid = f"wx_{state[-16:]}"
-    bindings[openid] = {"openid":openid,"user_id":user["user_id"],"username":username,"bound_at":datetime.now().isoformat()}
+    sessions = _lj(WECHAT_SESSIONS_FILE)
+    s = sessions.get(state, {})
+    openid = s.get("openid") or ("wx_mock_user_001" if _WECHAT_MODE == "mock" else f"wx_{state[-16:]}")
+
+    bindings[openid] = {
+        "openid": openid,
+        "user_id": user["user_id"],
+        "username": username,
+        "bound_at": datetime.now().isoformat(),
+    }
     _sj(WECHAT_BINDINGS_FILE, bindings)
 
     # 回写会话
-    sessions = _lj(WECHAT_SESSIONS_FILE)
-    session = sessions.get(state)
-    if session:
-        session["user_id"] = user["user_id"]
-        session["access_token"] = user.get("access_token")
+    if state in sessions:
+        sessions[state]["user_id"] = user["user_id"]
+        sessions[state]["access_token"] = user.get("access_token")
         _sj(WECHAT_SESSIONS_FILE, sessions)
 
-    return {"success":True,"access_token":user.get("access_token"),"user":user,"message":"注册成功！微信已绑定"}
+    _wechat_log.info(f"微信注册+绑定: openid={openid[:12]}... → user={username}")
+
+    return {
+        "success": True,
+        "access_token": user.get("access_token"),
+        "user": user,
+        "message": "注册成功！微信已绑定",
+    }
 
 
 def _do_wechat_login(user_id: str, state: str) -> Dict:

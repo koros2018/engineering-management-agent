@@ -399,42 +399,87 @@ function loadWx(){
     if(d.success||d.data){
       wxState=d.qr?.state||d.state;
       var url=(d.qr?.qr_base64||d.qr||d.data?.qr_base64||'');
-      $('qr-box').innerHTML='<img src="'+url+'" alt="微信二维码">';
-      $('qr-stat').textContent='请使用微信扫描二维码';
+      var authUrl=d.qr?.auth_url||d.auth_url||'';
+      var qrHtml='<img src="'+url+'" alt="微信二维码">';
+      // 模拟模式：加"模拟扫码"按钮
+      if(!authUrl){
+        qrHtml+='<div style="margin-top:10px;font-size:11px;color:var(--dim)">演示模式：<button class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:10px" onclick="mockScan()">📱 模拟扫码</button></div>';
+      }
+      $('qr-box').innerHTML=qrHtml;
+      $('qr-stat').textContent=authUrl?'请用微信扫描二维码，确认后自动登录':'请使用微信扫描二维码（演示模式）';
       poll=setInterval(function(){
         fetch(API_BASE + '/api/v1/auth/wechat-poll?state='+wxState)
         .then(function(r){return r.json()}).then(function(d){
-          if(d.status==='scanned'){$('qr-stat').textContent='✅ 已扫描，请在手机上确认'}
-          else if(d.status==='confirmed'&&d.success){
+          if(d.status==='scanned'){
+            $('qr-stat').textContent='✅ 已扫描，请在手机上确认';
+          } else if(d.status==='confirmed'&&d.success){
             clearInterval(poll);$('qr-stat').textContent='✅ 登录成功';
-            token=d.access_token||d.token;
-            isBoss=user.role==='super_admin'||user.role==='boss'||d.is_boss;
+            token=d.access_token||d.acce…ken;
+            var user=d.user||{};
+            var isBoss=user.role==='super_admin'||user.role==='boss'||d.is_boss;
             try{localStorage.setItem('ema_token',token);localStorage.setItem('ema_user',JSON.stringify(user))}catch(e){}
-            setTimeout(function(){show('ok');$('smsg').textContent='欢迎回来，'+user.display_name+'！';if(isBoss)$('ba').style.display=''},300)
-          }
-          else if(d.status==='need_register'){
-            clearInterval(poll);show('wxreg');
-          }
-          else if(d.status==='expired'){
+            setTimeout(function(){
+              show('ok');
+              $('smsg').textContent='欢迎回来，'+(user.username||user.display_name||'用户')+'！';
+              if(isBoss)$('ba').style.display='';
+            },300);
+          } else if(d.status==='need_register'){
+            clearInterval(poll);
+            $('qr-stat').textContent='首次扫码，请创建账号完成绑定';
+            setTimeout(function(){show('wxreg');$('wru').value='wx_user_'+(wxState.slice(-6));},500);
+          } else if(d.status==='expired'){
             clearInterval(poll);$('qr-stat').textContent='❌ 二维码已过期，请刷新';
           }
         }).catch(function(){})
-      },2000)
-    }else{$('qr-box').innerHTML='<span style="color:red;font-size:12px">加载失败</span>'}
+      },2000);
+    }else{
+      $('qr-box').innerHTML='<span style="color:red;font-size:12px">加载失败</span>';
+    }
   })
-  .catch(function(){$('qr-box').innerHTML='<span style="color:red;font-size:12px">加载失败</span>'});
+  .catch(function(){
+    $('qr-box').innerHTML='<span style="color:red;font-size:12px">网络错误</span>';
+  });
+}
+
+function mockScan(){
+  /* 模拟扫码：直接调 poll 一次，触发状态推进 */
+  fetch(API_BASE + '/api/v1/auth/wechat-poll?state='+wxState+'&__mock_scan=1')
+  .then(function(r){return r.json()}).then(function(d){
+    if(d.status==='scanned'){
+      $('qr-stat').textContent='✅ 已扫描（模拟），等待确认...';
+    } else if(d.status==='confirmed'){
+      $('qr-stat').textContent='✅ 已确认（模拟），登录中...';
+    } else {
+      $('qr-stat').textContent='⏳ 等待扫码...（5秒后自动推进）';
+    }
+  }).catch(function(){
+    $('qr-stat').textContent='⏳ 等待扫码...';
+  });
 }
 
 function doWxReg(){
   var u=$('wru').value.trim(),e=$('wre').value.trim(),p=$('wrp').value;
   if(!u||u.length<3){M('mw','用户名至少3位','err');return}
+  if(!p||p.length<8){M('mw','密码至少8位','err');return}
   M('mw','','');
-  var b=new FormData();b.append('username',u);b.append('email',e);b.append('password',p);b.append('state',wxState);
+  var b=new FormData();
+  b.append('username',u);b.append('email',e);
+  b.append('password',p);b.append('state',wxState);
   fetch(API_BASE + '/api/v1/auth/wechat-register',{method:'POST',body:b})
   .then(function(r){return r.json()})
   .then(function(d){
-    if(d.success||d.data){M('mw','注册成功！','ok');setTimeout(function(){show('login')},1500)}
-    else{M('mw',d.detail||d.message||'注册失败','err')}
+    if(d.success){
+      token=d.access_token||d.data?.access_token||'';
+      var user=d.user||d.data?.user||{};
+      try{localStorage.setItem('ema_token',token);localStorage.setItem('ema_user',JSON.stringify(user))}catch(e){}
+      M('mw','注册成功！微信已绑定','ok');
+      setTimeout(function(){
+        show('ok');
+        $('smsg').textContent='欢迎，'+u+'！';
+      },1000);
+    } else {
+      M('mw',d.detail||d.message||d.error||'注册失败','err');
+    }
   })
   .catch(function(e){M('mw','网络错误','err')});
 }
