@@ -237,6 +237,40 @@ def check_session_stall():
     return stalled
 
 
+def check_session_context():
+    """
+    检查 OpenClaw 主 session 上下文大小。
+    接近上限时提前告警，避免 compaction 超时。
+    """
+    alerts = []
+    sessions_file = SESSIONS_DIR / "sessions.json"
+    if not sessions_file.exists():
+        return alerts
+
+    try:
+        import json
+        with open(sessions_file) as f:
+            sessions = json.load(f)
+        for key, val in sessions.items():
+            if ":main:main" not in key:
+                continue
+            ctx_tokens = val.get("contextTokens", 0)
+            ctx_window = val.get("contextWindow", 200000)
+            if ctx_window > 0:
+                usage_pct = (ctx_tokens / ctx_window) * 100
+                if usage_pct >= 90:
+                    alerts.append({
+                        "session": key,
+                        "ctx_tokens": ctx_tokens,
+                        "ctx_window": ctx_window,
+                        "usage_pct": round(usage_pct, 1),
+                        "severity": "critical" if usage_pct >= 95 else "warning",
+                    })
+    except Exception:
+        pass
+    return alerts
+
+
 def check_session_locks():
     """检查残留 .lock 文件"""
     locks = []
@@ -453,8 +487,21 @@ def run_check():
         else:
             fail(f"  {name}: {status}")
 
-    # 3. 会话锁死检测
-    log.info("[3/4] 会话锁死检测...")
+    # 3. Session 上下文监控
+    log.info("[3/4] Session 上下文监控...")
+    ctx_alerts = check_session_context()
+    if ctx_alerts:
+        for a in ctx_alerts:
+            if a["severity"] == "critical":
+                alert(f"🚨 主 session 上下文 {a['usage_pct']}% ({a['ctx_tokens']}/{a['ctx_window']}) — 即将触发 compaction，可能超时！")
+            else:
+                log.warning(f"  ⚠️ 主 session 上下文 {a['usage_pct']}% ({a['ctx_tokens']}/{a['ctx_window']})")
+            report["actions"].append(f"ctx_alert:{a['usage_pct']}")
+    else:
+        ok("  主 session 上下文正常")
+
+    # 4. 会话锁死检测
+    log.info("[4/4] 会话锁死检测...")
     stalled = check_session_stall()
     locks = check_session_locks()
 
@@ -463,6 +510,7 @@ def run_check():
         "stalled": stalled,
         "lock_count": len(locks),
         "locks": locks,
+        "ctx_alerts": ctx_alerts,
     }
 
     if stalled:
@@ -479,8 +527,8 @@ def run_check():
     if not stalled and not locks:
         ok("  无锁死 session，无残留锁")
 
-    # 4. 项目进度
-    log.info("[4/4] 项目进度监督...")
+    # 5. 项目进度
+    log.info("[5/5] 项目进度监督...")
     progress = check_project_progress()
     report["project"] = progress
 
