@@ -681,7 +681,7 @@ createApp({setup(){
 
   const tab = ref('cockpit');
   const cockpit = ref({health_score:0,health_grade:'B',alerts:[],metrics:{revenue:{},projects:{},agents:{}}});
-  const alerts = ref([]);
+  const alerts = ref([]); const alertsLoading = ref(false);
   const tenants = ref([]); const tenantsLoading = ref(false);
   const tenantModal = ref({show:false,edit:false,id:'',name:'',plan:'free',status:'active'});
   const projects = ref([]); const projectsLoading = ref(false);
