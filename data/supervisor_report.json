@@ -1,19 +1,19 @@
 {
-  "timestamp": "2026-05-31 18:44:22",
+  "timestamp": "2026-06-01 10:17:49",
   "services": {
     "api_6188": {
       "status": "ok",
-      "ms": 20.0,
+      "ms": 3.0,
       "error": null
     },
     "ollama_11434": {
       "status": "ok",
-      "ms": 1.0,
+      "ms": 2.0,
       "error": null
     },
     "nvidia_api": {
       "status": "ok",
-      "ms": 579.0
+      "ms": 945.0
     }
   },
   "llm": {
@@ -36,9 +36,9 @@
     "locks": []
   },
   "project": {
-    "last_commit": "991db87 test(phase21): 预算引擎单元测试29/29 + 状态报告",
+    "last_commit": "7482f5d fix(ui): 导航栏折叠+修复语法错误+清理冗余cron",
     "idle_min": 0,
-    "uncommitted_files": 12,
+    "uncommitted_files": 11,
     "needs_push": true
   },
   "actions": [

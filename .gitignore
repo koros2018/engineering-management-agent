@@ -34,3 +34,4 @@ data/tenant_users.json
 data/tenants/
 data/uploads/*
 data/cache/*
+data/supervisor.pid
