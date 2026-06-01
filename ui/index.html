@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <meta name="theme-color" content="#1f6feb" media="(prefers-color-scheme: dark)">
@@ -9,7 +10,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="/manifest.json">
   <title>{{ t('app_name_full') }}</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  
   <script>
   // ═══ i18n 语言包 ═══
   const I18N = {
@@ -2889,7 +2891,7 @@ createApp({
 <script>
   // PWA Service Worker 注册
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/ui/service-worker.js', { scope: '/ui/' })
+    navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
       .then(() => console.log('SW registered'))
       .catch(() => console.log('SW failed (non-critical)'));
   }
