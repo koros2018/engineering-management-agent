@@ -226,6 +226,8 @@ def request_password_reset(username: str, email: str) -> Dict:
     try:
         from email_sender import send_password_reset_email
         email_sent = send_password_reset_email(email, username, t)
+        import logging
+        logging.info(f"邮件发送结果: {email_sent}")
     except Exception as e:
         import logging
         logging.warning(f"邮件发送失败: {e}")
