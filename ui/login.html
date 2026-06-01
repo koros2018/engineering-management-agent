@@ -159,6 +159,16 @@ body::after{
       <span onclick="show('reg')">📝 注册账号</span>
       <span onclick="show('wx')">📱 微信扫码</span>
     </div>
+    <!-- 快速体验（试用阶段） -->
+    <div style="margin-top:16px;text-align:center">
+      <div class="divider"><span>试用阶段</span></div>
+      <button class="btn btn-o" onclick="quickTry()" style="margin-top:12px;width:100%;font-size:14px;padding:10px">
+        🚀 快速体验（免注册）
+      </button>
+      <div style="font-size:11px;color:#5a6a82;margin-top:6px;line-height:1.4">
+        无需注册，立即体验全部功能<br>数据不会保存，适合快速试用
+      </div>
+    </div>
   </div>
 
   <!-- 微信扫码 -->
@@ -415,6 +425,14 @@ function doWxReg(){
 
 function clearPoll(){if(poll){clearInterval(poll);poll=null}}
 function go(p){window.location.href=(p==='admin')?'admin.html':'/'}
+
+// 快速体验：用 guest token 直接跳转
+function quickTry(){
+  // 生成一个临时 guest token
+  var guestToken = 'guest_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+  try { localStorage.setItem('ema_token', guestToken); localStorage.setItem('ema_guest_mode', '1'); } catch(e) {}
+  window.location.href = '/';
+}
 </script>
 </body>
 </html>

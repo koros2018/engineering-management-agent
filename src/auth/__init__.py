@@ -348,9 +348,21 @@ async def get_optional_user(
     request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
 ) -> Optional[Dict]:
-    """可选认证：有 token 返回用户，无则返回 None"""
+    """可选认证：有 token 返回用户，无则返回 None。支持 guest_ 前缀的快速体验 token。"""
     if not credentials:
         return None
+    token = credentials.credentials
+    # Guest 快速体验模式
+    if token.startswith("guest_"):
+        return {
+            "user_id": token,
+            "username": "guest",
+            "role": "free",
+            "tenant_id": "guest",
+            "tenant_name": "快速体验",
+            "plan": "free",
+            "is_guest": True,
+        }
     try:
         return await get_current_user(request, credentials)
     except HTTPException:
