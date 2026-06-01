@@ -274,6 +274,7 @@ body::after{
 </div></div>
 
 <script>
+var API_BASE = 'http://127.0.0.1:6188';
 function $(id){return document.getElementById(id)}
 function M(id,t,c){var e=$(id);e.textContent=t;e.className='msg '+c}
 function setBtnLoading(btn,loading){if(loading){btn.disabled=true;btn.innerHTML='<span class="spinner"></span>处理中...'}else{btn.disabled=false;btn.textContent=btn.dataset.orig||'登 录'}}
@@ -314,7 +315,7 @@ function doLogin(){
   M('ml','','');
   var btn=$('lbtn');btn.dataset.orig=btn.textContent;setBtnLoading(btn,true);
   var b=new FormData();b.append('username',u);b.append('password',p);
-  fetch('/api/v1/auth/login',{method:'POST',body:b})
+  fetch(API_BASE + '/api/v1/auth/login',{method:'POST',body:b})
   .then(function(r){return r.json()})
   .then(function(d){
     setBtnLoading(btn,false);
@@ -338,7 +339,7 @@ function doReg(){
   if(p!==p2){M('mr','两次密码不一致','err');return}
   M('mr','','');
   var b=new FormData();b.append('username',u);b.append('email',e);b.append('password',p);
-  fetch('/api/v1/auth/register',{method:'POST',body:b})
+  fetch(API_BASE + '/api/v1/auth/register',{method:'POST',body:b})
   .then(function(r){return r.json()})
   .then(function(d){
     if(d.success){M('mr','注册成功！请登录','ok');setTimeout(function(){show('login');$('lu').value=u},1500)}
@@ -352,7 +353,7 @@ function doFP(){
   if(!u||!e){M('mf','请填写用户名和邮箱','err');return}
   M('mf','','');
   var b=new FormData();b.append('username',u);b.append('email',e);
-  fetch('/api/v1/auth/forgot-password',{method:'POST',body:b})
+  fetch(API_BASE + '/api/v1/auth/forgot-password',{method:'POST',body:b})
   .then(function(r){return r.json()})
   .then(function(d){
     if(d.success||d.data){M('mf','重置码已发送到邮箱，请查收','ok');$('fp1').style.display='none';$('fp2').style.display='block'}
@@ -367,7 +368,7 @@ function doReset(){
   if(p!==p2){M('mf2','两次密码不一致','err');return}
   M('mf2','','');
   var b=new FormData();b.append('token',t);b.append('password',p);
-  fetch('/api/v1/auth/reset-password',{method:'POST',body:b})
+  fetch(API_BASE + '/api/v1/auth/reset-password',{method:'POST',body:b})
   .then(function(r){return r.json()})
   .then(function(d){
     if(d.success||d.data){M('mf2','密码已重置，请登录','ok');setTimeout(function(){show('login')},1500)}
@@ -377,7 +378,7 @@ function doReset(){
 }
 
 function loadWx(){
-  fetch('/api/v1/auth/wechat-qr',{method:'POST'})
+  fetch(API_BASE + '/api/v1/auth/wechat-qr',{method:'POST'})
   .then(function(r){return r.json()})
   .then(function(d){
     if(d.success||d.data){
@@ -386,7 +387,7 @@ function loadWx(){
       $('qr-box').innerHTML='<img src="'+url+'" alt="微信二维码">';
       $('qr-stat').textContent='请使用微信扫描二维码';
       poll=setInterval(function(){
-        fetch('/api/v1/auth/wechat-poll?state='+wxState)
+        fetch(API_BASE + '/api/v1/auth/wechat-poll?state='+wxState)
         .then(function(r){return r.json()}).then(function(d){
           if(d.status==='scanned'){$('qr-stat').textContent='✅ 已扫描，请在手机上确认'}
           else if(d.status==='confirmed'&&d.success){
@@ -414,7 +415,7 @@ function doWxReg(){
   if(!u||u.length<3){M('mw','用户名至少3位','err');return}
   M('mw','','');
   var b=new FormData();b.append('username',u);b.append('email',e);b.append('password',p);b.append('state',wxState);
-  fetch('/api/v1/auth/wechat-register',{method:'POST',body:b})
+  fetch(API_BASE + '/api/v1/auth/wechat-register',{method:'POST',body:b})
   .then(function(r){return r.json()})
   .then(function(d){
     if(d.success||d.data){M('mw','注册成功！','ok');setTimeout(function(){show('login')},1500)}
