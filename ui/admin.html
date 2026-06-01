@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>EMA 管家后台</title>
-<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -681,6 +681,7 @@ createApp({setup(){
 
   const tab = ref('cockpit');
   const cockpit = ref({health_score:0,health_grade:'B',alerts:[],metrics:{revenue:{},projects:{},agents:{}}});
+  const alerts = ref([]);
   const tenants = ref([]); const tenantsLoading = ref(false);
   const tenantModal = ref({show:false,edit:false,id:'',name:'',plan:'free',status:'active'});
   const projects = ref([]); const projectsLoading = ref(false);

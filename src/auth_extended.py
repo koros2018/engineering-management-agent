@@ -222,7 +222,20 @@ def request_password_reset(username: str, email: str) -> Dict:
     t = secrets.token_hex(16)
     tokens[t] = {"user_id":found["user_id"],"username":username,"created_at":datetime.now().isoformat(),"expires_at":(datetime.now()+timedelta(minutes=30)).isoformat(),"used":False}
     _sj(RESET_TOKENS_FILE, tokens)
-    return {"success":True,"token":t,"message":f"重置码已发送到 {email}\n\n重置码: {t}"}
+    # 发送重置邮件
+    try:
+        from email_sender import send_password_reset_email
+        email_sent = send_password_reset_email(email, username, t)
+    except Exception as e:
+        import logging
+        logging.warning(f"邮件发送失败: {e}")
+        email_sent = False
+
+    if email_sent:
+        return {"success":True,"token":t,"message":f"重置码已发送到 {email}，请查收邮件"}
+    else:
+        # 邮件发送失败，返回重置码（演示模式）
+        return {"success":True,"token":t,"message":f"重置码已生成（邮件发送失败，演示模式）\n\n重置码: {t}"}
 
 def reset_password(token: str, new_pw: str) -> Dict:
     tokens = _lj(RESET_TOKENS_FILE); r = tokens.get(token)

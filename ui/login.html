@@ -382,7 +382,7 @@ function doReset(){
   if(!t){M('mf2','请输入重置码','err');return}
   if(p!==p2){M('mf2','两次密码不一致','err');return}
   M('mf2','','');
-  var b=new FormData();b.append('token',t);b.append('password',p);
+  var b=new FormData();b.append('token',t);b.append('new_password',p);
   fetch(API_BASE + '/api/v1/auth/reset-password',{method:'POST',body:b})
   .then(function(r){return r.json()})
   .then(function(d){
