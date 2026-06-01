@@ -1141,22 +1141,26 @@ async def blueprint_generate_documents(request: Request):
         return {"success": False, "error": "缺少analysis参数"}
     
     doc_types = data.get("doc_types", ["all"])
-    if "all" in doc_types:
-        result = generate_full_document_set(analysis)
-    else:
-        from src.blueprint.documents.generator import (
-            generate_design_description, generate_technical_disclosure,
-            generate_quantity_list, generate_change_request, generate_bid_document,
-        )
-        type_map = {
-            "design_description": generate_design_description,
-            "technical_disclosure": generate_technical_disclosure,
-            "quantity_list": generate_quantity_list,
-            "change_request": generate_change_request,
-            "bid_document": generate_bid_document,
-        }
-        docs = {dt: type_map[dt](analysis) for dt in doc_types if dt in type_map}
-        result = {"success": True, "analysis": analysis, "documents": docs}
+    try:
+        if "all" in doc_types:
+            result = generate_full_document_set(analysis)
+        else:
+            from src.blueprint.documents.generator import (
+                generate_design_description, generate_technical_disclosure,
+                generate_quantity_list, generate_change_request, generate_bid_document,
+            )
+            type_map = {
+                "design_description": generate_design_description,
+                "technical_disclosure": generate_technical_disclosure,
+                "quantity_list": generate_quantity_list,
+                "change_request": generate_change_request,
+                "bid_document": generate_bid_document,
+            }
+            docs = {dt: type_map[dt](analysis) for dt in doc_types if dt in type_map}
+            result = {"success": True, "analysis": analysis, "documents": docs}
+    except Exception as e:
+        import traceback
+        return {"success": False, "error": str(e), "traceback": traceback.format_exc()}
     return {"success": True, "documents": result}
 
 
@@ -1183,7 +1187,11 @@ async def blueprint_generate_single_document(request: Request):
     fn = type_map.get(doc_type)
     if not fn:
         return {"success": False, "error": f"不支持的文档类型: {doc_type}", "supported": list(type_map.keys())}
-    result = fn(analysis)
+    try:
+        result = fn(analysis)
+    except Exception as e:
+        import traceback
+        return {"success": False, "error": str(e), "traceback": traceback.format_exc()}
     return {"success": True, "doc_type": doc_type, "content": result}
 
 
