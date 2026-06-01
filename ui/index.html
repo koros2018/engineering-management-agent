@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="/ui/manifest.json">
+  <link rel="manifest" href="/manifest.json">
   <title>{{ t('app_name_full') }}</title>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script>
@@ -1479,7 +1479,7 @@ margin-bottom: 0; margin-right: 4px;
 </div>
 
 <script>
-const { createApp, ref, nextTick, onMounted } = Vue;
+const { createApp, ref, nextTick, onMounted, computed } = Vue;
 
 createApp({
   setup() {
@@ -1490,7 +1490,7 @@ createApp({
       try { authToken = localStorage.getItem('ema_token'); } catch(e) {}
     }
     if (!authToken) {
-      window.location.href = window.location.origin + '/ui/login.html';
+      window.location.href = '/login.html';
       return {};
     }
     // 存储到localStorage供后续使用
@@ -2164,7 +2164,7 @@ createApp({
 
     function logout() {
       try { localStorage.removeItem('ema_token'); } catch(e) {}
-      window.location.href = '/ui/login.html';
+      window.location.href = '/login.html';
     }
 
     // ═══ i18n ═══
