@@ -1,11 +1,49 @@
 {
   "providers": {
     "ollama": {
-      "name": "Ollama",
+      "name": "Ollama 本地",
       "base_url": "http://127.0.0.1:11434"
+    },
+    "longcat": {
+      "name": "LongCat",
+      "base_url": "https://api.longcat.chat/openai/v1"
+    },
+    "opencode": {
+      "name": "OpenCode",
+      "base_url": "https://opencode.ai/zen/go/v1"
     }
   },
   "models": [
+    {
+      "id": "longcat/LongCat-2.0-Preview",
+      "name": "LongCat 2.0 Preview",
+      "provider": "longcat",
+      "base_url": "https://api.longcat.chat/openai/v1",
+      "api_key": "ak_2iF8Eh8ZI5VX9b02MP4Fo4dU6Eo2P",
+      "model_name": "LongCat-2.0-Preview",
+      "context_window": 131072,
+      "reasoning": true,
+      "cost_input": 0,
+      "cost_output": 0,
+      "enabled": true,
+      "tags": ["cloud", "reasoning", "longcat"],
+      "description": "LongCat 2.0 Preview 云端大模型"
+    },
+    {
+      "id": "opencode/kimi-k2.6",
+      "name": "Kimi K2.6",
+      "provider": "opencode",
+      "base_url": "https://opencode.ai/zen/go/v1/chat/completions",
+      "api_key": "sk-BPJo2nABvPFNOWddZmzqrPmca1qkpb8y4Oj7qNRg9hEfXmtS2RrGTBkizM74VXEq",
+      "model_name": "kimi-k2.6",
+      "context_window": 131072,
+      "reasoning": true,
+      "cost_input": 0,
+      "cost_output": 0,
+      "enabled": true,
+      "tags": ["cloud", "reasoning", "kimi"],
+      "description": "OpenCode Go Kimi K2.6 云端大模型"
+    },
     {
       "id": "ollama/qwen3.5:9b",
       "name": "Qwen 3.5 9B",

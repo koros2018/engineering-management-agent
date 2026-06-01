@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Debug Vue</title>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head><body>
+<div id="app">
+  <div v-if="show">Test: {{ msg }}</div>
+  <button @click="show = !show">Toggle</button>
+</div>
+<script>
+const { createApp, ref } = Vue;
+createApp({
+  setup() {
+    const msg = ref('Debug mode');
+    const show = ref(true);
+    return { msg, show };
+  }
+}).mount('#app');
+</script>
+</body></html>

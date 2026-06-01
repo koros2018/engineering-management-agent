@@ -522,7 +522,10 @@ def generate_technical_disclosure(analysis: Dict) -> str:
     lines.append("  4) 施工过程中应做好成品保护")
     lines.append("  5) 发现图纸问题应及时办理设计变更或技术核定")
 
-    layer_str = ' '.join(layers).upper()
+    layer_str = ' '.join(
+        l.get('name','') if isinstance(l, dict) else str(l)
+        for l in layers
+    ).upper()
     if 'FIRE' in layer_str or '消防' in layer_str:
         lines.append("  6) 【消防专项】消防系统施工后需通过消防验收")
     if 'SEISMIC' in layer_str or '抗震' in layer_str:

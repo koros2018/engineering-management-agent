@@ -70,5 +70,11 @@
     "tenant_id": "tenant_9c895d931587",
     "role": "tenant_admin",
     "joined_at": "2026-05-27T15:10:27.121015"
+  },
+  "user_88b8c81bbd90c555": {
+    "user_id": "user_88b8c81bbd90c555",
+    "tenant_id": "tenant_88743df66358",
+    "role": "tenant_admin",
+    "joined_at": "2026-06-01T12:39:31.773385"
   }
 }

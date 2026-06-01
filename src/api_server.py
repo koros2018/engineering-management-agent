@@ -1794,6 +1794,7 @@ async def admin_list_tenants(user: dict = Depends(require_role(Role.SUPER_ADMIN)
             "plan": t.get("plan_id", "free"),
             "user_count": user_count,
             "status": t.get("status", "active"),
+            "created_at": t.get("created_at", ""),
         })
     return {"success": True, "tenants": tenants, "total": len(tenants)}
 

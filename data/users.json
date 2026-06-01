@@ -12,8 +12,8 @@
     "user_id": "user_boss_ke",
     "username": "boss_ke",
     "email": "boss@ema.local",
-    "password_hash": "507b5432b433b75c790067e8976ddc4bd6a5cba176470f469564e40e7e0e9db3",
-    "salt": "99ab0e9b84e7d1868161ab2c4a421d10",
+    "password_hash": "4d3894f4ab814d9f4ad9884a9dc150954fea83231f0f5cb5204e8cc605d1c71d",
+    "salt": "19cd1fc2e1f0287e9eea2a23d4193c95",
     "created_at": "2026-05-19T15:17:33.362778",
     "status": "active",
     "role": "super_admin"
@@ -76,8 +76,8 @@
     "user_id": "user_65daa73c4f84993f",
     "username": "test01",
     "email": "2698835828@qq.com",
-    "password_hash": "4b4111c7bbf36efc0d437e4bc8ab0aad84c146be110b086377d2965a5fb679dd",
-    "salt": "db619fa5fdc8558dc6c0524c8c437a9a",
+    "password_hash": "ccfd90d20edf4401d16da73b37fba6c467fbd512b26d5918212d1c8e480c47ab",
+    "salt": "24784d8f783bea19417d40eb8a848356",
     "created_at": "2026-05-20T08:17:34.290051",
     "status": "active"
   },
@@ -108,6 +108,15 @@
     "password_hash": "dcc9eecec09bb2835a589e1c738884cfc777da4c41233540961c9aa2fbc48f80",
     "salt": "fc0f4672ead9357fa5be3681476fcd1a",
     "created_at": "2026-05-27T15:10:27.109820",
+    "status": "active"
+  },
+  "user_88b8c81bbd90c555": {
+    "user_id": "user_88b8c81bbd90c555",
+    "username": "test_phase22",
+    "email": "test22@ema.local",
+    "password_hash": "690dd22e0065a9bd7f2d75119d422e7d8c09f56fbb93f2f97437bb074e76207f",
+    "salt": "0cada1c6be814fb6719e5775f6db17a4",
+    "created_at": "2026-06-01T12:39:31.765290",
     "status": "active"
   }
 }

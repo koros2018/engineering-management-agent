@@ -1,24 +1,24 @@
 {
-  "timestamp": "2026-06-01 12:15:50",
+  "timestamp": "2026-06-01 16:43:59",
   "services": {
     "api_6188": {
-      "status": "ok",
-      "ms": 2.0,
-      "error": null
-    },
-    "ui_6189": {
-      "status": "ok",
-      "ms": 5.0,
-      "error": null
-    },
-    "ollama_11434": {
       "status": "ok",
       "ms": 3.0,
       "error": null
     },
+    "ui_6189": {
+      "status": "ok",
+      "ms": 4.0,
+      "error": null
+    },
+    "ollama_11434": {
+      "status": "ok",
+      "ms": 2.0,
+      "error": null
+    },
     "nvidia_api": {
       "status": "ok",
-      "ms": 5747.0
+      "ms": 1335.0
     }
   },
   "llm": {
@@ -42,9 +42,9 @@
     "ctx_alerts": []
   },
   "project": {
-    "last_commit": "e250bb4 feat(supervisor): Session上下文监控 + compaction配置",
+    "last_commit": "09fef0f fix(admin): 修复管理后台登录 + 标签页问题",
     "idle_min": 0,
-    "uncommitted_files": 12,
+    "uncommitted_files": 21,
     "needs_push": true
   },
   "actions": [

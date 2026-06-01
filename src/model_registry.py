@@ -34,9 +34,10 @@ REGISTRY_FILE = EMA_DATA_DIR / "model_registry.json"
 
 class Provider(Enum):
     OLLAMA = "ollama"
-    NVIDIA = "nvidia"
+    LONGCAT = "longcat"
+    OPENCODE = "opencode"
     FASTAPI = "fastapi"
-    CLOUD = "cloud"  # 泛指云端（ollama.com 等）
+    CLOUD = "cloud"
 
 
 # ── 模型配置 dataclass ────────────────────────────────────────
