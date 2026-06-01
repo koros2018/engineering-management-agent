@@ -177,7 +177,8 @@ def _estimate_quantities_from_layers(analysis: Dict) -> Dict[str, Any]:
 
     category_layer_count: Dict[str, int] = {}
     for layer in layers:
-        sem = infer_layer_semantics(layer)
+        layer_name = layer.get('name', '') if isinstance(layer, dict) else str(layer)
+        sem = infer_layer_semantics(layer_name)
         eng = sem.get('english', 'unknown')
         if sem.get('confidence') != 'none':
             category_layer_count[eng] = category_layer_count.get(eng, 0) + 1
@@ -244,7 +245,8 @@ def _collect_specs_for_analysis(analysis: Dict) -> List[Dict[str, str]]:
     all_specs: List[Dict[str, str]] = []
     seen_codes: set = set()
     for layer in layers:
-        for spec in lookup_specs_for_layer(layer):
+        layer_name = layer.get('name', '') if isinstance(layer, dict) else str(layer)
+        for spec in lookup_specs_for_layer(layer_name):
             key = f"{spec['code']}_{spec['section']}"
             if key not in seen_codes:
                 all_specs.append(spec)
@@ -380,18 +382,13 @@ def generate_design_description(analysis: Dict) -> str:
     lines.append("四、主要材料规格")
     lines.append("-" * 40)
 
-    has_concrete = any(
-        infer_layer_semantics(l).get('english') in ('column', 'beam', 'slab', 'foundation')
-        for l in layers
-    )
-    has_steel = any(
-        infer_layer_semantics(l).get('english') in ('rebar', 'steel')
-        for l in layers
-    )
-    has_masonry = any(
-        infer_layer_semantics(l).get('english') == 'wall'
-        for l in layers
-    )
+    def _layer_sem(l):
+        ln = l.get('name', '') if isinstance(l, dict) else str(l)
+        return infer_layer_semantics(ln).get('english', '')
+
+    has_concrete = any(_layer_sem(l) in ('column', 'beam', 'slab', 'foundation') for l in layers)
+    has_steel = any(_layer_sem(l) in ('rebar', 'steel') for l in layers)
+    has_masonry = any(_layer_sem(l) == 'wall' for l in layers)
 
     mat_idx = 1
     if has_concrete:
