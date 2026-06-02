@@ -300,6 +300,10 @@ from fastapi import HTTPException, Request, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from utils import load_json as _load_json, save_json as _save_json
 
+# Aliases for auth_extended compatibility (fixes circular import)
+_lj = _load_json
+_sj = _save_json
+
 
 security_scheme = HTTPBearer(auto_error=False)
 
