@@ -414,7 +414,7 @@ function loadWx(){
             $('qr-stat').textContent='✅ 已扫描，请在手机上确认';
           } else if(d.status==='confirmed'&&d.success){
             clearInterval(poll);$('qr-stat').textContent='✅ 登录成功';
-            token=d.access_token||d.acce…ken;
+            token=d.access_token||d.token;
             var user=d.user||{};
             var isBoss=user.role==='super_admin'||user.role==='boss'||d.is_boss;
             try{localStorage.setItem('ema_token',token);localStorage.setItem('ema_user',JSON.stringify(user))}catch(e){}
