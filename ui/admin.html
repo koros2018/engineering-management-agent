@@ -593,7 +593,8 @@ createApp({setup(){
   if (!token) { window.location.href = '/login.html'; return {}; }
   try { localStorage.setItem('ema_token', token); } catch(e) {}
 
-  const API='http://localhost:6188';
+  // 动态API: HTTPS走nginx代理(相对路径)，HTTP直连API
+  const API = window.location.protocol === 'https:' ? '' : 'http://localhost:6188';
 
   // Toast 系统
   const toast = ref({show:false,msg:'',type:'info',timer:null});
@@ -842,6 +843,7 @@ createApp({setup(){
     }catch(e){showToast('网络错误','error')}
   }
 
+  async function loadAlerts(){
     alertsLoading.value = true;
     try{
       const r=await fetch(API+'/api/v1/admin/alerts',{headers:{'Authorization':'Bearer '+token},timeout:10000});
