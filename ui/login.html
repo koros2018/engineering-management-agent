@@ -276,7 +276,8 @@ body::after{
 </div></div>
 
 <script>
-var API_BASE = 'http://localhost:6188';
+// 动态API_BASE: HTTPS走nginx代理(相对路径)，HTTP直连API
+var API_BASE = window.location.protocol === 'https:' ? '' : 'http://localhost:6188';
 function $(id){return document.getElementById(id)}
 function M(id,t,c){var e=$(id);e.textContent=t;e.className='msg '+c}
 function setBtnLoading(btn,loading){if(loading){btn.disabled=true;btn.innerHTML='<span class="spinner"></span>处理中...'}else{btn.disabled=false;btn.textContent=btn.dataset.orig||'登 录'}}

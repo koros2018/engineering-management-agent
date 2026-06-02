@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-01 23:01:13",
+  "timestamp": "2026-06-02 10:29:45",
   "services": {
     "api_6188": {
       "status": "ok",
@@ -8,17 +8,17 @@
     },
     "ui_6189": {
       "status": "ok",
-      "ms": 6.0,
+      "ms": 5.0,
       "error": null
     },
     "ollama_11434": {
       "status": "ok",
-      "ms": 2.0,
+      "ms": 1.0,
       "error": null
     },
     "nvidia_api": {
       "status": "ok",
-      "ms": 451.0
+      "ms": 1933.0
     }
   },
   "llm": {
@@ -42,9 +42,9 @@
     "ctx_alerts": []
   },
   "project": {
-    "last_commit": "a9220ff feat(wechat): 配置驱动微信登录模块重写",
+    "last_commit": "1b0099b fix(ui): 修复login.html中acce…ken截断导致的JS语法错误",
     "idle_min": 0,
-    "uncommitted_files": 13,
+    "uncommitted_files": 6,
     "needs_push": true
   },
   "actions": [
