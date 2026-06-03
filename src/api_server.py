@@ -820,12 +820,12 @@ async def main_agent_chat(
 
     result = await main_agent._chat(
         params={
-            'message': message,
-            'file_path': file_path,
+            'message': req.message,
+            'file_path': req.file_path,
         },
         context={
-            'user_id': user_id,
-            'project_id': project_id,
+            'user_id': req.user_id,
+            'project_id': req.project_id,
             'task_id': str(uuid.uuid4()),
             'model': req.model,
             'model_chain': req.model_chain,
@@ -834,7 +834,7 @@ async def main_agent_chat(
 
     return {
         "success": result.get('success', False),
-        "task_id": project_id or str(uuid.uuid4()),
+        "task_id": req.project_id or str(uuid.uuid4()),
         "intent": result.get('intent'),
         "plan": result.get('plan'),
         "confidence": result.get('confidence', 0.0),
@@ -868,10 +868,10 @@ async def agent_chat(req: AgentChatRequest):
         task_id=task_id,
         agent_id=agent_id,
         task_type=req.task_type,
-        params={"file_path": file_path, "message": message},
+        params={"file_path": req.file_path, "message": req.message},
         context={
-            "user_id": user_id,
-            "project_id": project_id,
+            "user_id": req.user_id,
+            "project_id": req.project_id,
             "task_id": task_id,
         }
     )
