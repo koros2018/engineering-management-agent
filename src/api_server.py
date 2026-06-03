@@ -203,11 +203,12 @@ def get_tech_rd_agent() -> TechRdAgent:
 
 class AgentChatRequest(BaseModel):
     message: str
-    task_type: str = "full_analysis"
+    agent_id: Optional[str] = None  # Phase 26: 指定 Agent ID (tech_rd/safety_compliance 等)
+    task_type: str = "chat"
     file_path: Optional[str] = None
     project_id: Optional[str] = None
     user_id: str = "guest"
-    model: Optional[str] = None  # 可选：指定模型（如 "ollama:qwen3.5:9b" 或 "cloud:gpt-4o-mini"）
+    model: Optional[str] = None  # 可选：指定模型
     model_chain: Optional[List[str]] = None  # 可选：模型链
 
 
@@ -853,11 +854,16 @@ async def agent_chat(req: AgentChatRequest):
     直接路由到指定 Agent
     """
     task_id = str(uuid.uuid4())
-    agent_id = req.task_type if req.task_type in [
+    # Phase 26: 优先使用 req.agent_id，fallback 到 task_type
+    agent_id = req.agent_id if req.agent_id in [
         'tech_rd', 'safety_compliance', 'market_sales',
         'engineering_delivery', 'cost_benefit', 'customer_service',
         'manager'
-    ] else 'tech_rd'
+    ] else (req.task_type if req.task_type in [
+        'tech_rd', 'safety_compliance', 'market_sales',
+        'engineering_delivery', 'cost_benefit', 'customer_service',
+        'manager'
+    ] else 'tech_rd')
 
     main_agent = get_main_agent()
     agent = main_agent.sub_agents.get(agent_id)
