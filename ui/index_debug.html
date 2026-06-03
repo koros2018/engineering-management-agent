@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <meta name="theme-color" content="#1f6feb" media="(prefers-color-scheme: dark)">
@@ -10,6 +11,7 @@
   <link rel="manifest" href="/manifest.json">
   <title>{{ t('app_name_full') }}</title>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  
   <script>
   // ═══ i18n 语言包 ═══
   const I18N = {
@@ -509,15 +511,12 @@ margin-bottom: 0; margin-right: 4px;
       <div :class="['nav-item', { active: activeWfTab === 'multi' }]" @click="switchWfTab('multi')">
         <span style="margin-right:6px">🤖</span> 多Agent
       </div>
-      <!-- 更多功能下拉 -->
-      <div style="position:relative" v-click-outside="()=>moreMenuOpen=false">
-        <div :class="['nav-item', { active: moreMenuOpen }]" @click="moreMenuOpen=!moreMenuOpen" style="padding:4px 8px">
-          <span style="font-size:12px">⋯</span>
-        </div>
-        <div v-if="moreMenuOpen" style="position:absolute;top:100%;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:100;min-width:140px">
-          <div :class="['nav-item', { active: activeWfTab === 'pipeline' }]" @click="switchWfTab('pipeline');moreMenuOpen=false" style="padding:8px 12px;font-size:11px">⚡ 端到端流水线</div>
-          <div :class="['nav-item', { active: activeWfTab === 'lcc' }]" @click="switchWfTab('lcc');moreMenuOpen=false" style="padding:8px 12px;font-size:11px">📈 生命周期成本</div>
-        </div>
+      <!-- Phase 25: 端到端流水线 + 生命周期成本 提升到工作台 -->
+      <div :class="['nav-item', { active: activeWfTab === 'pipeline' }]" @click="switchWfTab('pipeline')">
+        <span style="margin-right:6px">⚡</span> 端到端流水线
+      </div>
+      <div :class="['nav-item', { active: activeWfTab === 'lcc' }]" @click="switchWfTab('lcc')">
+        <span style="margin-right:6px">📈</span> 生命周期成本
       </div>
       <div v-if="showTour" class="tour-panel">
         <div v-if="lifecycleStage===0" style="padding:6px 8px">
@@ -570,19 +569,40 @@ margin-bottom: 0; margin-right: 4px;
           <span>{{ agent.name }}</span>
         </div>
       </div>
+      <!-- 个人功能 -->
       <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
         <div class="nav-section">{{ t('func_list') }}</div>
         <div :class="['nav-item', { active: showHistory }]" @click="toggleHistory" style="color:var(--text-dim)">
           <span style="margin-right:6px">📜</span> 历史记录
         </div>
+        <div :class="['nav-item', { active: showFeedback }]" @click="showFeedback=true" style="color:var(--text-dim)">
+          <span style="margin-right:6px">💬</span> 反馈建议
+        </div>
+      </div>
+      <!-- Phase 25: 系统管理中心（仅管理员可见） -->
+      <div v-if="isAdmin" style="margin-top:8px;border-top:1px solid var(--accent);padding-top:8px">
+        <div class="nav-section" style="color:var(--accent)">⚙️ 系统管理中心</div>
+        <div :class="['nav-item', { active: showAdmin && activeAdminTab==='overview' }]" @click="toggleAdminPanel('overview')" style="color:var(--text-dim)">
+          <span style="margin-right:6px">📊</span> 驾驶舱
+        </div>
+        <div :class="['nav-item', { active: showAdmin && activeAdminTab==='users' }]" @click="toggleAdminPanel('users')" style="color:var(--text-dim)">
+          <span style="margin-right:6px">👥</span> 用户管理
+        </div>
+        <div :class="['nav-item', { active: showAdmin && activeAdminTab==='tenants' }]" @click="toggleAdminPanel('tenants')" style="color:var(--text-dim)">
+          <span style="margin-right:6px">🏢</span> 租户管理
+        </div>
+        <div :class="['nav-item', { active: showAdmin && activeAdminTab==='models' }]" @click="toggleAdminPanel('models')" style="color:var(--text-dim)">
+          <span style="margin-right:6px">🤖</span> 模型配置
+        </div>
         <div :class="['nav-item', { active: showMonitor }]" @click="toggleMonitor" style="color:var(--text-dim)">
-          <span style="margin-right:6px">📊</span> 性能监控
+          <span style="margin-right:6px">📈</span> 性能监控
         </div>
         <div :class="['nav-item', { active: showAnalytics }]" @click="toggleAnalytics" style="color:var(--text-dim)">
-          <span style="margin-right:6px">📈</span> 行为分析
+          <span style="margin-right:6px">👁️</span> 行为分析
         </div>
-        <div v-if="isSuperAdmin" :class="['nav-item', { active: showAdmin }]" @click="toggleAdmin" style="color:var(--warning);font-weight:600;margin-top:4px">
-          <span style="margin-right:6px">⚙️</span> 管理后台
+        <div class="nav-item" @click="window.open('admin.html','_blank')" style="color:var(--warning);font-weight:600;margin-top:4px">
+          <span style="margin-right:6px">🔧</span> 完整管理台
+          <span style="font-size:8px;color:var(--text-dim);margin-left:auto">↗</span>
         </div>
       </div>
     </div>
@@ -774,7 +794,7 @@ margin-bottom: 0; margin-right: 4px;
             <div style="font-size:12px;font-weight:600;margin-bottom:4px">小时趋势</div>
             <div style="display:flex;align-items:flex-end;gap:2px;height:40px">
               <div v-for="(hour, i) in Object.keys(analyticsData.hourly_trend).slice(-12)" :key="hour" style="flex:1;text-align:center">
-                <div :style="{height: Math.max(2, (analyticsData.hourly_trend[hour] / Math.max(...Object.values(analyticsData.hourly_trend))) * 36) + 'px', background: 'var(--accent)', borderRadius: '2px 2px 0 0'}"></div>
+                <div :style="analyticsBarStyle(hour)"></div>
                 <div style="font-size:8px;color:var(--text-dim);margin-top:2px">{{ hour.slice(-2) }}</div>
               </div>
             </div>
@@ -798,7 +818,7 @@ margin-bottom: 0; margin-right: 4px;
       <!-- Admin Tab 切换 -->
       <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:8px">
         <div v-for="t in adminTabs" :key="t.id" @click="activeAdminTab=t.id"
-             :style="{padding:'6px 10px',fontSize:'12px',cursor:'pointer',borderBottom:activeAdminTab===t.id?'2px solid var(--accent)':'2px solid transparent',color:activeAdminTab===t.id?'var(--accent)':'var(--text-dim)',fontWeight:activeAdminTab===t.id?'600':'400'}">
+             :style="adminTabStyle(t.id)">
           {{ t.icon }} {{ t.name }}
         </div>
       </div>
@@ -833,7 +853,7 @@ margin-bottom: 0; margin-right: 4px;
           <div style="font-size:12px;font-weight:600;margin-bottom:6px">LLM 状态</div>
           <div v-for="(v,k) in adminStats.llm.models" :key="k" style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0">
             <span>{{ k }}</span>
-            <span :style="{color:v.status==='ok'?'var(--success)':'var(--danger)'}">{{ v.status }}</span>
+            <span :style="healthStatusStyle(v.status)">{{ v.status }}</span>
           </div>
         </div>
       </div>
@@ -978,14 +998,14 @@ margin-bottom: 0; margin-right: 4px;
           <textarea v-model="feedbackText" rows="4" placeholder="请描述您的问题或建议..." style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
           <div style="margin-top:8px">
             <span style="font-size:12px;color:var(--text-dim);margin-right:8px">{{ t('type_label') }}</span>
-            <span v-for="t in feedbackTypes" :key="t.id" @click="feedbackType=t.id" :style="{display:'inline-block',padding:'3px 10px',borderRadius:'12px',fontSize:'11px',cursor:'pointer',marginRight:'6px',background: feedbackType===t.id ? 'var(--accent)' : 'var(--agent-bubble)', color: feedbackType===t.id ? '#fff' : 'var(--text-dim)', border:'1px solid '+(feedbackType===t.id?'var(--accent)':'var(--border)')">{{t.icon}} {{t.name}}</span>
+            <span v-for="t in feedbackTypes" :key="t.id" @click="feedbackType=t.id" :style="feedbackTypeStyle(t.id)">{{t.icon}} {{t.name}}</span>
           </div>
           <div style="margin-top:8px">
             <span style="font-size:12px;color:var(--text-dim);margin-right:8px">{{ t('score_label') }}</span>
             <span v-for="n in 5" :key="n" @click="feedbackScore=n" style="cursor:pointer;font-size:16px;margin-right:2px">{{n <= feedbackScore ? '⭐' : '☆'}}</span>
           </div>
           <button class="wf-run-btn" :disabled="!feedbackText.trim()" style="margin-top:12px" @click="submitFeedback">{{ feedbackSubmitting ? '提交中...' : '提交反馈' }}</button>
-          <div v-if="feedbackResult" style="margin-top:8px;font-size:12px" :style="{color: feedbackResult.ok ? 'var(--success)' : 'var(--danger)'}">{{ feedbackResult.msg }}</div>
+          <div v-if="feedbackResult" style="margin-top:8px;font-size:12px" :style="feedbackResultStyle">{{ feedbackResult.msg }}</div>
         </div>
       </div>
     </div>
@@ -1028,7 +1048,7 @@ margin-bottom: 0; margin-right: 4px;
                 <div v-if="msg.data.optimizations && msg.data.optimizations.suggestions" class="result-section">
                   <div class="result-label">{{ t('optimize') }}</div>
                   <div v-for="(s, si) in msg.data.optimizations.suggestions.slice(0,3)" :key="si" style="font-size:12px;margin-bottom:3px">
-                    <span :style="'color:' + (s.priority==='high'?'var(--danger)':'var(--text)')">• [{{ s.type }}]</span> {{ s.recommendation }}
+                    <span :style="suggestionPriorityStyle(s.priority)">• [{{ s.type }}]</span> {{ s.recommendation }}
                   </div>
                 </div>
                 <div v-if="msg.data.analysis && msg.data.analysis.analysis" class="result-section">
@@ -1330,7 +1350,7 @@ margin-bottom: 0; margin-right: 4px;
         <div style="font-size:12px;font-weight:600;color:var(--text-bright);margin-bottom:6px">💰 造价汇总</div>
         <div v-for="(val,lab) in budgetResult.summary" :key="lab" style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0">
           <span style="color:var(--text-dim)">{{ lab }}</span>
-          <span :style="{color: lab==='total_cost'?'var(--accent)':'var(--text)', fontWeight: lab==='total_cost'?600:400}">{{ typeof val==='number'? val.toLocaleString('zh-CN')+' 元': val }}</span>
+          <span :style="budgetLabelStyle(lab)">{{ typeof val==='number'? val.toLocaleString('zh-CN')+' 元': val }}</span>
         </div>
       </div>
       <div v-if="budgetResult?.quantities?.length" style="font-size:12px;font-weight:600;color:var(--text-bright);margin-bottom:6px">📋 工程量清单</div>
@@ -1576,7 +1596,7 @@ createApp({
     // 存储到localStorage供后续使用
     try { localStorage.setItem('ema_token', authToken); } catch(e) {}
 
-    const API_BASE = window.location.protocol === 'https:' ? '' : 'http://127.0.0.1:6188';
+    const API_BASE = window.location.protocol === 'https:' ? '' : 'http://localhost:6188';
     const authHeaders = () => ({ 'Authorization': 'Bearer ' + authToken });
     const messages = ref([]);
     const input = ref('');
@@ -1620,6 +1640,8 @@ createApp({
     const planId = ref('free');
     const currentUser = ref(null);
     const isSuperAdmin = computed(() => currentUser.value?.role === 'super_admin' || currentUser.value?.role === 'admin');
+    const isAdmin = isSuperAdmin; // Phase 25: 语义更清晰的别名
+
 
     // 从localStorage恢复用户信息
     try { currentUser.value = JSON.parse(localStorage.getItem('ema_user_info') || 'null'); } catch(e) {}
@@ -2172,9 +2194,12 @@ createApp({
       { id: 'feedback', name: '反馈', icon: '💬' },
     ];
 
-    function toggleAdmin() {
-      showAdmin.value = !showAdmin.value;
-      if (showAdmin.value) {
+    function toggleAdminPanel(tab) {
+      if (showAdmin.value && activeAdminTab.value === tab) {
+        showAdmin.value = false;
+      } else {
+        showAdmin.value = true;
+        activeAdminTab.value = tab;
         showHistory.value = false;
         showMonitor.value = false;
         showAnalytics.value = false;
@@ -2297,7 +2322,6 @@ createApp({
     }
 
     // ═══ i18n ═══
-    const moreMenuOpen = ref(false);
     const savedLang = localStorage.getItem('ema_lang') || 'zh';
     const lang = ref(savedLang);
     const t = (key) => (I18N[lang.value] || I18N.zh)[key] || key;
@@ -2814,6 +2838,17 @@ createApp({
       { id:'other', name:'其他', icon:'📝' },
     ];
 
+    function feedbackTypeStyle(id) {
+      const active = feedbackType.value === id;
+      return {
+        display: 'inline-block', padding: '3px 10px', borderRadius: '12px',
+        fontSize: '11px', cursor: 'pointer', marginRight: '6px',
+        background: active ? 'var(--accent)' : 'var(--agent-bubble)',
+        color: active ? '#fff' : 'var(--text-dim)',
+        border: '1px solid ' + (active ? 'var(--accent)' : 'var(--border)')
+      };
+    }
+
     async function submitFeedback() {
       if (!feedbackText.value.trim()) return;
       feedbackSubmitting.value = true;
@@ -2991,13 +3026,114 @@ createApp({
       reviewResult, docResults,
       pipelineResult, pipelineRunning, pipelineProgress, pipelineSteps,
       docTypes, selectedDocTypes,
-      switchWfTab, onWfFileSelect, runReview, runDocuments, runPipeline,
+      switchWfTab, onWfFileSelect,
+      onWfDragEnter, onWfDragLeave, onWfDragOver, onWfDrop,
+      runReview, runDocuments, runBudget, runPipeline, runLCC,
+      onMultiFileSelect, onMultiDragEnter, onMultiDragLeave, onMultiDrop, runMultiReview,
       // Phase 11
       lang, t, toggleLang,
       themeMode, themeIcon, themeLabel, toggleTheme,
       // Phase 11 反馈
       showFeedback, feedbackText, feedbackType, feedbackScore,
       feedbackSubmitting, feedbackResult, feedbackTypes, submitFeedback,
+      feedbackTypeStyle,
+      // Phase 25: 系统管理中心
+      isAdmin, isSuperAdmin,
+      showAdmin, activeAdminTab, adminTabs, adminStats,
+      adminUsers, adminTenants, adminModels, adminFeedback, adminLoading,
+      toggleAdminPanel, loadAdminData,
+    };
+
+    // ── CSS变量辅助函数（放在return之后，避免引用未定义的ref）──
+    const cssAccent = '#3b82f6';
+    const cssDanger = '#ef4444';
+    const cssSuccess = '#10b981';
+    const cssTextDim = '#6b7280';
+    const cssText = '#e5e7eb';
+    const cssBorder = '#1f2937';
+    const cssAgentBubble = '#111827';
+
+    function analyticsBarStyle(hour) {
+      const vals = analyticsData.value.hourly_trend || {};
+      const max = Math.max(...Object.values(vals), 1);
+      const h = Math.max(2, (vals[hour] || 0) / max * 36);
+      return { height: h + 'px', background: cssAccent, borderRadius: '2px 2px 0 0' };
+    }
+
+    function adminTabStyle(id) {
+      const active = activeAdminTab.value === id;
+      return {
+        padding: '6px 10px', fontSize: '12px', cursor: 'pointer',
+        borderBottom: active ? '2px solid ' + cssAccent : '2px solid transparent',
+        color: active ? cssAccent : cssTextDim,
+        fontWeight: active ? 600 : 400
+      };
+    }
+
+    function healthStatusStyle(status) {
+      return { color: status === 'ok' ? cssSuccess : cssDanger };
+    }
+
+    function feedbackResultStyleFn() {
+      if (!feedbackResult.value) return {};
+      return { color: feedbackResult.value.ok ? cssSuccess : cssDanger };
+    }
+
+    function suggestionPriorityStyle(priority) {
+      return { color: priority === 'high' ? cssDanger : cssText };
+    }
+
+    function budgetLabelStyle(lab) {
+      const isTotal = lab === 'total_cost';
+      return { color: isTotal ? cssAccent : cssText, fontWeight: isTotal ? 600 : 400 };
+    }
+
+    return {
+      messages, input, loading, selectedFile, chatArea, inputBox,
+      agents, currentAgent, availableModels, selectedModel,
+      planId, planName, unreadCount, showPlans, showNotifs, plans, notifList,
+      showHistory, historySessions, historyLoading, historyQuery, activeHistorySession,
+      showMonitor, monitorData, monitorLoading, toggleMonitor, loadMonitor,
+      showAnalytics, analyticsData, analyticsLoading, toggleAnalytics, loadAnalytics, trackEvent,
+      formatSize, switchAgent, onFileSelect, autoGrow, send, onModelChange,
+      toggleHistory, loadHistory, searchHistory, viewHistorySession,
+      userRole, canAccessAgent, lockedAgents,
+      showTour, lifecycleStage, lcRunning, lcResult, lcName, lcSteps, lifecycles,
+      toggleTour, runLifecycle, lcNext, lcReset, lcFinish,
+      showOnboarding, onboardingStep, onboardSteps,
+      startOnboarding, nextOnboarding, prevOnboarding, skipOnboarding,
+      openSubscribe, openNotifications, doSubscribe, loadNotificationsList, markAllRead, readNotif, formatNotifTime,
+      logout,
+      // Phase 9-10
+      mobileSidebarOpen,
+      activeWfTab, wfFile, wfDocFile, wfPipeFile, wfRunning,
+      reviewResult, docResults,
+      pipelineResult, pipelineRunning, pipelineProgress, pipelineSteps,
+      docTypes, selectedDocTypes,
+      // 预算 & LCC
+      budgetResult, budgetReport, budgetCity, budgetProjectName,
+      lccResult,
+      // 多Agent
+      multiFiles, multiAgents, multiDragOver, multiRunning, multiProgress, multiResults,
+      // 工作流操作
+      switchWfTab, onWfFileSelect,
+      onWfDragEnter, onWfDragLeave, onWfDragOver, onWfDrop,
+      runReview, runDocuments, runBudget, runPipeline, runLCC,
+      onMultiFileSelect, onMultiDragEnter, onMultiDragLeave, onMultiDrop, runMultiReview,
+      // Phase 11
+      lang, t, toggleLang,
+      themeMode, themeIcon, themeLabel, toggleTheme,
+      // Phase 11 反馈
+      showFeedback, feedbackText, feedbackType, feedbackScore,
+      feedbackSubmitting, feedbackResult, feedbackTypes, submitFeedback,
+      feedbackTypeStyle,
+      // Phase 25: 系统管理中心
+      isAdmin, isSuperAdmin,
+      showAdmin, activeAdminTab, adminTabs, adminStats,
+      adminUsers, adminTenants, adminModels, adminFeedback, adminLoading,
+      toggleAdminPanel, loadAdminData,
+      analyticsBarStyle, adminTabStyle, healthStatusStyle,
+      feedbackResultStyle: feedbackResultStyleFn, suggestionPriorityStyle, budgetLabelStyle,
     };
   },
   directives: {
@@ -3017,13 +3153,11 @@ createApp({
 </script>
 <script>
   // PWA Service Worker 注册
-  /* SW disabled for debugging
-if ('serviceWorker' in navigator) {
+  if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
       .then(() => console.log('SW registered'))
       .catch(() => console.log('SW failed (non-critical)'));
   }
-*/
 </script>
 </body>
 </html>
