@@ -612,50 +612,130 @@ margin-bottom: 0; margin-right: 4px;
       </div>
     </div>
 
-    <!-- 性能监控面板 -->
-    <div class="history-panel" v-if="showMonitor" style="width:340px">
+    <!-- 性能监控面板 (Phase 24-A 增强版) -->
+    <div class="history-panel" v-if="showMonitor" style="width:380px">
       <div class="history-header">
         <span>📊 性能监控</span>
-        <span class="history-refresh" @click="loadMonitor" title="刷新">🔄</span>
-      </div>
-      <div v-if="monitorLoading" style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">{{ t('loading') }}</div>
-      <div v-else-if="monitorData" style="padding:8px">
-        <!-- 系统概览 -->
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">{{ monitorData.timestamp }}</div>
-        <div v-if="monitorData.system" style="margin-bottom:10px">
-          <div style="font-size:12px;font-weight:600;margin-bottom:4px">🖥️ 系统</div>
-          <div style="font-size:11px;color:var(--text-dim)">{{ monitorData.system.platform }} · Python {{ monitorData.system.python }}</div>
-        </div>
-        <!-- 模块状态 -->
-        <div v-if="monitorData.modules" style="margin-bottom:10px">
-          <div style="font-size:12px;font-weight:600;margin-bottom:4px">📦 模块</div>
-          <div v-for="(mod, name) in monitorData.modules" :key="name" style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">
-            <span>{{ mod.status }}</span>
-            <span style="flex:1;color:var(--text)">{{ name }}</span>
-            <span v-if="mod.load_ms" style="color:var(--text-dim)">{{ mod.load_ms }}ms</span>
-          </div>
-        </div>
-        <!-- LLM状态 -->
-        <div v-if="monitorData.llm && monitorData.llm.models" style="margin-bottom:10px">
-          <div style="font-size:12px;font-weight:600;margin-bottom:4px">🤖 LLM</div>
-          <div v-for="(model, name) in monitorData.llm.models" :key="name" style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">
-            <span>{{ model.status === 'healthy' ? '✅' : '⚠️' }}</span>
-            <span style="flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="name">{{ name }}</span>
-            <span v-if="model.error_rate" style="color:model.error_rate > 0.3 ? 'var(--danger)' : 'var(--text-dim)'">{{ (model.error_rate*100).toFixed(0) }}%</span>
-          </div>
-        </div>
-        <!-- 缓存 -->
-        <div v-if="monitorData.cache && monitorData.cache.status !== 'unavailable'" style="margin-bottom:10px">
-          <div style="font-size:12px;font-weight:600;margin-bottom:4px">⚡ 缓存</div>
-          <div style="font-size:11px;color:var(--text-dim)">{{ monitorData.cache.hits || 0 }} hits · {{ monitorData.cache.misses || 0 }} misses</div>
-        </div>
-        <!-- 数据 -->
-        <div v-if="monitorData.data" style="margin-bottom:10px">
-          <div style="font-size:12px;font-weight:600;margin-bottom:4px">💾 数据</div>
-          <div style="font-size:11px;color:var(--text-dim)">{{ monitorData.data.size_mb }}MB · {{ monitorData.data.files }} files</div>
+        <div style="display:flex;gap:4px;align-items:center">
+          <span v-if="autoRefresh" style="font-size:9px;color:var(--accent);margin-right:4px">⏱ 5s</span>
+          <span class="history-refresh" @click="refreshAll" title="刷新全部">🔄</span>
         </div>
       </div>
-      <div v-else style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">点击刷新加载数据</div>
+      <!-- Tab 切换 -->
+      <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:6px">
+        <div v-for="t in monitorTabs" :key="t.id" @click="activeMonitorTab=t.id"
+             :style="{padding:'6px 10px',fontSize:'11px',cursor:'pointer',borderBottom:activeMonitorTab===t.id?'2px solid var(--accent)':'2px solid transparent',color:activeMonitorTab===t.id?'var(--accent)':'var(--text-dim)',fontWeight:activeMonitorTab===t.id?700:400}">
+          {{ t.icon }} {{ t.name }}
+        </div>
+      </div>
+      <!-- Tab: 系统 -->
+      <div v-if="activeMonitorTab==='system'" style="padding:4px;max-height:420px;overflow-y:auto">
+        <div v-if="monitorLoading" style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">{{ t('loading') }}</div>
+        <div v-else-if="monitorData" style="padding:4px">
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">{{ monitorData.timestamp }}</div>
+          <div v-if="monitorData.system" style="margin-bottom:10px">
+            <div style="font-size:12px;font-weight:600;margin-bottom:4px">🖥️ 系统</div>
+            <div style="font-size:11px;color:var(--text-dim)">{{ monitorData.system.platform }} · Python {{ monitorData.system.python }}</div>
+          </div>
+          <div v-if="monitorData.modules" style="margin-bottom:10px">
+            <div style="font-size:12px;font-weight:600;margin-bottom:4px">📦 模块</div>
+            <div v-for="(mod, name) in monitorData.modules" :key="name" style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">
+              <span>{{ mod.status }}</span>
+              <span style="flex:1;color:var(--text)">{{ name }}</span>
+              <span v-if="mod.load_ms" style="color:var(--text-dim)">{{ mod.load_ms }}ms</span>
+            </div>
+          </div>
+          <div v-if="monitorData.llm && monitorData.llm.models" style="margin-bottom:10px">
+            <div style="font-size:12px;font-weight:600;margin-bottom:4px">🤖 LLM</div>
+            <div v-for="(model, name) in monitorData.llm.models" :key="name" style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">
+              <span>{{ model.status === 'healthy' ? '✅' : '⚠️' }}</span>
+              <span style="flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="name">{{ name }}</span>
+              <span v-if="model.error_rate" style="color:model.error_rate > 0.3 ? 'var(--danger)' : 'var(--text-dim)'">{{ (model.error_rate*100).toFixed(0) }}%</span>
+            </div>
+          </div>
+          <div v-if="monitorData.cache && monitorData.cache.status !== 'unavailable'" style="margin-bottom:10px">
+            <div style="font-size:12px;font-weight:600;margin-bottom:4px">⚡ 缓存</div>
+            <div style="font-size:11px;color:var(--text-dim)">{{ monitorData.cache.hits || 0 }} hits · {{ monitorData.cache.misses || 0 }} misses</div>
+          </div>
+          <div v-if="monitorData.data" style="margin-bottom:10px">
+            <div style="font-size:12px;font-weight:600;margin-bottom:4px">💾 数据</div>
+            <div style="font-size:11px;color:var(--text-dim)">{{ monitorData.data.size_mb }}MB · {{ monitorData.data.files }} files</div>
+          </div>
+        </div>
+        <div v-else style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">点击刷新加载数据</div>
+      </div>
+      <!-- Tab: 指标 -->
+      <div v-if="activeMonitorTab==='metrics'" style="padding:4px;max-height:420px;overflow-y:auto">
+        <div v-if="metricsLoading" style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">{{ t('loading') }}</div>
+        <div v-else-if="metricsData" style="padding:4px">
+          <!-- 概览卡片 -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+            <div style="padding:8px;background:var(--agent-bubble);border-radius:6px;text-align:center">
+              <div style="font-size:18px;font-weight:700;color:var(--text-bright)">{{ metricsData.requests_total || 0 }}</div>
+              <div style="font-size:10px;color:var(--text-dim)">请求总数</div>
+            </div>
+            <div style="padding:8px;background:var(--agent-bubble);border-radius:6px;text-align:center">
+              <div :style="{fontSize:'18px',fontWeight:700,color:(metricsData.errors_total||0)>0?'var(--danger)':'var(--green)'}">{{ metricsData.errors_total || 0 }}</div>
+              <div style="font-size:10px;color:var(--text-dim)">错误数</div>
+            </div>
+          </div>
+          <!-- 延迟 -->
+          <div style="margin-bottom:10px">
+            <div style="font-size:12px;font-weight:600;margin-bottom:4px">⏱️ 延迟</div>
+            <div style="display:flex;gap:8px;font-size:11px">
+              <span style="color:var(--text-dim)">Avg: <b style="color:var(--text)">{{ metricsData.avg_ms }}ms</b></span>
+              <span style="color:var(--text-dim)">Max: <b style="color:var(--text)">{{ metricsData.max_ms }}ms</b></span>
+              <span style="color:var(--text-dim)">P95: <b style="color:var(--text)">{{ metricsData.p95_ms }}ms</b></span>
+            </div>
+          </div>
+          <!-- 错误率进度条 -->
+          <div v-if="metricsData.requests_total > 0" style="margin-bottom:10px">
+            <div style="font-size:12px;font-weight:600;margin-bottom:4px">📉 错误率 {{ ((metricsData.errors_total/metricsData.requests_total)*100).toFixed(1) }}%</div>
+            <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+              <div :style="{height:'100%',width:((metricsData.errors_total/metricsData.requests_total)*100).toFixed(0)+'%',background:(metricsData.errors_total/metricsData.requests_total)>0.05?'var(--danger)':'var(--green)',borderRadius:'2px'}"></div>
+            </div>
+          </div>
+          <!-- 端点统计 -->
+          <div v-if="metricsData.endpoints && Object.keys(metricsData.endpoints).length" style="margin-bottom:6px">
+            <div style="font-size:12px;font-weight:600;margin-bottom:4px">🔗 端点</div>
+            <div v-for="(ep, name) in metricsData.endpoints" :key="name" style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid var(--border);font-size:10px">
+              <span style="flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px" :title="name">{{ name }}</span>
+              <span style="color:var(--text-dim);min-width:30px;text-align:right">{{ ep.count }}</span>
+              <span :style="{color:parseFloat(ep.error_rate)>5?'var(--danger)':'var(--text-dim)',minWidth:'32px',textAlign:'right'}">{{ ep.error_rate }}</span>
+              <span style="color:var(--text-dim);min-width:38px;text-align:right">{{ ep.avg_ms }}ms</span>
+            </div>
+          </div>
+        </div>
+        <div v-else style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">点击刷新加载数据</div>
+      </div>
+      <!-- Tab: 告警 -->
+      <div v-if="activeMonitorTab==='alerts'" style="padding:4px;max-height:420px;overflow-y:auto">
+        <div v-if="alertsLoading" style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">{{ t('loading') }}</div>
+        <div v-else-if="alertsData" style="padding:4px">
+          <!-- 摘要 -->
+          <div style="display:flex;gap:6px;margin-bottom:8px">
+            <div style="flex:1;padding:6px;border-radius:6px;text-align:center;font-size:11px"
+                 :style="{background: alertsData.has_critical?'rgba(239,68,68,.15)':'rgba(16,185,129,.1)'}">
+              <div :style="{fontSize:'20px',fontWeight:700,color:alertsData.has_critical?'var(--danger)':'var(--green)'}">{{ alertsData.alert_count || 0 }}</div>
+              <div style="font-size:10px;color:var(--text-dim)">告警</div>
+            </div>
+            <div v-if="alertsData.metrics_summary" style="flex:2;padding:6px;background:var(--agent-bubble);border-radius:6px;font-size:10px;color:var(--text-dim);line-height:1.6">
+              <div>请求: {{ alertsData.metrics_summary.requests_total }} · 错误率: {{ alertsData.metrics_summary.error_rate }}</div>
+              <div>延迟: Avg {{ alertsData.metrics_summary.avg_latency_ms }}ms · Max {{ alertsData.metrics_summary.max_latency_ms }}ms</div>
+            </div>
+          </div>
+          <!-- 告警列表 -->
+          <div v-if="alertsData.alerts && alertsData.alerts.length">
+            <div v-for="(a, i) in alertsData.alerts" :key="i" style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px">
+              <span style="font-size:12px">{{ a.level==='critical'?'🔴':a.level==='warning'?'🟡':'🔵' }}</span>
+              <span :style="{color:a.level==='critical'?'var(--danger)':a.level==='warning'?'var(--yellow)':'var(--accent)',fontWeight:600,fontSize:'9px',minWidth:'40px'}">{{ a.level.toUpperCase() }}</span>
+              <span style="flex:1;color:var(--text);font-size:10px">{{ a.msg }}</span>
+            </div>
+          </div>
+          <div v-else style="padding:16px;text-align:center;font-size:12px;color:var(--green)">✅ 一切正常，无告警</div>
+        </div>
+        <div v-else style="padding:16px;text-align:center;font-size:12px;color:var(--text-dim)">点击刷新加载数据</div>
+      </div>
     </div>
 
     <!-- 用户行为分析面板 -->
@@ -1970,26 +2050,75 @@ createApp({
       historyLoading.value = false;
     }
 
-    // ── 性能监控 ──
+    // ── 性能监控 (Phase 24-A 增强版) ──
     const showMonitor = ref(false);
     const monitorData = ref(null);
     const monitorLoading = ref(false);
+    const metricsData = ref(null);
+    const metricsLoading = ref(false);
+    const alertsData = ref(null);
+    const alertsLoading = ref(false);
+    const activeMonitorTab = ref('system');
+    const autoRefresh = ref(true);
+    let monitorTimer = null;
+    const monitorTabs = [
+      { id: 'system', name: '系统', icon: '🖥️' },
+      { id: 'metrics', name: '指标', icon: '📈' },
+      { id: 'alerts', name: '告警', icon: '🔔' },
+    ];
 
     function toggleMonitor() {
       showMonitor.value = !showMonitor.value;
-      if (showMonitor.value && !monitorData.value) loadMonitor();
+      if (showMonitor.value) { refreshAll(); startAutoRefresh(); }
+      else stopAutoRefresh();
     }
 
     async function loadMonitor() {
       monitorLoading.value = true;
       try {
         const resp = await fetch(`${API_BASE}/api/v1/system/performance`);
-        const data = await resp.json();
-        monitorData.value = data;
+        monitorData.value = await resp.json();
       } catch (e) {
         monitorData.value = { error: e.message, timestamp: new Date().toLocaleString() };
       }
       monitorLoading.value = false;
+    }
+
+    async function loadMetrics() {
+      metricsLoading.value = true;
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/system/metrics`);
+        metricsData.value = await resp.json();
+      } catch (e) {
+        metricsData.value = { error: e.message };
+      }
+      metricsLoading.value = false;
+    }
+
+    async function loadAlerts() {
+      alertsLoading.value = true;
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/system/alerts`);
+        alertsData.value = await resp.json();
+      } catch (e) {
+        alertsData.value = { error: e.message };
+      }
+      alertsLoading.value = false;
+    }
+
+    async function refreshAll() {
+      await Promise.all([loadMonitor(), loadMetrics(), loadAlerts()]);
+    }
+
+    function startAutoRefresh() {
+      stopAutoRefresh();
+      if (autoRefresh.value) {
+        monitorTimer = setInterval(refreshAll, 5000);
+      }
+    }
+
+    function stopAutoRefresh() {
+      if (monitorTimer) { clearInterval(monitorTimer); monitorTimer = null; }
     }
 
     // ── 用户行为埋点 ──
