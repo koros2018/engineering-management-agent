@@ -795,11 +795,6 @@ createApp({setup(){
     } catch(e) {
       analyticsSummary.value = { error: e.message };
     }
-  }
-  const modelFormLoading = ref(false); const modelFormError = ref('');
-  const modelToggling = ref(null);
-  const routeLoading = ref(false);
-  const showApiKey = ref(false);
 
   const pageTitle = computed(()=>{
     const m={'cockpit':'📊 运营驾驶舱','tenants':'👥 租户管理','alerts':'🚨 预警中心','reports':'📝 自动报告','advice':'💡 决策建议','logs':'📈 日志统计','models':'🤖 模型配置','monitor':'📈 性能监控','analytics':'👁️ 行为分析'};

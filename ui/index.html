@@ -2348,6 +2348,7 @@ createApp({
     const kbSearched = ref(false);
     const kbChecklist = ref(null);
     const kbMandatoryDomain = ref('');
+    const kbMandatory = ref([]);
     const kbConflicts = ref(null);
     const kbSpecDetail = ref(null);
     const kbTabs = [
@@ -2563,12 +2564,8 @@ createApp({
     const themeLabel = ref('切换主题');
     const activeWfTab = ref(null);
 
-    // 知识库搜索
-    const kbQuery = ref('');
+    // 知识库搜索（全平台共享变量）
     const kbCategory = ref('');
-    const kbResults = ref([]);
-    const kbSpecDetail = ref(null);
-    const kbMandatory = ref([]);
     const kbRecommend = ref([]);
     const kbCategories = ref([]);
     const kbQueried = ref(false);
@@ -3235,7 +3232,7 @@ createApp({
       showMonitor, monitorData, monitorLoading, toggleMonitor, loadMonitor,
       showAnalytics, analyticsData, analyticsLoading, toggleAnalytics, loadAnalytics, trackEvent,
       showKnowledge, activeKbTab, kbTabs, kbStats, kbQuery, kbResults, kbSearched,
-      kbChecklist, kbMandatoryDomain, kbConflicts, kbSpecDetail,
+      kbChecklist, kbMandatoryDomain, kbConflicts, kbSpecDetail, kbMandatory,
       toggleKnowledge, loadKbStats, searchKb, loadKbSpec, loadKbMandatory,
       formatSize, switchAgent, onFileSelect, autoGrow, send, onModelChange,
       toggleHistory, loadHistory, searchHistory, viewHistorySession,
@@ -3322,7 +3319,7 @@ createApp({
       showMonitor, monitorData, monitorLoading, toggleMonitor, loadMonitor,
       showAnalytics, analyticsData, analyticsLoading, toggleAnalytics, loadAnalytics, trackEvent,
       showKnowledge, activeKbTab, kbTabs, kbStats, kbQuery, kbResults, kbSearched,
-      kbChecklist, kbMandatoryDomain, kbConflicts, kbSpecDetail,
+      kbChecklist, kbMandatoryDomain, kbConflicts, kbSpecDetail, kbMandatory,
       toggleKnowledge, loadKbStats, searchKb, loadKbSpec, loadKbMandatory,
       formatSize, switchAgent, onFileSelect, autoGrow, send, onModelChange,
       toggleHistory, loadHistory, searchHistory, viewHistorySession,
