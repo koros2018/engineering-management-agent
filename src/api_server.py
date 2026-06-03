@@ -2181,11 +2181,22 @@ class ModelConfigSchema(BaseModel):
     description: str = ""
 
 
+def _mask_model(m: dict) -> dict:
+    """脱敏模型配置中的 api_key"""
+    m = dict(m)
+    key = m.get("api_key", "")
+    if key and len(key) > 8:
+        m["api_key"] = key[:4] + "****" + key[-4:]
+    elif key:
+        m["api_key"] = "****" if key else ""
+    return m
+
+
 @app.get("/api/v1/admin/models")
 async def list_models_api(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
     """列出所有模型配置（仅超级管理员）"""
     from model_registry import list_models, check_network
-    models = [asdict(m) for m in list_models()]
+    models = [_mask_model(asdict(m)) for m in list_models()]
     net = check_network()
     return {"success": True, "models": models, "network": net}
 
@@ -2230,10 +2241,10 @@ async def route_model_api(
     nvidia_stats = get_nvidia_stats()
     return {
         "success": True,
-        "model": asdict(chosen),
+        "model": _mask_model(asdict(chosen)),
         "reason": reason,
         "nvidia_rpm": nvidia_stats,
-        "available_models": [asdict(c) for c in list_models() if c.enabled],
+        "available_models": [_mask_model(asdict(c)) for c in list_models() if c.enabled],
     }
 
 
