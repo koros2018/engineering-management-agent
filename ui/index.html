@@ -3026,7 +3026,10 @@ createApp({
       reviewResult, docResults,
       pipelineResult, pipelineRunning, pipelineProgress, pipelineSteps,
       docTypes, selectedDocTypes,
-      switchWfTab, onWfFileSelect, runReview, runDocuments, runPipeline,
+      switchWfTab, onWfFileSelect,
+      onWfDragEnter, onWfDragLeave, onWfDragOver, onWfDrop,
+      runReview, runDocuments, runBudget, runPipeline, runLCC,
+      onMultiFileSelect, onMultiDragEnter, onMultiDragLeave, onMultiDrop, runMultiReview,
       // Phase 11
       lang, t, toggleLang,
       themeMode, themeIcon, themeLabel, toggleTheme,
@@ -3034,6 +3037,11 @@ createApp({
       showFeedback, feedbackText, feedbackType, feedbackScore,
       feedbackSubmitting, feedbackResult, feedbackTypes, submitFeedback,
       feedbackTypeStyle,
+      // Phase 25: 系统管理中心
+      isAdmin, isSuperAdmin,
+      showAdmin, activeAdminTab, adminTabs, adminStats,
+      adminUsers, adminTenants, adminModels, adminFeedback, adminLoading,
+      toggleAdminPanel, loadAdminData,
     };
 
     // ── CSS变量辅助函数（放在return之后，避免引用未定义的ref）──
@@ -3102,7 +3110,16 @@ createApp({
       reviewResult, docResults,
       pipelineResult, pipelineRunning, pipelineProgress, pipelineSteps,
       docTypes, selectedDocTypes,
-      switchWfTab, onWfFileSelect, runReview, runDocuments, runPipeline,
+      // 预算 & LCC
+      budgetResult, budgetReport, budgetCity, budgetProjectName,
+      lccResult,
+      // 多Agent
+      multiFiles, multiAgents, multiDragOver, multiRunning, multiProgress, multiResults,
+      // 工作流操作
+      switchWfTab, onWfFileSelect,
+      onWfDragEnter, onWfDragLeave, onWfDragOver, onWfDrop,
+      runReview, runDocuments, runBudget, runPipeline, runLCC,
+      onMultiFileSelect, onMultiDragEnter, onMultiDragLeave, onMultiDrop, runMultiReview,
       // Phase 11
       lang, t, toggleLang,
       themeMode, themeIcon, themeLabel, toggleTheme,
