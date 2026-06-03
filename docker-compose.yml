@@ -35,9 +35,19 @@ services:
     environment:
       - PYTHONPATH=/app/src
       - EMA_ENV=${EMA_ENV:-production}
+      - EMA_PORT=${EMA_PORT:-6188}
       - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
-      - NVIDIA_API_KEY=${NVIDIA_API_KEY:-}
+      - LONGCAT_API_KEY=${LONGCAT_API_KEY:-}
+      - KIMI_API_KEY=${KIMI_API_KEY:-}
       - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - WECHAT_APPID=${WECHAT_APPID:-}
+      - WECHAT_SECRET=${WECHAT_SECRET:-}
+      - WECHAT_MODE=${WECHAT_MODE:-mock}
+      - SMTP_HOST=${SMTP_HOST:-smtp.qq.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     deploy:
       resources:
         limits:
