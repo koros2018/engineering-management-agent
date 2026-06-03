@@ -161,6 +161,11 @@ tr:hover td{background:rgba(59,130,246,.05)}
       <div @click="tab='advice'" :class="['sb-item',{active:tab==='advice'}]">💡 决策建议</div>
       <div @click="tab='logs'" :class="['sb-item',{active:tab==='logs'}]">📈 日志统计</div>
       <div @click="tab='models'" :class="['sb-item',{active:tab==='models'}]">🤖 模型配置</div>
+      <div @click="tab='monitor'" :class="['sb-item',{active:tab==='monitor'}]">📈 性能监控</div>
+      <div @click="tab='analytics'" :class="['sb-item',{active:tab==='analytics'}]">👁️ 行为分析</div>
+      <div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border)">
+        <div @click="window.location.href='/'" class="sb-item" style="color:var(--accent);font-size:12px">← 返回主界面</div>
+      </div>
     </div>
   </div>
 
@@ -512,6 +517,125 @@ tr:hover td{background:rgba(59,130,246,.05)}
       </div>
     </template>
 
+    <!-- ════ 性能监控 ════ -->
+    <template v-if="tab==='monitor'">
+      <div class="grid">
+        <div class="card">
+          <div class="card-header"><span class="card-title">📊 实时指标</span></div>
+          <div v-if="monitorMetrics">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+              <div style="text-align:center;padding:10px;background:var(--card2);border-radius:8px">
+                <div class="card-value">{{ monitorMetrics.requests_total || 0 }}</div>
+                <div class="card-title">请求总数</div>
+              </div>
+              <div style="text-align:center;padding:10px;background:var(--card2);border-radius:8px">
+                <div class="card-value" :style="{color:(monitorMetrics.errors_total||0)>0?'var(--red)':'var(--green)'}">{{ monitorMetrics.errors_total || 0 }}</div>
+                <div class="card-title">错误数</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;font-size:12px;margin-bottom:8px">
+              <span>Avg: <b>{{ monitorMetrics.avg_ms }}ms</b></span>
+              <span>Max: <b>{{ monitorMetrics.max_ms }}ms</b></span>
+              <span>P95: <b>{{ monitorMetrics.p95_ms }}ms</b></span>
+            </div>
+            <div v-if="monitorMetrics.requests_total > 0" style="margin-bottom:8px">
+              <div style="font-size:11px;color:var(--dim);margin-bottom:3px">错误率 {{ ((monitorMetrics.errors_total/monitorMetrics.requests_total)*100).toFixed(1) }}%</div>
+              <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+                <div :style="{height:'100%',width:((monitorMetrics.errors_total/monitorMetrics.requests_total)*100).toFixed(0)+'%',background:(monitorMetrics.errors_total/monitorMetrics.requests_total)>0.05?'var(--red)':'var(--green)',borderRadius:'2px'}"></div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="empty-state"><span class="icon">📡</span>点击刷新加载指标</div>
+        </div>
+        <div class="card" style="grid-column:span 2">
+          <div class="card-header"><span class="card-title">🔗 端点统计</span></div>
+          <div v-if="monitorMetrics && monitorMetrics.endpoints" class="table-wrap">
+            <table>
+              <thead><tr><th>端点</th><th>请求数</th><th>平均延迟</th><th>错误率</th></tr></thead>
+              <tbody>
+                <tr v-for="(ep, name) in monitorMetrics.endpoints" :key="name">
+                  <td style="font-size:11px;font-family:monospace;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="name">{{ name }}</td>
+                  <td>{{ ep.count }}</td>
+                  <td>{{ ep.avg_ms }}ms</td>
+                  <td><span :style="{color:parseFloat(ep.error_rate)>5?'var(--red)':'var(--green)'}">{{ ep.error_rate }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div v-else class="empty-state"><span class="icon">📡</span>加载中...</div>
+        </div>
+      </div>
+
+      <div class="grid" v-if="monitorAlerts">
+        <div class="card alerts">
+          <div class="card-header">
+            <span class="card-title">🚨 实时告警 ({{ monitorAlerts.alert_count || 0 }})</span>
+            <span :class="['badge', monitorAlerts.has_critical?'offline':'live']">{{ monitorAlerts.has_critical?'有严重告警':'正常' }}</span>
+          </div>
+          <div v-if="monitorAlerts.alerts && monitorAlerts.alerts.length">
+            <div class="alert-row" v-for="(a,i) in monitorAlerts.alerts" :key="i">
+              <div :class="['alert-dot', a.level==='critical'?'danger':a.level==='warning'?'warning':'info']"></div>
+              <span style="font-size:10px;font-weight:700;min-width:50px" :style="{color:a.level==='critical'?'var(--red)':a.level==='warning'?'var(--yellow)':'var(--accent)'}">{{ a.level.toUpperCase() }}</span>
+              <span>{{ a.msg }}</span>
+            </div>
+          </div>
+          <div v-else class="empty-state">✅ 一切正常，无告警</div>
+        </div>
+      </div>
+    </template>
+
+    <!-- ════ 行为分析 ════ -->
+    <template v-if="tab==='analytics'">
+      <div class="grid">
+        <div class="card">
+          <div class="card-header"><span class="card-title">📈 总览</span></div>
+          <div v-if="analyticsSummary">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+              <div style="text-align:center;padding:10px;background:var(--card2);border-radius:8px">
+                <div class="card-value">{{ analyticsSummary.total_events || 0 }}</div>
+                <div class="card-title">总事件</div>
+              </div>
+              <div style="text-align:center;padding:10px;background:var(--card2);border-radius:8px">
+                <div class="card-value">{{ analyticsSummary.unique_users || 0 }}</div>
+                <div class="card-title">用户数</div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="empty-state"><span class="icon">📡</span>点击刷新加载数据</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">🎯 事件分布</span></div>
+          <div v-if="analyticsSummary && analyticsSummary.event_types">
+            <div v-for="(count, name) in analyticsSummary.event_types" :key="name" style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+              <span>{{ name }}</span>
+              <span style="color:var(--accent);font-weight:700">{{ count }}</span>
+            </div>
+          </div>
+          <div v-else class="empty-state"><span class="icon">📡</span>—</div>
+        </div>
+      </div>
+      <div class="grid" v-if="analyticsSummary">
+        <div class="card alerts">
+          <div class="card-header"><span class="card-title">👤 活跃用户 TOP 10</span></div>
+          <div v-if="analyticsSummary.top_users">
+            <div v-for="(count, name) in analyticsSummary.top_users" :key="name" class="alert-row" style="justify-content:space-between">
+              <span style="font-size:12px">{{ name }}</span>
+              <span style="color:var(--accent);font-weight:600">{{ count }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="card alerts">
+          <div class="card-header"><span class="card-title">📂 分类分布</span></div>
+          <div v-if="analyticsSummary.categories">
+            <div v-for="(count, name) in analyticsSummary.categories" :key="name" class="alert-row" style="justify-content:space-between">
+              <span style="font-size:12px">{{ name }}</span>
+              <span style="color:var(--text-dim)">{{ count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
     <!-- 全局刷新按钮 -->
     <button class="refresh" @click="refreshAll" title="刷新全部数据">🔄</button>
   </div>
@@ -585,7 +709,7 @@ tr:hover td{background:rgba(59,130,246,.05)}
 </div>
 </div>
 <script>
-const {createApp, ref, computed, onMounted} = Vue;
+const {createApp, ref, computed, onMounted, watch} = Vue;
 createApp({setup(){
   // Auth
   let token = new URLSearchParams(window.location.search).get('token');
@@ -642,12 +766,43 @@ createApp({setup(){
   const showModelForm = ref(false); const editingModel = ref(null);
   const modelForm = ref({id:'',name:'',provider:'ollama',base_url:'http://127.0.0.1:11434',api_key:'',model_name:'',description:''});
   const modelFormLoading = ref(false); const modelFormError = ref('');
+  const modelToggling = ref(null); const routeLoading = ref(false);
+  const showApiKey = ref(false);
+
+  // Phase 25: 性能监控 & 行为分析
+  const monitorMetrics = ref(null);
+  const monitorAlerts = ref(null);
+  const analyticsSummary = ref(null);
+
+  async function loadMonitor() {
+    try {
+      const [mRes, aRes] = await Promise.all([
+        fetch(`${API}/api/v1/system/metrics`),
+        fetch(`${API}/api/v1/system/alerts`),
+      ]);
+      monitorMetrics.value = await mRes.json();
+      monitorAlerts.value = await aRes.json();
+    } catch(e) {
+      monitorMetrics.value = { error: e.message };
+    }
+  }
+
+  async function loadAnalytics() {
+    try {
+      const resp = await fetch(`${API}/api/v1/analytics/summary?days=30`);
+      const data = await resp.json();
+      analyticsSummary.value = data.stats || {};
+    } catch(e) {
+      analyticsSummary.value = { error: e.message };
+    }
+  }
+  const modelFormLoading = ref(false); const modelFormError = ref('');
   const modelToggling = ref(null);
   const routeLoading = ref(false);
   const showApiKey = ref(false);
 
   const pageTitle = computed(()=>{
-    const m={'cockpit':'📊 运营驾驶舱','tenants':'👥 租户管理','alerts':'🚨 预警中心','reports':'📝 自动报告','advice':'💡 决策建议','logs':'📈 日志统计','models':'🤖 模型配置'};
+    const m={'cockpit':'📊 运营驾驶舱','tenants':'👥 租户管理','alerts':'🚨 预警中心','reports':'📝 自动报告','advice':'💡 决策建议','logs':'📈 日志统计','models':'🤖 模型配置','monitor':'📈 性能监控','analytics':'👁️ 行为分析'};
     return m[tab.value]||'管家后台';
   });
   const gradeLabel = computed(()=>{
@@ -911,10 +1066,18 @@ createApp({setup(){
     if(tab.value==='advice')await loadAdvice();
     if(tab.value==='logs'){await loadLogs();await checkNetwork();}
     if(tab.value==='models'){await loadModels();await loadRoute();}
+    if(tab.value==='monitor')await loadMonitor();
+    if(tab.value==='analytics')await loadAnalytics();
     showToast('数据已刷新','success');
   }
 
   onMounted(async()=>{ await loadCockpit(); });
+
+  // Tab切换自动加载
+  watch(tab, (newTab) => {
+    if (newTab === 'monitor' && !monitorMetrics.value) loadMonitor();
+    if (newTab === 'analytics' && !analyticsSummary.value) loadAnalytics();
+  });
 
   function logout(){try{localStorage.removeItem('ema_token');}catch(e){}window.location.href='/login.html';}
 
@@ -926,9 +1089,11 @@ createApp({setup(){
     tenantsLoading,alertsLoading,reportLoading,
     tenantModal,showTenantModal,saveTenant,deleteTenant,
     loadTenants,loadAlerts,loadAdvice,loadLogs,loadModels,loadRoute,checkNetwork,
+    loadMonitor,loadAnalytics,
     openAddModel,openEditModel,closeModelForm,saveModel,deleteModel,toggleModel,
     toast,
     planName,formatDate,
+    monitorMetrics,monitorAlerts,analyticsSummary,
   };
 }}).mount('#app');
 </script></body></html>
