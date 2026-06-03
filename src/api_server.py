@@ -3098,6 +3098,24 @@ async def knowledge_mandatory(code: str = ""):
     return {"success": True, "code": code, "total": len(reqs), "requirements": reqs}
 
 
+@app.get("/api/v1/knowledge/conflicts", summary="标准冲突检测")
+async def knowledge_conflicts():
+    """检测标准库中的冲突（版本替代/上位法/特殊法）"""
+    from tools.specs_adapter import get_specs_adapter
+    adapter = get_specs_adapter()
+    report = adapter.get_conflict_report()
+    return {"success": True, **report} if report else {"success": False, "error": "冲突检测不可用"}
+
+
+@app.get("/api/v1/knowledge/checklist", summary="审查检查清单")
+async def knowledge_checklist(drawing_type: str = "建筑"):
+    """根据图纸类型生成强制性条文审查清单"""
+    from tools.specs_adapter import get_specs_adapter
+    adapter = get_specs_adapter()
+    clauses = adapter.get_review_checklist(drawing_type)
+    return {"success": True, "drawing_type": drawing_type, "total": len(clauses), "checklist": clauses}
+
+
 # ═══════════════════════════════════════════════════════════════
 # 成本预算 API
 # ═══════════════════════════════════════════════════════════════
