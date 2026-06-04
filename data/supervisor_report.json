@@ -1,24 +1,24 @@
 {
-  "timestamp": "2026-06-02 10:29:45",
+  "timestamp": "2026-06-04 09:23:53",
   "services": {
     "api_6188": {
       "status": "ok",
-      "ms": 2.0,
+      "ms": 3.0,
       "error": null
     },
     "ui_6189": {
       "status": "ok",
-      "ms": 5.0,
+      "ms": 6.0,
       "error": null
     },
     "ollama_11434": {
       "status": "ok",
-      "ms": 1.0,
+      "ms": 2.0,
       "error": null
     },
     "nvidia_api": {
       "status": "ok",
-      "ms": 1933.0
+      "ms": 1955.0
     }
   },
   "llm": {
@@ -31,7 +31,7 @@
     },
     "openclaw_gw": {
       "status": "ok",
-      "ms": 3.0
+      "ms": 4.0
     }
   },
   "sessions": {
@@ -42,9 +42,9 @@
     "ctx_alerts": []
   },
   "project": {
-    "last_commit": "1b0099b fix(ui): 修复login.html中acce…ken截断导致的JS语法错误",
+    "last_commit": "3c29d2a fix(admin): 修复 setup() 中间 return {} 导致括号错乱 SyntaxError",
     "idle_min": 0,
-    "uncommitted_files": 6,
+    "uncommitted_files": 10,
     "needs_push": true
   },
   "actions": [
