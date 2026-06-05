@@ -279,9 +279,21 @@ class SafetyComplianceAgent(BaseAgent):
             }
 
     async def _chat_response(self, params: Dict, context: Dict) -> Dict:
+        """安全合规对话 - LLM驱动"""
+        from agent.agent_llm import call_agent_llm, build_system_prompt
+        user_msg = params.get('message', '')
+        ctx = context.get('analysis_result', '') if context else ''
+        system_prompt = build_system_prompt('safety_compliance')
+        response, model = await call_agent_llm(
+            system_prompt=system_prompt,
+            user_message=user_msg,
+            context=ctx,
+            timeout=30,
+        )
         return {
-            'response': '安全与合规中心：请问您需要什么帮助？\n\n- 通用审图（15条国标规则）\n- 消防合规专项审查\n- 结构安全专项审查\n- 法规合规性审核\n\n请上传图纸文件（DWG/DXF/PDF）',
-            'confidence': 0.8,
+            'response': response,
+            'model': model,
+            'confidence': 0.9 if model != 'none' else 0.5,
         }
 
     def get_supported_tasks(self) -> list:
@@ -541,9 +553,21 @@ class EngineeringDeliveryAgent(BaseAgent):
             }
 
     async def _delivery_response(self, params: Dict, context: Dict) -> Dict:
+        """工程交付对话 - LLM驱动"""
+        from agent.agent_llm import call_agent_llm, build_system_prompt
+        user_msg = params.get('message', '')
+        ctx = context.get('analysis_result', '') if context else ''
+        system_prompt = build_system_prompt('engineering_delivery')
+        response, model = await call_agent_llm(
+            system_prompt=system_prompt,
+            user_message=user_msg,
+            context=ctx,
+            timeout=30,
+        )
         return {
-            'response': '工程交付中心：请问您需要什么帮助？\n\n- SOP（标准操作程序）\n- MOP（维护操作程序）\n- EOP（紧急操作程序）\n- LCC（生命周期成本）\n- 竣工文档（5类）\n\n请提供项目名称和图纸类型',
-            'confidence': 0.8,
+            'response': response,
+            'model': model,
+            'confidence': 0.9 if model != 'none' else 0.5,
         }
 
     def get_supported_tasks(self) -> list:
@@ -755,9 +779,21 @@ class CostBenefitAgent(BaseAgent):
         }
 
     async def _cost_response(self, params: Dict, context: Dict) -> Dict:
+        """成本效益对话 - LLM驱动"""
+        from agent.agent_llm import call_agent_llm, build_system_prompt
+        user_msg = params.get('message', '')
+        ctx = context.get('analysis_result', '') if context else ''
+        system_prompt = build_system_prompt('cost_benefit')
+        response, model = await call_agent_llm(
+            system_prompt=system_prompt,
+            user_message=user_msg,
+            context=ctx,
+            timeout=30,
+        )
         return {
-            'response': '成本效益中心：请问您需要什么帮助？\n\n- 从图纸生成工程预算\n- 提取工程量清单\n- 成本对比分析\n- 变更签证管理\n\n请提供项目信息或上传图纸进行分析',
-            'confidence': 0.8,
+            'response': response,
+            'model': model,
+            'confidence': 0.9 if model != 'none' else 0.5,
         }
 
     def get_supported_tasks(self) -> list:
@@ -800,40 +836,22 @@ class MarketSalesAgent(BaseAgent):
         return [{"step": 1, "tool": "business_response", "expected": "商务响应"}]
 
     async def _business_response(self, params: Dict, context: Dict) -> Dict:
-        """商务响应 - 市场分析/需求挖掘/方案制定"""
+        """商务响应 - LLM驱动的市场分析/需求挖掘/方案制定"""
+        from agent.agent_llm import call_agent_llm, build_system_prompt
         user_msg = params.get('message', '')
-        project_info = context.get('project_info', {}) if context else {}
-        
-        # 根据用户输入判断意图
-        intent_keywords = {
-            '方案': ['方案', '建议', '怎么做', '如何'],
-            '投标': ['投标', '招标', '标书', '竞标'],
-            '报价': ['价格', '报价', '收费', '多少钱', '费用'],
-            '分析': ['分析', '市场', '需求', '客户'],
-        }
-        
-        detected_intent = 'general'
-        for intent, keywords in intent_keywords.items():
-            if any(k in user_msg for k in keywords):
-                detected_intent = intent
-                break
-        
-        # 根据项目规模给建议
-        scale_hint = ''
-        if project_info:
-            area = project_info.get('estimated_area', project_info.get('area', 0))
-            if area > 10000:
-                scale_hint = '（大型项目：建议企业版或私有部署）'
-            elif area > 1000:
-                scale_hint = '（中型项目：建议专业版）'
-            else:
-                scale_hint = '（小型项目：体验版即可）'
-        
+        ctx = context.get('analysis_result', '') if context else ''
+        system_prompt = build_system_prompt('market_sales')
+        response, model = await call_agent_llm(
+            system_prompt=system_prompt,
+            user_message=user_msg,
+            context=ctx,
+            timeout=30,
+        )
         return {
-            'response': f'市场与销售中心：收到您的需求\n\n我可以帮您：\n- 分析客户需求 → 制定针对性方案\n- 辅助投标文件 → 提高中标率\n- 制定报价策略 → 合理定价{safe_get(project_info, "scale_hint", scale_hint)}\n\n💡 提示：提供项目名称/规模/类型，可以生成更精准的商务方案。',
-            'detected_intent': detected_intent,
+            'response': response,
+            'model': model,
             'suggestions': ['生成投标文件', '制定报价方案', '分析市场需求'],
-            'confidence': 0.85,
+            'confidence': 0.9 if model != 'none' else 0.5,
         }
 
     async def _tender_doc(self, params: Dict, context: Dict) -> Dict:
@@ -1144,9 +1162,19 @@ class CustomerServiceAgent(BaseAgent):
         }
 
     async def _cs_response(self, params: Dict, context: Dict) -> Dict:
+        """客服对话 - LLM驱动"""
+        from agent.agent_llm import call_agent_llm, build_system_prompt
+        user_msg = params.get('message', '')
+        system_prompt = build_system_prompt('customer_service')
+        response, model = await call_agent_llm(
+            system_prompt=system_prompt,
+            user_message=user_msg,
+            timeout=30,
+        )
         return {
-            'response': '客户服务中心：请问您需要什么帮助？\n\n我可以帮您：\n- 解答常见问题\n- 生成培训材料\n- 分析客户反馈\n- 制定回访计划',
-            'confidence': 0.8,
+            'response': response,
+            'model': model,
+            'confidence': 0.9 if model != 'none' else 0.5,
         }
 
     def get_supported_tasks(self) -> list:

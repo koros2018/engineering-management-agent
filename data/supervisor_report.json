@@ -1,24 +1,24 @@
 {
-  "timestamp": "2026-06-04 09:23:53",
+  "timestamp": "2026-06-05 10:12:49",
   "services": {
     "api_6188": {
       "status": "ok",
-      "ms": 3.0,
+      "ms": 34.0,
       "error": null
     },
     "ui_6189": {
       "status": "ok",
-      "ms": 6.0,
+      "ms": 7.0,
       "error": null
     },
     "ollama_11434": {
-      "status": "ok",
-      "ms": 2.0,
-      "error": null
+      "status": "down",
+      "ms": 0,
+      "error": "<urlopen error [Errno 111] Connection refused>"
     },
     "nvidia_api": {
       "status": "ok",
-      "ms": 1955.0
+      "ms": 1151.0
     }
   },
   "llm": {
@@ -26,12 +26,12 @@
       "status": "no_key"
     },
     "ollama": {
-      "status": "timeout",
-      "threshold": 10
+      "status": "error",
+      "error": "<urlopen error [Errno 111] Connection refused>"
     },
     "openclaw_gw": {
       "status": "ok",
-      "ms": 4.0
+      "ms": 29.0
     }
   },
   "sessions": {
@@ -42,13 +42,12 @@
     "ctx_alerts": []
   },
   "project": {
-    "last_commit": "3c29d2a fix(admin): 修复 setup() 中间 return {} 导致括号错乱 SyntaxError",
+    "last_commit": "680a773 sync: 同步所有本地修改 (2026-06-04)",
     "idle_min": 0,
-    "uncommitted_files": 10,
+    "uncommitted_files": 7,
     "needs_push": true
   },
   "actions": [
-    "llm_timeout:ollama",
     "uncommitted_files"
   ]
 }

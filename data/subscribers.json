@@ -23,8 +23,8 @@
     "tenant_id": "t-008",
     "plan_id": "pro",
     "plan_name": "专业版",
-    "started_at": "2026-06-03T16:01:34.307788",
-    "expires_at": "2026-07-03T16:01:34.307788",
+    "started_at": "2026-06-05T10:14:20.646076",
+    "expires_at": "2026-07-05T10:14:20.646076",
     "auto_renew": true,
     "status": "active",
     "payment_history": []
@@ -33,8 +33,8 @@
     "tenant_id": "t-pay-001",
     "plan_id": "pro",
     "plan_name": "专业版",
-    "started_at": "2026-06-03T16:01:34.348605",
-    "expires_at": "2026-07-03T16:01:34.348605",
+    "started_at": "2026-06-05T10:14:20.700018",
+    "expires_at": "2026-07-05T10:14:20.700018",
     "auto_renew": true,
     "status": "active",
     "payment_history": []
@@ -43,8 +43,8 @@
     "tenant_id": "t-pay-002",
     "plan_id": "pro",
     "plan_name": "专业版",
-    "started_at": "2026-06-03T16:01:34.367992",
-    "expires_at": "2026-07-03T16:01:34.367992",
+    "started_at": "2026-06-05T10:14:20.721230",
+    "expires_at": "2026-07-05T10:14:20.721230",
     "auto_renew": true,
     "status": "active",
     "payment_history": []
@@ -53,8 +53,8 @@
     "tenant_id": "t-pay-003",
     "plan_id": "pro",
     "plan_name": "专业版",
-    "started_at": "2026-06-03T16:01:34.390065",
-    "expires_at": "2026-07-03T16:01:34.390065",
+    "started_at": "2026-06-05T10:14:20.745260",
+    "expires_at": "2026-07-05T10:14:20.745260",
     "auto_renew": true,
     "status": "active",
     "payment_history": []

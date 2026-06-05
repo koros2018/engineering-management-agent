@@ -379,9 +379,11 @@ def restart_ui():
     log.info("尝试重启 UI 服务...")
     run_cmd("pkill -f 'http.server.*6189'", timeout=5)
     time.sleep(1)
+    # 用自定义路由脚本（/ui/* → ui/目录，/ → ui/index.html）
+    run_cmd("pkill -f 'ema_ui_serve'", timeout=3)
     run_cmd(
-        f"cd {PROJECT_DIR} && nohup python3 -m http.server {UI_PORT} "
-        f"--directory ui > /tmp/ema_ui.log 2>&1 &",
+        f"nohup python3 {PROJECT_DIR}/scripts/ema_ui_serve.py "
+        f"> /tmp/ema_ui.log 2>&1 &",
         timeout=5
     )
     time.sleep(3)
