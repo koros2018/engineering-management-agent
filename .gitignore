@@ -27,6 +27,14 @@ ui-dist/
 certs/
 *.env.local
 dump.rdbdata/chromadb/
+data/admin_passwords.json
+data/supervisor_alert.txt
+data/supervisor_report.json
+data/wechat_sessions.json
+ui/admin_test.html
+ui/vue_test.html
+ui/vue_test2.html
+ui/vue3_test.html
 data/chromadb/
 data/users.json
 data/tenants.json

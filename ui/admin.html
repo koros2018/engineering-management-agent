@@ -709,8 +709,7 @@ tr:hover td{background:rgba(59,130,246,.05)}
 </div>
 </div>
 <script>
-const {createApp, ref, computed, onMounted, watch} = Vue;
-createApp({setup(){
+const app = Vue.createApp({setup(){
   // Auth
   let token = new URLSearchParams(window.location.search).get('token');
   if (!token) { try { token = localStorage.getItem('ema_token'); } catch(e) {} }
@@ -722,18 +721,18 @@ createApp({setup(){
   const API = window.location.protocol === 'https:' ? '' : 'http://localhost:6188';
 
   // Toast 系统
-  const toast = ref({show:false,msg:'',type:'info',timer:null});
+  const toast = Vue.ref({show:false,msg:'',type:'info',timer:null});
   function showToast(msg, type='info', duration=3500){
     if(toast.value.timer) clearTimeout(toast.value.timer);
     toast.value = {show:true, msg, type, timer:setTimeout(()=>{toast.value.show=false},duration)};
   }
 
   // Admin gate
-  const adminVerified = ref(false);
-  const showAdminGate = ref(true);
-  const adminPwInput = ref('');
-  const adminPwError = ref('');
-  const showAdminPw = ref(false);
+  const adminVerified = Vue.ref(false);
+  const showAdminGate = Vue.ref(true);
+  const adminPwInput = Vue.ref('');
+  const adminPwError = Vue.ref('');
+  const showAdminPw = Vue.ref(false);
 
   async function verifyAdmin(){
     try{
@@ -749,29 +748,29 @@ createApp({setup(){
     }catch(e){ adminPwError.value='验证失败，请重试'; }
   }
 
-  const tab = ref('cockpit');
-  const cockpit = ref({health_score:0,health_grade:'B',alerts:[],metrics:{revenue:{},projects:{},agents:{}}});
-  const alerts = ref([]); const alertsLoading = ref(false);
-  const tenants = ref([]); const tenantsLoading = ref(false);
-  const tenantModal = ref({show:false,edit:false,id:'',name:'',plan:'free',status:'active'});
-  const report = ref({sections:[]}); const reportLoading = ref(false);
-  const suggestions = ref([]); const insights = ref([]);
-  const logStats = ref({}); const userActivity = ref({});
-  const netStatus = ref({ollama_com:false,nvidia_api:false});
-  const netLoading = ref(false);
+  const tab = Vue.ref('cockpit');
+  const cockpit = Vue.ref({health_score:0,health_grade:'B',alerts:[],metrics:{revenue:{},projects:{},agents:{}}});
+  const alerts = Vue.ref([]); const alertsLoading = Vue.ref(false);
+  const tenants = Vue.ref([]); const tenantsLoading = Vue.ref(false);
+  const tenantModal = Vue.ref({show:false,edit:false,id:'',name:'',plan:'free',status:'active'});
+  const report = Vue.ref({sections:[]}); const reportLoading = Vue.ref(false);
+  const suggestions = Vue.ref([]); const insights = Vue.ref([]);
+  const logStats = Vue.ref({}); const userActivity = Vue.ref({});
+  const netStatus = Vue.ref({ollama_com:false,nvidia_api:false});
+  const netLoading = Vue.ref(false);
 
   // 模型相关
-  const modelList = ref([]); const routeResult = ref(null);
-  const showModelForm = ref(false); const editingModel = ref(null);
-  const modelForm = ref({id:'',name:'',provider:'ollama',base_url:'http://127.0.0.1:11434',api_key:'',model_name:'',description:''});
-  const modelFormLoading = ref(false); const modelFormError = ref('');
-  const modelToggling = ref(null); const routeLoading = ref(false);
-  const showApiKey = ref(false);
+  const modelList = Vue.ref([]); const routeResult = Vue.ref(null);
+  const showModelForm = Vue.ref(false); const editingModel = Vue.ref(null);
+  const modelForm = Vue.ref({id:'',name:'',provider:'ollama',base_url:'http://127.0.0.1:11434',api_key:'',model_name:'',description:''});
+  const modelFormLoading = Vue.ref(false); const modelFormError = Vue.ref('');
+  const modelToggling = Vue.ref(null); const routeLoading = Vue.ref(false);
+  const showApiKey = Vue.ref(false);
 
   // Phase 25: 性能监控 & 行为分析
-  const monitorMetrics = ref(null);
-  const monitorAlerts = ref(null);
-  const analyticsSummary = ref(null);
+  const monitorMetrics = Vue.ref(null);
+  const monitorAlerts = Vue.ref(null);
+  const analyticsSummary = Vue.ref(null);
 
   async function loadMonitor() {
     try {
@@ -794,12 +793,13 @@ createApp({setup(){
     } catch(e) {
       analyticsSummary.value = { error: e.message };
     }
+  }
 
-  const pageTitle = computed(()=>{
+  const pageTitle = Vue.computed(()=>{
     const m={'cockpit':'📊 运营驾驶舱','tenants':'👥 租户管理','alerts':'🚨 预警中心','reports':'📝 自动报告','advice':'💡 决策建议','logs':'📈 日志统计','models':'🤖 模型配置','monitor':'📈 性能监控','analytics':'👁️ 行为分析'};
     return m[tab.value]||'管家后台';
   });
-  const gradeLabel = computed(()=>{
+  const gradeLabel = Vue.computed(()=>{
     const g=cockpit.value.health_grade||'B';
     const m={A:'卓越 - 一切正常',B:'健康 - 有小幅改善空间',C:'关注 - 需要检查',D:'警告 - 立即处理'};
     return m[g]||'';
@@ -1065,10 +1065,10 @@ createApp({setup(){
     showToast('数据已刷新','success');
   }
 
-  onMounted(async()=>{ await loadCockpit(); });
+  Vue.onMounted(async()=>{ await loadCockpit(); });
 
   // Tab切换自动加载
-  watch(tab, (newTab) => {
+  Vue.watch(tab, (newTab) => {
     if (newTab === 'monitor' && !monitorMetrics.value) loadMonitor();
     if (newTab === 'analytics' && !analyticsSummary.value) loadAnalytics();
   });
@@ -1092,5 +1092,6 @@ createApp({setup(){
 }
 }
 }
-}).mount('#app');
+)
+app.mount('#app');
 </script></body></html>
