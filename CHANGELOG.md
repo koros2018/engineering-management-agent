@@ -1,5 +1,20 @@
 # Changelog
 
+## v3.4.0 (2026-06-05) — Phase 21: Agent LLM接入
+
+### 核心功能
+- **agent_llm.py**（327行）— 统一LLM调用模块
+  - Ollama本地模型 + LongCat/Kimi云端fallback
+  - 6个Agent角色化system prompt（tech_rd/safety/engineering/cost/market/service）
+  - 异步+同步双版本，超时保护+自动降级
+- **sub_agents/__init__.py** — 5个Agent对话方法全部LLM驱动
+- **ema_ui_serve.py** — 独立UI静态文件服务
+
+### 测试
+- 200/200 passed
+
+---
+
 ## v2.7.0 (2026-05-30) — Phase 16: 实战测试+性能调优+发布准备
 
 ### 测试修复（162/162 全部通过）
