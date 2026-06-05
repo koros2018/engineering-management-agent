@@ -714,7 +714,7 @@ createApp({setup(){
   // Auth
   let token = new URLSearchParams(window.location.search).get('token');
   if (!token) { try { token = localStorage.getItem('ema_token'); } catch(e) {} }
-  if (!token) { window.location.href = '/login.html'; }
+  if (!token) { window.location.href = '/login.html'; return {}; }
   else {
   try { localStorage.setItem('ema_token', token); } catch(e) {}
 
@@ -1089,7 +1089,8 @@ createApp({setup(){
     planName,formatDate,
     monitorMetrics,monitorAlerts,analyticsSummary,
   };
-} // end else(token)
-} // end setup()
+}
+}
+}
 }).mount('#app');
 </script></body></html>
