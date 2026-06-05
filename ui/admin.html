@@ -714,8 +714,8 @@ createApp({setup(){
   // Auth
   let token = new URLSearchParams(window.location.search).get('token');
   if (!token) { try { token = localStorage.getItem('ema_token'); } catch(e) {} }
-  if (!token) { window.location.href = '/login.html'; return {}; }
-  else {
+  if (!token) { window.location.href = '/login.html'; }
+  if (token) {
   try { localStorage.setItem('ema_token', token); } catch(e) {}
 
   // 动态API: HTTPS走nginx代理(相对路径)，HTTP直连API
