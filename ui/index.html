@@ -509,7 +509,22 @@ margin-bottom: 0; margin-right: 4px;
 .msg { max-width: 85%; }
 .popup { width: 480px; }
 }
-  </style>
+  
+/* 流式输出打字机效果 */
+.streaming-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 16px;
+  background: var(--accent, #4a9eff);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+</style>
 </head>
 <body>
 <div id="app">
@@ -1192,7 +1207,12 @@ margin-bottom: 0; margin-right: 4px;
         <div class="msg-avatar">{{ msg.role === 'user' ? '👤' : currentAgent.icon }}</div>
         <div>
           <div class="msg-bubble">
-            <template v-if="msg.type === 'result'">
+            <!-- 流式输出（打字机效果） -->
+            <template v-if="msg.type === 'streaming'">
+              <div class="result-text" style="white-space: pre-wrap">{{ msg.text }}</div>
+              <span class="streaming-cursor">▌</span>
+            </template>
+            <template v-else-if="msg.type === 'result'">
               <!-- 分析结果（TechRdAgent） -->
               <div v-if="msg.data.drawing_type">
                 <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px">{{ t('blueprint_analysis') }}</div>
@@ -2155,33 +2175,61 @@ createApp({
           });
           selectedFile.value = null;
         } else {
-          // 文字消息 - 发给 main chat 接口
-          const resp = await fetch(`${API_BASE}/api/v1/main/chat`, {
+          // 文字消息 - SSE 流式输出
+          const agentMsg = {
+            role: 'agent', type: 'streaming',
+            text: '', time: now(),
+          };
+          messages.value.push(agentMsg);
+
+          const resp = await fetch(`${API_BASE}/api/v1/agent/chat/stream`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               message: text,
+              agent_id: currentAgent.value.id,
+              model: selectedModel.value || 'ollama/tinyllama:1.1b',
               user_id: 'web_user',
-              task_type: currentAgent.value.id,
-              model: selectedModel.value || undefined,
             })
           });
 
           if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-          const data = await resp.json();
+          if (!resp.body) throw new Error('浏览器不支持 ReadableStream');
 
-          let content = data.response_text;
-          if (!content && data.output) {
-            if (typeof data.output === 'string') content = data.output;
-            else if (data.output.response_text) content = data.output.response_text;
-            else if (data.output.response) content = data.output.response;
+          const reader = resp.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+
+            // 解析 SSE 事件
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';  // 保留不完整行
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const payload = JSON.parse(line.slice(6));
+                  if (payload.token) {
+                    agentMsg.text += payload.token;
+                  } else if (payload.done) {
+                    // 完成
+                  }
+                } catch (e) {
+                  // 忽略解析错误
+                }
+              }
+            }
           }
 
-          messages.value.push({
-            role: 'agent', type: 'result',
-            data: { _text: content || '（无内容）', _raw: data },
-            time: now(), showRaw: false
-          });
+          // 流完成后转为 result 类型
+          agentMsg.type = 'result';
+          agentMsg.data = { _text: agentMsg.text };
+          delete agentMsg.text;
         }
       } catch (err) {
         messages.value.push({
