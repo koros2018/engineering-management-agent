@@ -325,3 +325,163 @@ def call_agent_llm_sync(
         "抱歉，当前AI模型服务暂时不可用。请稍后再试，或联系管理员检查模型配置。",
         "none"
     )
+
+
+# ─── 流式调用（SSE/打字机效果）──────────────────────────────────
+
+def _stream_ollama(prompt: str, model: str = LLM_MODEL, timeout: float = 60.0):
+    """
+    Ollama 流式生成器（逐块 yield token）
+    用法: for token in _stream_ollama(prompt): ...
+    """
+    import urllib.request
+    import json
+
+    payload = json.dumps({
+        "model": model,
+        "prompt": prompt,
+        "stream": True,
+        "options": {
+            "temperature": 0.7,
+            "top_p": 0.9,
+            "num_predict": 4096,
+        }
+    }).encode()
+
+    req = urllib.request.Request(
+        LLM_API_URL, data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST"
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            buffer = b""
+            while True:
+                chunk = resp.read(1024)
+                if not chunk:
+                    break
+                buffer += chunk
+                while b"\n" in buffer:
+                    line, buffer = buffer.split(b"\n", 1)
+                    if line.strip():
+                        try:
+                            data = json.loads(line.decode())
+                            token = data.get("response", "")
+                            done = data.get("done", False)
+                            if token:
+                                yield token
+                            if done:
+                                return
+                        except json.JSONDecodeError:
+                            continue
+    except Exception as e:
+        yield f"\n[Ollama 流式错误: {e}]"
+
+
+def _stream_cloud_openai(base_url: str, api_key: str, model: str,
+                          messages: list, timeout: float = 60.0):
+    """
+    云端 OpenAI 兼容 API 流式生成器（逐块 yield token）
+    """
+    import urllib.request
+    import json
+
+    url = f"{base_url}/chat/completions"
+    payload = json.dumps({
+        "model": model,
+        "messages": messages,
+        "temperature": 0.7,
+        "max_tokens": 4096,
+        "stream": True,
+    }).encode()
+
+    req = urllib.request.Request(
+        url, data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        },
+        method="POST"
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            buffer = b""
+            while True:
+                chunk = resp.read(1024)
+                if not chunk:
+                    break
+                buffer += chunk
+                while b"\n" in buffer:
+                    line, buffer = buffer.split(b"\n", 1)
+                    line_str = line.decode().strip()
+                    if not line_str or line_str.startswith(":"):
+                        continue
+                    if line_str.startswith("data: "):
+                        data_str = line_str[6:]
+                        if data_str == "[DONE]":
+                            return
+                        try:
+                            data = json.loads(data_str)
+                            choice = data.get("choices", [{}])[0]
+                            delta = choice.get("delta", {})
+                            token = delta.get("content", "")
+                            if token:
+                                yield token
+                        except json.JSONDecodeError:
+                            continue
+    except Exception as e:
+        yield f"\n[云端流式错误: {e}]"
+
+
+def build_stream_prompt(system_prompt: str, user_message: str, context: str = "") -> str:
+    """构建流式调用的完整 prompt（与同步版本一致）"""
+    full = f"{system_prompt}\n\n"
+    if context:
+        full += f"## 上下文信息\n{context}\n\n"
+    full += f"## 用户问题\n{user_message}\n\n请给出专业、详细的回答："
+    return full
+
+
+def stream_agent_llm(
+    system_prompt: str,
+    user_message: str,
+    model_id: str = "",
+    timeout: float = 60.0,
+    context: str = "",
+):
+    """
+    LLM 流式生成器入口
+
+    返回一个生成器，逐 token 产出响应文本。
+    模型选择逻辑与 call_agent_llm 一致（ollama → cloud fallback）。
+
+    用法:
+        for token in stream_agent_llm(sys_prompt, user_msg):
+            print(token, end="", flush=True)
+    """
+    full_prompt = build_stream_prompt(system_prompt, user_message, context)
+
+    if not model_id or model_id.startswith("ollama/"):
+        model_name = model_id.split("/")[-1] if "/" in model_id else LLM_MODEL
+        yield from _stream_ollama(full_prompt, model_name, timeout)
+        return
+
+    for provider, config in CLOUD_APIS.items():
+        if not config["api_key"]:
+            continue
+        messages = [
+            {"role": "system", "content": system_prompt},
+        ]
+        if context:
+            messages.append({"role": "user", "content": f"上下文：{context}"})
+        messages.append({"role": "user", "content": user_message})
+
+        yield from _stream_cloud_openai(
+            config["base_url"], config["api_key"], config["model"],
+            messages, timeout
+        )
+        return
+
+    yield "抱歉，当前AI模型服务暂时不可用。请稍后再试，或联系管理员检查模型配置。"

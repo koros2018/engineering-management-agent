@@ -54,7 +54,7 @@ from typing import Optional, List, Dict, Tuple
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Form, Depends, Body, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from dataclasses import asdict
 import uvicorn
@@ -3165,6 +3165,65 @@ async def budget_report(request: Dict = None):
         report = generate_budget_report(budget_data)
         return {"success": True, "format": "text", "report": report}
     return {"success": True, "format": "json", "budget": budget_data}
+
+
+# ─── SSE 流式对话 API（Phase 2: 打字机效果）─────────────────────
+
+class StreamChatRequest(BaseModel):
+    message: str
+    agent_id: str = "tech_rd"
+    model: Optional[str] = None
+    user_id: str = "guest"
+
+
+@app.post("/api/v1/agent/chat/stream")
+async def agent_chat_stream(req: StreamChatRequest):
+    """
+    SSE 流式对话接口
+
+    返回 text/event-stream，每行一个 token。
+    前端用 EventSource 或 fetch + ReadableStream 消费。
+
+    格式:
+        data: {"token": "你好"}\n\n
+        data: {"token": "世界"}\n\n
+        data: {"done": true}\n\n
+    """
+    from agent.agent_llm import (
+        build_system_prompt, stream_agent_llm
+    )
+
+    async def event_generator():
+        # 构建 system prompt
+        system_prompt = build_system_prompt(req.agent_id)
+        user_message = req.message
+
+        # 获取流式生成器
+        stream_gen = stream_agent_llm(
+            system_prompt=system_prompt,
+            user_message=user_message,
+            model_id=req.model or "",
+            timeout=60.0,
+        )
+
+        # 逐 token 转换为 SSE 事件
+        for token in stream_gen:
+            # yield 格式: "data: {\"token\": \"...\"}\n\n"
+            yield f"data: {json.dumps({'token': token})}\n\n"
+            await asyncio.sleep(0)  # 让出事件循环
+
+        # 流结束标记
+        yield f"data: {json.dumps({'done': True})}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # 禁用 nginx 缓冲
+        }
+    )
 
 
 def run_server(host: str = "0.0.0.0", port: int = 6188, reload: bool = False):
