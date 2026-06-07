@@ -3199,6 +3199,7 @@ async def agent_chat_stream(req: StreamChatRequest):
         build_system_prompt, stream_agent_llm
     )
 
+
     async def event_generator():
         # 构建 system prompt
         system_prompt = build_system_prompt(req.agent_id)
@@ -3237,6 +3238,25 @@ async def agent_chat_stream(req: StreamChatRequest):
         if sid and full_response:
             conversations[sid].append({"role": "user", "content": user_message})
             conversations[sid].append({"role": "assistant", "content": "".join(full_response)})
+
+            # 持久化到 ChromaDB
+            try:
+                from memory import get_chroma_store
+                store = get_chroma_store()
+                store.add_conversation(
+                    session_id=sid,
+                    role="user",
+                    content=user_message,
+                    agent_id=req.agent_id,
+                )
+                store.add_conversation(
+                    session_id=sid,
+                    role="agent",
+                    content="".join(full_response),
+                    agent_id=req.agent_id,
+                )
+            except Exception:
+                pass  # ChromaDB 不可用时忽略
 
             # 限制历史轮次
             while len(conversations[sid]) > MAX_HISTORY_ROUNDS * 2:
