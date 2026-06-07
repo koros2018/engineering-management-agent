@@ -1,24 +1,24 @@
 {
-  "timestamp": "2026-06-05 10:12:49",
+  "timestamp": "2026-06-07 08:12:28",
   "services": {
     "api_6188": {
       "status": "ok",
-      "ms": 34.0,
+      "ms": 3.0,
       "error": null
     },
     "ui_6189": {
       "status": "ok",
-      "ms": 7.0,
+      "ms": 4.0,
       "error": null
     },
     "ollama_11434": {
-      "status": "down",
-      "ms": 0,
-      "error": "<urlopen error [Errno 111] Connection refused>"
+      "status": "ok",
+      "ms": 2.0,
+      "error": null
     },
     "nvidia_api": {
       "status": "ok",
-      "ms": 1151.0
+      "ms": 362.0
     }
   },
   "llm": {
@@ -26,12 +26,12 @@
       "status": "no_key"
     },
     "ollama": {
-      "status": "error",
-      "error": "<urlopen error [Errno 111] Connection refused>"
+      "status": "timeout",
+      "threshold": 10
     },
     "openclaw_gw": {
       "status": "ok",
-      "ms": 29.0
+      "ms": 6.0
     }
   },
   "sessions": {
@@ -42,12 +42,13 @@
     "ctx_alerts": []
   },
   "project": {
-    "last_commit": "680a773 sync: 同步所有本地修改 (2026-06-04)",
+    "last_commit": "527cb63 feat(sse): 前端SSE流式输出打字机效果",
     "idle_min": 0,
-    "uncommitted_files": 7,
+    "uncommitted_files": 8,
     "needs_push": true
   },
   "actions": [
+    "llm_timeout:ollama",
     "uncommitted_files"
   ]
 }

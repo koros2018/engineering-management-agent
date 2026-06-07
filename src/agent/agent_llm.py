@@ -435,13 +435,43 @@ def _stream_cloud_openai(base_url: str, api_key: str, model: str,
         yield f"\n[云端流式错误: {e}]"
 
 
-def build_stream_prompt(system_prompt: str, user_message: str, context: str = "") -> str:
+def build_stream_prompt(system_prompt: str, user_message: str,
+                          context: str = "", history_text: str = "") -> str:
     """构建流式调用的完整 prompt（与同步版本一致）"""
     full = f"{system_prompt}\n\n"
+    if history_text:
+        full += f"## 对话历史\n{history_text}\n\n"
     if context:
         full += f"## 上下文信息\n{context}\n\n"
     full += f"## 用户问题\n{user_message}\n\n请给出专业、详细的回答："
     return full
+
+def build_history_prompt(history: list) -> str:
+    """构建对话历史文本块（用于 Ollama /api/generate 纯文本 prompt 拼接）"""
+    if not history:
+        return ""
+    parts = []
+    for h in history:
+        role = h.get("role", "user")
+        msg = h.get("content", "")
+        if role == "user":
+            parts.append(f"用户：{msg}")
+        else:
+            parts.append(f"助手：{msg}")
+    return "\n".join(parts)
+
+
+def build_messages_with_history(system_prompt: str, user_message: str,
+                                 history: list = None, context: str = "") -> list:
+    """构建带对话历史的 messages 列表（用于云端 chat/completions API）"""
+    messages = [{"role": "system", "content": system_prompt}]
+    if context:
+        messages.append({"role": "user", "content": f"上下文：{context}"})
+    if history:
+        for h in history:
+            messages.append({"role": h.get("role", "user"), "content": h.get("content", "")})
+    messages.append({"role": "user", "content": user_message})
+    return messages
 
 
 def stream_agent_llm(
@@ -450,20 +480,23 @@ def stream_agent_llm(
     model_id: str = "",
     timeout: float = 60.0,
     context: str = "",
+    history: list = None,
 ):
     """
     LLM 流式生成器入口
 
     返回一个生成器，逐 token 产出响应文本。
     模型选择逻辑与 call_agent_llm 一致（ollama → cloud fallback）。
+    history: 对话历史列表 [{"role": "user"|"assistant", "content": "..."}]
 
     用法:
         for token in stream_agent_llm(sys_prompt, user_msg):
             print(token, end="", flush=True)
     """
-    full_prompt = build_stream_prompt(system_prompt, user_message, context)
-
+    # 根据模型类型选择 prompt 构建方式
     if not model_id or model_id.startswith("ollama/"):
+        history_text = build_history_prompt(history or [])
+        full_prompt = build_stream_prompt(system_prompt, user_message, context, history_text)
         model_name = model_id.split("/")[-1] if "/" in model_id else LLM_MODEL
         yield from _stream_ollama(full_prompt, model_name, timeout)
         return
@@ -471,13 +504,7 @@ def stream_agent_llm(
     for provider, config in CLOUD_APIS.items():
         if not config["api_key"]:
             continue
-        messages = [
-            {"role": "system", "content": system_prompt},
-        ]
-        if context:
-            messages.append({"role": "user", "content": f"上下文：{context}"})
-        messages.append({"role": "user", "content": user_message})
-
+        messages = build_messages_with_history(system_prompt, user_message, history, context)
         yield from _stream_cloud_openai(
             config["base_url"], config["api_key"], config["model"],
             messages, timeout

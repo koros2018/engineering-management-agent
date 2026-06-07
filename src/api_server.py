@@ -3174,6 +3174,12 @@ class StreamChatRequest(BaseModel):
     agent_id: str = "tech_rd"
     model: Optional[str] = None
     user_id: str = "guest"
+    session_id: Optional[str] = None
+
+
+# 内存会话存储：session_id -> [{"role": "user"|"assistant", "content": "..."}]
+conversations: dict[str, list] = {}
+MAX_HISTORY_ROUNDS = 10
 
 
 @app.post("/api/v1/agent/chat/stream")
@@ -3198,22 +3204,47 @@ async def agent_chat_stream(req: StreamChatRequest):
         system_prompt = build_system_prompt(req.agent_id)
         user_message = req.message
 
-        # 获取流式生成器
+        # 会话管理
+        history = []
+        if req.session_id:
+            sid = req.session_id
+            if sid not in conversations:
+                conversations[sid] = []
+            history = list(conversations[sid])  # 复制当前历史（不含最新问题）
+        else:
+            sid = None
+
+        # 获取流式生成器（传入历史）
         stream_gen = stream_agent_llm(
             system_prompt=system_prompt,
             user_message=user_message,
             model_id=req.model or "",
             timeout=60.0,
+            history=history,
         )
+
+        # 收集完整回复用于保存到历史
+        full_response = []
 
         # 逐 token 转换为 SSE 事件
         for token in stream_gen:
+            full_response.append(token)
             # yield 格式: "data: {\"token\": \"...\"}\n\n"
             yield f"data: {json.dumps({'token': token})}\n\n"
             await asyncio.sleep(0)  # 让出事件循环
 
-        # 流结束标记
-        yield f"data: {json.dumps({'done': True})}\n\n"
+        # 保存用户问题和助手回复到会话历史
+        if sid and full_response:
+            conversations[sid].append({"role": "user", "content": user_message})
+            conversations[sid].append({"role": "assistant", "content": "".join(full_response)})
+
+            # 限制历史轮次
+            while len(conversations[sid]) > MAX_HISTORY_ROUNDS * 2:
+                conversations[sid].pop(0)
+                conversations[sid].pop(0)
+
+        # 流结束标记（携带完整文本）
+        yield f"data: {json.dumps({'done': True, 'text': ''.join(full_response)})}\n\n"
 
     return StreamingResponse(
         event_generator(),

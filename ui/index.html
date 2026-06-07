@@ -543,6 +543,10 @@ margin-bottom: 0; margin-right: 4px;
       </div>
     </div>
     <div class="sidebar-nav">
+      <!-- 新对话按钮 -->
+      <div class="nav-item" @click="newChat" style="color:var(--accent);font-weight:500;margin-bottom:6px">
+        <span style="margin-right:6px">💬</span> 新对话
+      </div>
       <!-- 一键体验 -->
       <div class="nav-section">{{ t('quick_entry') }}</div>
       <div :class="['nav-item', { active: showTour }]" @click="toggleTour" style="color:var(--accent);font-weight:500">
@@ -1781,6 +1785,7 @@ createApp({
     const API_BASE = window.location.protocol === 'https:' ? '' : 'http://localhost:6188';
     const authHeaders = () => ({ 'Authorization': 'Bearer ' + authToken });
     const messages = ref([]);
+    const sessionId = ref(crypto.randomUUID());
     const input = ref('');
     const loading = ref(false);
     const selectedFile = ref(null);
@@ -2145,6 +2150,7 @@ createApp({
 
       const agentId = currentAgent.value.id;
       messages.value.push({ role: 'user', content: text || (selectedFile.value ? `上传了文件: ${selectedFile.value.name}` : ''), time: now() });
+
       input.value = '';
       if (inputBox.value) { inputBox.value.style.height = 'auto'; }
       scrollBottom();
@@ -2190,6 +2196,7 @@ createApp({
               agent_id: currentAgent.value.id,
               model: selectedModel.value || 'ollama/tinyllama:1.1b',
               user_id: 'web_user',
+              session_id: sessionId.value,
             })
           });
 
@@ -2810,6 +2817,13 @@ createApp({
           kbRecommend.value = d.results;
         }
       } catch(e) {}
+    }
+
+    function newChat() {
+      messages.value = [];
+      sessionId.value = crypto.randomUUID();
+      input.value = '';
+      if (inputBox.value) inputBox.value.style.height = 'auto';
     }
 
     function switchWfTab(tab) {
