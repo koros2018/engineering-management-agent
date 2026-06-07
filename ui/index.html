@@ -1193,7 +1193,7 @@ margin-bottom: 0; margin-right: 4px;
 
     <div class="chat-area" ref="chatArea">
       <!-- 欢迎消息 -->
-      <div v-if="messages.length === 0" class="welcome-card">
+      <div v-if="currentMessages.length === 0" class="welcome-card">
         <div class="welcome-title">{{ currentAgent.icon }} {{ currentAgent.name }}</div>
         <div class="welcome-desc">{{ currentAgent.description }}</div>
         <div class="welcome-tasks">
@@ -1207,7 +1207,7 @@ margin-bottom: 0; margin-right: 4px;
       </div>
 
       <!-- 消息列表 -->
-      <div v-for="(msg, i) in messages" :key="i" :class="['msg', msg.role]">
+      <div v-for="(msg, i) in currentMessages" :key="i" :class="['msg', msg.role]">
         <div class="msg-avatar">{{ msg.role === 'user' ? '👤' : currentAgent.icon }}</div>
         <div>
           <div class="msg-bubble">
@@ -1784,8 +1784,8 @@ createApp({
 
     const API_BASE = window.location.protocol === 'https:' ? '' : 'http://localhost:6188';
     const authHeaders = () => ({ 'Authorization': 'Bearer ' + authToken });
-    const messages = ref([]);
-    const sessionId = ref(crypto.randomUUID());
+    const messages = ref({});  // {agentId: [msg, ...]} 每个Agent独立对话历史
+    const sessionId = ref({});  // {agentId: uuid} 每个Agent独立session
     const input = ref('');
     const loading = ref(false);
     const selectedFile = ref(null);
@@ -1822,6 +1822,7 @@ createApp({
     }
 
     const currentAgent = ref(agents[0]);
+    const currentMessages = computed(() => messages.value[currentAgent.value.id] || []);
     const availableModels = ref([]);
     const selectedModel = ref('');
     const planId = ref('free');
@@ -1940,7 +1941,9 @@ createApp({
         lcSteps.value[2].done = true;
         stage.done = true;
         lcRunning.value = false;
-        messages.value.push({ role:'agent', content:'🎯 **'+stage.name+'** 阶段完成:\n\n'+text, time:now() });
+        const techId = 'tech_rd';
+        if (!messages.value[techId]) messages.value[techId] = [];
+        messages.value[techId].push({ role:'agent', content:'🎯 **'+stage.name+'** 阶段完成:\n\n'+text, time:now() });
         scrollBottom();
       } catch(e) {
         lcResult.value = '⚠ 网络错误';
@@ -1962,7 +1965,9 @@ createApp({
     }
 
     function lcFinish() {
-      messages.value.push({ role:'agent', content:'🎉 **全生命周期体验完成！**\n\n✅ 可研 → ✅ 立项 → ✅ 设计 → ✅ 招投标 → ✅ 施工 → ✅ 验收 → ✅ 运营\n\n工程管理完整闭环。点击任一 Agent 继续使用。', time:now() });
+      const techId = 'tech_rd';
+      if (!messages.value[techId]) messages.value[techId] = [];
+      messages.value[techId].push({ role:'agent', content:'🎉 **全生命周期体验完成！**\n\n✅ 可研 → ✅ 立项 → ✅ 设计 → ✅ 招投标 → ✅ 施工 → ✅ 验收 → ✅ 运营\n\n工程管理完整闭环。点击任一 Agent 继续使用。', time:now() });
       scrollBottom();
       lcReset();
     }
@@ -2128,10 +2133,10 @@ createApp({
 
     function switchAgent(agent) {
       currentAgent.value = agent;
-      messages.value = [];
       input.value = '';
       selectedFile.value = null;
       showHistory.value = false;
+      // 不再清空 messages — 每个Agent独立维护对话历史
     }
 
     function onFileSelect(e) {
@@ -2149,7 +2154,10 @@ createApp({
       if (loading.value) return;
 
       const agentId = currentAgent.value.id;
-      messages.value.push({ role: 'user', content: text || (selectedFile.value ? `上传了文件: ${selectedFile.value.name}` : ''), time: now() });
+      // 初始化该 Agent 的消息数组和 session（首次对话时）
+      if (!messages.value[agentId]) messages.value[agentId] = [];
+      if (!sessionId.value[agentId]) sessionId.value[agentId] = crypto.randomUUID();
+      messages.value[agentId].push({ role: 'user', content: text || (selectedFile.value ? `上传了文件: ${selectedFile.value.name}` : ''), time: now() });
 
       input.value = '';
       if (inputBox.value) { inputBox.value.style.height = 'auto'; }
@@ -2174,7 +2182,7 @@ createApp({
           if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           const data = await resp.json();
 
-          messages.value.push({
+          messages.value[agentId].push({
             role: 'agent', type: 'result',
             data: data.output || data,
             time: now(), showRaw: false
@@ -2186,7 +2194,7 @@ createApp({
             role: 'agent', type: 'streaming',
             text: '', time: now(),
           };
-          messages.value.push(agentMsg);
+          messages.value[agentId].push(agentMsg);
 
           const resp = await fetch(`${API_BASE}/api/v1/agent/chat/stream`, {
             method: 'POST',
@@ -2196,7 +2204,7 @@ createApp({
               agent_id: currentAgent.value.id,
               model: selectedModel.value || 'ollama/tinyllama:1.1b',
               user_id: 'web_user',
-              session_id: sessionId.value,
+              session_id: sessionId.value[agentId],
             })
           });
 
@@ -2239,7 +2247,7 @@ createApp({
           delete agentMsg.text;
         }
       } catch (err) {
-        messages.value.push({
+        messages.value[agentId].push({
           role: 'agent',
           content: `❌ 请求失败：${err.message}\n\n请确认 EMA API 服务已启动（python src/main.py）`,
           time: now()
@@ -2579,7 +2587,7 @@ createApp({
     function viewHistorySession(session) {
       activeHistorySession.value = session.id;
       // 加载历史对话到消息区
-      messages.value = (session.messages || []).map(m => ({
+      messages.value[currentAgent.value.id] = (session.messages || []).map(m => ({
         role: m.role === 'user' ? 'user' : 'agent',
         content: m.content,
         time: '',
@@ -2820,8 +2828,9 @@ createApp({
     }
 
     function newChat() {
-      messages.value = [];
-      sessionId.value = crypto.randomUUID();
+      const agentId = currentAgent.value.id;
+      messages.value[agentId] = [];
+      sessionId.value[agentId] = crypto.randomUUID();
       input.value = '';
       if (inputBox.value) inputBox.value.style.height = 'auto';
     }
@@ -3287,7 +3296,7 @@ createApp({
     }
 
     return {
-      messages, input, loading, selectedFile, chatArea, inputBox,
+      messages, currentMessages, input, loading, selectedFile, chatArea, inputBox,
       agents, currentAgent, availableModels, selectedModel,
       planId, planName, unreadCount, showPlans, showNotifs, plans, notifList,
       showHistory, historySessions, historyLoading, historyQuery, activeHistorySession,
@@ -3374,7 +3383,7 @@ createApp({
     }
 
     return {
-      messages, input, loading, selectedFile, chatArea, inputBox,
+      messages, currentMessages, input, loading, selectedFile, chatArea, inputBox,
       agents, currentAgent, availableModels, selectedModel,
       planId, planName, unreadCount, showPlans, showNotifs, plans, notifList,
       showHistory, historySessions, historyLoading, historyQuery, activeHistorySession,
