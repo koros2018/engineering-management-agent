@@ -1156,7 +1156,7 @@ margin-bottom: 0; margin-right: 4px;
       <div class="notif-bell" @click="openNotifications" title="通知">
         🔔 <span class="count" v-if="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
       </div>
-      <select class="model-select" v-model="selectedModel" @change="onModelChange">
+      <select class="model-select" v-model="currentSelectedModel" @change="onModelChange">
         <option v-for="m in availableModels" :key="m.name" :value="m.name">
           {{ m.type === 'cloud' ? '☁️' : '💻' }} {{ m.display || m.name }}
         </option>
@@ -1823,8 +1823,12 @@ createApp({
 
     const currentAgent = ref(agents[0]);
     const currentMessages = computed(() => messages.value[currentAgent.value.id] || []);
+    const currentSelectedModel = computed({
+      get: () => selectedModel.value[currentAgent.value.id] || availableModels.value[0]?.name || '',
+      set: (val) => { selectedModel.value[currentAgent.value.id] = val; },
+    });
     const availableModels = ref([]);
-    const selectedModel = ref('');
+    const selectedModel = ref({});  // per-agent: { agentId: modelName }
     const planId = ref('free');
     const currentUser = ref(null);
     const isSuperAdmin = computed(() => currentUser.value?.role === 'super_admin' || currentUser.value?.role === 'admin');
@@ -2063,8 +2067,9 @@ createApp({
     }
 
     function loadModels() {
-      // 加载模型列表，恢复用户上次选择
-      const savedModel = localStorage.getItem('ema_selected_model');
+      // 加载模型列表，恢复当前 Agent 上次选择的模型
+      const _agentId = currentAgent.value?.id || 'tech_rd';
+      const savedModel = localStorage.getItem('ema_model_' + _agentId);
       fetch(`${API_BASE}/api/v1/models/route?task_type=chat`, { headers: authHeaders(), timeout: 10000 })
         .then(r => r.json())
         .then(d => {
@@ -2087,7 +2092,7 @@ createApp({
               filtered.unshift(recommended);
             }
             availableModels.value = filtered;
-            selectedModel.value = savedModel || d.model.id;
+            selectedModel.value[currentAgent.value.id] = savedModel || d.model.id;
           }
         })
         .catch(() => {
@@ -2097,7 +2102,7 @@ createApp({
             .then(d => {
               if (d.models && d.models.length > 0) {
                 availableModels.value = d.models;
-                selectedModel.value = d.default_chain?.[0] || d.models[0]?.model_id || '';
+                selectedModel.value[currentAgent.value.id] = d.default_chain?.[0] || d.models[0]?.model_id || '';
               }
             })
             .catch(() => {});
@@ -2105,9 +2110,11 @@ createApp({
     }
 
     function onModelChange() {
-      const m = availableModels.value.find(x => x.model_id === selectedModel.value || x.name === selectedModel.value);
+      const agentId = currentAgent.value.id;
+      const modelName = selectedModel.value[agentId] || '';
+      const m = availableModels.value.find(x => x.model_id === modelName || x.name === modelName);
       if (m) {
-        localStorage.setItem('ema_selected_model', selectedModel.value);
+        localStorage.setItem('ema_model_' + agentId, modelName);
         // 简单反馈
         const old = document.title; document.title = '✅ ' + (m.display || m.name); setTimeout(() => document.title = old, 1500);
       }
@@ -2137,6 +2144,13 @@ createApp({
       selectedFile.value = null;
       showHistory.value = false;
       // 不再清空 messages — 每个Agent独立维护对话历史
+      // 恢复该 Agent 上次选的模型
+      const saved = localStorage.getItem('ema_model_' + agent.id);
+      if (saved) {
+        selectedModel.value[agent.id] = saved;
+      } else if (!selectedModel.value[agent.id]) {
+        selectedModel.value[agent.id] = availableModels.value[0]?.name || '';
+      }
     }
 
     function onFileSelect(e) {
@@ -2202,7 +2216,7 @@ createApp({
             body: JSON.stringify({
               message: text,
               agent_id: currentAgent.value.id,
-              model: selectedModel.value || 'ollama/tinyllama:1.1b',
+              model: selectedModel.value[currentAgent.value.id] || availableModels.value[0]?.name || 'ollama/tinyllama:1.1b',
               user_id: 'web_user',
               session_id: sessionId.value[agentId],
             })
@@ -3297,7 +3311,7 @@ createApp({
 
     return {
       messages, currentMessages, input, loading, selectedFile, chatArea, inputBox,
-      agents, currentAgent, availableModels, selectedModel,
+      agents, currentAgent, availableModels, selectedModel, currentSelectedModel,
       planId, planName, unreadCount, showPlans, showNotifs, plans, notifList,
       showHistory, historySessions, historyLoading, historyQuery, activeHistorySession,
       showMonitor, monitorData, monitorLoading, toggleMonitor, loadMonitor,
@@ -3384,7 +3398,7 @@ createApp({
 
     return {
       messages, currentMessages, input, loading, selectedFile, chatArea, inputBox,
-      agents, currentAgent, availableModels, selectedModel,
+      agents, currentAgent, availableModels, selectedModel, currentSelectedModel,
       planId, planName, unreadCount, showPlans, showNotifs, plans, notifList,
       showHistory, historySessions, historyLoading, historyQuery, activeHistorySession,
       showMonitor, monitorData, monitorLoading, toggleMonitor, loadMonitor,
