@@ -12,6 +12,10 @@ import sys
 import os
 from pathlib import Path
 
+# 加载 .env 环境变量
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).parent.parent / '.env')
+
 # 将 src 目录加入 path
 sys.path.insert(0, str(Path(__file__).parent))
 

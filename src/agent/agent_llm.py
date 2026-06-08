@@ -46,6 +46,16 @@ CLOUD_APIS = {
         "api_key": os.environ.get("KIMI_API_KEY", ""),
         "model": "kimi-k2.6",
     },
+    "sensenova": {
+        "base_url": "https://token.sensenova.cn/v1",
+        "api_key": os.environ.get("SENSENOVA_API_KEY", ""),
+        "model": "deepseek-v4-flash",
+    },
+    "nvidia": {
+        "base_url": "https://integrate.api.nvidia.com/v1",
+        "api_key": os.environ.get("NVIDIA_API_KEY", ""),
+        "model": "deepseek-ai/deepseek-v4-pro",
+    },
 }
 
 # ─── System Prompts（每个Agent的角色定义）────────────────────────
@@ -257,8 +267,13 @@ async def call_agent_llm(
         if response:
             return response, f"ollama/{model_name}"
 
-    # 云端模型 fallback
-    for provider, config in CLOUD_APIS.items():
+    # 云端模型 fallback — 优先根据 model_id 前缀匹配 provider
+    provider_order = list(CLOUD_APIS.keys())
+    prefix = model_id.split("/")[0] if "/" in model_id else ""
+    if prefix in CLOUD_APIS:
+        provider_order = [prefix] + [p for p in provider_order if p != prefix]
+    for provider in provider_order:
+        config = CLOUD_APIS[provider]
         if not config["api_key"]:
             continue
         messages = [
@@ -501,7 +516,13 @@ def stream_agent_llm(
         yield from _stream_ollama(full_prompt, model_name, timeout)
         return
 
-    for provider, config in CLOUD_APIS.items():
+    # 优先根据 model_id 前缀匹配 provider，否则按顺序尝试
+    provider_order = list(CLOUD_APIS.keys())
+    prefix = model_id.split("/")[0] if "/" in model_id else ""
+    if prefix in CLOUD_APIS:
+        provider_order = [prefix] + [p for p in provider_order if p != prefix]
+    for provider in provider_order:
+        config = CLOUD_APIS[provider]
         if not config["api_key"]:
             continue
         messages = build_messages_with_history(system_prompt, user_message, history, context)
