@@ -1022,7 +1022,132 @@ async def upload_and_analyze(
         raise HTTPException(status_code=500, detail=f"解析失败: {str(e)}")
 
 
-# ── Blueprint AI 增强分析 API ─────────────────────────────────
+# ── 图纸上传 + LLM 智能解读（SSE 流式）─────────────────────────
+@app.post("/api/v1/upload/chat")
+async def upload_and_chat(
+    file: UploadFile = File(...),
+    user_id: str = Form("guest"),
+    agent_id: str = Form("tech_rd"),
+    model: Optional[str] = Form(None),
+    session_id: Optional[str] = Form(None),
+    project_id: Optional[str] = Form(None),
+    disable_ocr: bool = Form(True),
+):
+    """
+    上传图纸 → AI解析 → LLM智能解读 → SSE 流式返回对话
+
+    流程：
+    1. 保存文件
+    2. BlueprintParser.parse_with_ai() 解析+AI增强分析
+    3. 构建 LLM prompt（图纸分析结果作为上下文）
+    4. stream_agent_llm() 流式生成解读
+    """
+    from pathlib import Path
+
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in ['.dwg', '.dxf', '.pdf']:
+        raise HTTPException(status_code=400, detail="Unsupported file type. Use DWG/DXF/PDF")
+
+    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    safe_name = f"chat_{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
+    save_path = UPLOAD_DIR / safe_name
+    save_path.write_bytes(await file.read())
+
+    try:
+        from blueprint.core import BlueprintParser
+        parser = BlueprintParser(use_ocr=not disable_ocr, enable_ai=True, use_llm=True)
+        parse_result = parser.parse_with_ai(str(save_path))
+
+        if not parse_result.get('success'):
+            raise HTTPException(status_code=422, detail=f"图纸解析失败: {parse_result.get('errors', ['未知错误'])}")
+
+        # 构建 LLM prompt
+        ai_analysis = parse_result.get('ai_analysis', {})
+        drawing_type = ai_analysis.get('drawing_type', {})
+        project_info = ai_analysis.get('project_info', {})
+        layer_analysis = ai_analysis.get('layer_analysis', {})
+        design_principles = ai_analysis.get('design_principles', {})
+        construction_reqs = ai_analysis.get('construction_requirements', {})
+        material_specs = ai_analysis.get('material_specs', {})
+        design_params = ai_analysis.get('design_params', {})
+        parse_info = parse_result.get('parse_result', {})
+
+        # 组装分析摘要
+        analysis_summary = f"""## 图纸分析结果
+
+**文件**: {parse_result.get('file_name', file.filename)}
+**类型**: {parse_result.get('file_type', '未知')}
+**图纸分类**: {drawing_type.get('primary', '未识别')}
+**图层数**: {parse_info.get('layer_count', 0)}
+**实体数**: {parse_info.get('entity_count', 0)}
+
+### 图层分析
+{json.dumps(layer_analysis, ensure_ascii=False, indent=2)[:1000]}
+
+### 工程信息
+{json.dumps(project_info, ensure_ascii=False, indent=2)[:1000]}
+
+### 设计原则
+{json.dumps(design_principles, ensure_ascii=False, indent=2)[:800]}
+
+### 施工要求
+{json.dumps(construction_reqs, ensure_ascii=False, indent=2)[:800]}
+
+### 材料规格
+{json.dumps(material_specs, ensure_ascii=False, indent=2)[:500]}
+
+### 设计参数
+{json.dumps(design_params, ensure_ascii=False, indent=2)[:500]}
+"""
+
+        user_message = f"请分析这份图纸：{file.filename}。以下是自动解析结果，请给出专业解读和建议。"
+
+        from agent.agent_llm import build_system_prompt, stream_agent_llm
+
+        system_prompt = build_system_prompt(agent_id)
+
+        async def event_generator():
+            full_response = []
+            stream_gen = stream_agent_llm(
+                system_prompt=system_prompt,
+                user_message=user_message + "\n\n" + analysis_summary,
+                model_id=model or "",
+                timeout=120.0,
+                context=f"图纸文件: {file.filename}",
+            )
+            for token in stream_gen:
+                full_response.append(token)
+                yield f"data: {json.dumps({'token': token})}\n\n"
+                await asyncio.sleep(0)
+
+            # 保存对话历史
+            if session_id:
+                if session_id not in conversations:
+                    conversations[session_id] = []
+                conversations[session_id].append({"role": "user", "content": f"[图纸分析] {file.filename}"})
+                conversations[session_id].append({"role": "assistant", "content": "".join(full_response)})
+
+                # 持久化到 ChromaDB
+                try:
+                    from memory import get_chroma_store
+                    store = get_chroma_store()
+                    store.add_conversation(session_id=session_id, role="user", content=f"[图纸分析] {file.filename}", agent_id=agent_id)
+                    store.add_conversation(session_id=session_id, role="assistant", content="".join(full_response), agent_id=agent_id)
+                except Exception:
+                    pass
+
+            yield f"data: {json.dumps({'done': True, 'text': ''.join(full_response)})}\n\n"
+
+        return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[Upload Chat Error] {file.filename}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"图纸智能解读失败: {str(e)}")
+
+
 
 @app.post("/api/v1/blueprint/ai-analyze")
 async def blueprint_ai_analyze(

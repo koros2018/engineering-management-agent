@@ -2183,24 +2183,52 @@ createApp({
 
       try {
         if (selectedFile.value) {
-          // 文件上传
+          // 文件上传 → SSE 流式 LLM 解读
           const formData = new FormData();
           formData.append('file', selectedFile.value);
           formData.append('user_id', 'web_user');
+          formData.append('agent_id', currentAgent.value.id);
+          const _model = selectedModel.value[currentAgent.value.id] || availableModels.value[0]?.name || '';
+          if (_model) formData.append('model', _model);
+          if (sessionId.value[agentId]) formData.append('session_id', sessionId.value[agentId]);
 
-          const resp = await fetch(`${API_BASE}/api/v1/upload/analyze`, {
+          const agentMsg = {
+            role: 'agent', type: 'streaming',
+            text: '', time: now(),
+          };
+          messages.value[agentId].push(agentMsg);
+
+          const resp = await fetch(`${API_BASE}/api/v1/upload/chat`, {
             method: 'POST',
             body: formData,
           });
 
           if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-          const data = await resp.json();
+          if (!resp.body) throw new Error('浏览器不支持 ReadableStream');
 
-          messages.value[agentId].push({
-            role: 'agent', type: 'result',
-            data: data.output || data,
-            time: now(), showRaw: false
-          });
+          const reader = resp.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const evt = JSON.parse(line.slice(6));
+                  if (evt.token) {
+                    agentMsg.text += evt.token;
+                    scrollBottom();
+                  }
+                  if (evt.done) break;
+                } catch(e) {}
+              }
+            }
+          }
           selectedFile.value = null;
         } else {
           // 文字消息 - SSE 流式输出
