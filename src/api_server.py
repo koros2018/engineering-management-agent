@@ -3443,9 +3443,14 @@ def run_server(host: str = "0.0.0.0", port: int = 6188, reload: bool = False, wo
     sys.path.insert(0, _src_dir)
     sys.path.insert(0, _ema_dir)
     os.environ["PYTHONPATH"] = _src_dir + os.pathsep + _ema_dir + os.pathsep + os.environ.get("PYTHONPATH", "")
-    from src.api_server import app as _ema_app
+    # workers > 1 时必须传 import string，否则 uvicorn 报错
+    if workers > 1:
+        app_ref = "src.api_server:app"
+    else:
+        from src.api_server import app as _ema_app
+        app_ref = _ema_app
     uvicorn.run(
-        _ema_app,
+        app_ref,
         host=host,
         port=port,
         reload=False,
