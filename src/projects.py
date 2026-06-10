@@ -8,29 +8,16 @@ projects.py - 项目管理 + 里程碑追踪
 - 项目状态流转（规划中→设计中→施工中→验收中→已交付）
 """
 
-import json
 import time
 import uuid
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
+from utils import load_json, save_json
 
 EMA_DATA_DIR = Path(__file__).parent.parent / "data"
 PROJECTS_FILE = EMA_DATA_DIR / "projects.json"
 MILESTONES_FILE = EMA_DATA_DIR / "milestones.json"
-
-
-def _load(path):
-    if path.exists():
-        with open(path) as f:
-            return json.load(f)
-    return {}
-
-
-def _save(path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
 
 
 # ── 项目状态 ──────────────────────────────────────────────────
@@ -66,7 +53,7 @@ def create_project(tenant_id: str, name: str, description: str = "",
                    budget: float = 0, start_date: str = None,
                    end_date: str = None, created_by: str = "") -> Dict:
     """创建项目"""
-    projects = _load(PROJECTS_FILE)
+    projects = load_json(PROJECTS_FILE)
     pid = f"proj_{uuid.uuid4().hex[:12]}"
     now = datetime.now().isoformat()
     projects[pid] = {
@@ -85,13 +72,13 @@ def create_project(tenant_id: str, name: str, description: str = "",
         "file_count": 0,
         "review_count": 0,
     }
-    _save(PROJECTS_FILE, projects)
+    save_json(PROJECTS_FILE, projects)
     return projects[pid]
 
 
 def update_project(project_id: str, **kwargs) -> Optional[Dict]:
     """更新项目"""
-    projects = _load(PROJECTS_FILE)
+    projects = load_json(PROJECTS_FILE)
     if project_id not in projects:
         return None
     p = projects[project_id]
@@ -99,28 +86,28 @@ def update_project(project_id: str, **kwargs) -> Optional[Dict]:
         if k in p and v is not None:
             p[k] = v
     p["updated_at"] = datetime.now().isoformat()
-    _save(PROJECTS_FILE, projects)
+    save_json(PROJECTS_FILE, projects)
     return p
 
 
 def delete_project(project_id: str) -> bool:
     """删除项目"""
-    projects = _load(PROJECTS_FILE)
+    projects = load_json(PROJECTS_FILE)
     if project_id not in projects:
         return False
     del projects[project_id]
-    _save(PROJECTS_FILE, projects)
+    save_json(PROJECTS_FILE, projects)
     # 清理里程碑
-    milestones = _load(MILESTONES_FILE)
+    milestones = load_json(MILESTONES_FILE)
     for mid in [k for k, v in milestones.items() if v.get("project_id") == project_id]:
         del milestones[mid]
-    _save(MILESTONES_FILE, milestones)
+    save_json(MILESTONES_FILE, milestones)
     return True
 
 
 def list_projects(tenant_id: str = None, status: str = None) -> List[Dict]:
     """列出项目"""
-    projects = _load(PROJECTS_FILE)
+    projects = load_json(PROJECTS_FILE)
     result = list(projects.values())
     if tenant_id:
         result = [p for p in result if p.get("tenant_id") == tenant_id]
@@ -132,7 +119,7 @@ def list_projects(tenant_id: str = None, status: str = None) -> List[Dict]:
 
 def get_project(project_id: str) -> Optional[Dict]:
     """获取项目详情"""
-    projects = _load(PROJECTS_FILE)
+    projects = load_json(PROJECTS_FILE)
     return projects.get(project_id)
 
 
@@ -142,7 +129,7 @@ def add_milestone(project_id: str, milestone_type: str, title: str,
                   due_date: str, description: str = "",
                   notify_days_before: int = 3) -> Dict:
     """添加里程碑"""
-    milestones = _load(MILESTONES_FILE)
+    milestones = load_json(MILESTONES_FILE)
     mid = f"ms_{uuid.uuid4().hex[:10]}"
     now = datetime.now().isoformat()
     milestones[mid] = {
@@ -158,24 +145,24 @@ def add_milestone(project_id: str, milestone_type: str, title: str,
         "completed_at": None,
         "created_at": now,
     }
-    _save(MILESTONES_FILE, milestones)
+    save_json(MILESTONES_FILE, milestones)
     return milestones[mid]
 
 
 def complete_milestone(milestone_id: str) -> Optional[Dict]:
     """完成里程碑"""
-    milestones = _load(MILESTONES_FILE)
+    milestones = load_json(MILESTONES_FILE)
     if milestone_id not in milestones:
         return None
     milestones[milestone_id]["status"] = "completed"
     milestones[milestone_id]["completed_at"] = datetime.now().isoformat()
-    _save(MILESTONES_FILE, milestones)
+    save_json(MILESTONES_FILE, milestones)
     return milestones[milestone_id]
 
 
 def list_milestones(project_id: str = None) -> List[Dict]:
     """列出里程碑"""
-    milestones = _load(MILESTONES_FILE)
+    milestones = load_json(MILESTONES_FILE)
     result = list(milestones.values())
     if project_id:
         result = [m for m in result if m.get("project_id") == project_id]
@@ -190,8 +177,8 @@ def check_milestones() -> List[Dict]:
     检查即将到期和已过期的里程碑
     返回需要通知的里程碑列表
     """
-    milestones = _load(MILESTONES_FILE)
-    projects = _load(PROJECTS_FILE)
+    milestones = load_json(MILESTONES_FILE)
+    projects = load_json(PROJECTS_FILE)
     now = datetime.now()
     alerts = []
 
@@ -232,7 +219,7 @@ def check_milestones() -> List[Dict]:
             })
             ms["notified"] = True
 
-    _save(MILESTONES_FILE, milestones)
+    save_json(MILESTONES_FILE, milestones)
     return alerts
 
 

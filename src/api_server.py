@@ -22,6 +22,10 @@ from concurrent.futures import ThreadPoolExecutor
 _executor = ThreadPoolExecutor(max_workers=3)
 _tasks = {}  # task_id -> {"status": "running|done|error", "result": ..., "progress": 0}
 
+# ── 路径常量 ──────────────────────────────────────────
+UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
 def _run_async(task_id: str, fn, *args, **kwargs):
     def wrapper():
         _tasks[task_id]["status"] = "running"
@@ -434,7 +438,6 @@ async def wechat_bind(state: str = Form(...), username: str = Form(...), passwor
     if result.get("success"):
         return result
     raise HTTPException(status_code=400, detail=result.get("error", "绑定失败"))
-
 
 
 @app.post("/api/v1/auth/forgot-password")
@@ -958,8 +961,6 @@ async def upload_and_analyze(
 
     # ── 持久化存储路径 ──
     from performance import get_cached_analysis, cache_analysis
-    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
     # 保存到持久化路径（文件名加时间戳避免冲突）
     safe_name = f"{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
@@ -1043,8 +1044,6 @@ async def batch_upload_and_analyze(
         raise HTTPException(status_code=400, detail="Max 20 files per batch")
 
     max_workers = min(max(max_workers, 1), 8)
-    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
     # ── 保存所有文件 ──
     saved_files = []
@@ -1122,8 +1121,6 @@ async def upload_and_chat(
     if suffix not in ['.dwg', '.dxf', '.pdf']:
         raise HTTPException(status_code=400, detail="Unsupported file type. Use DWG/DXF/PDF")
 
-    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     safe_name = f"chat_{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
     save_path = UPLOAD_DIR / safe_name
     save_path.write_bytes(await file.read())
@@ -1220,7 +1217,6 @@ async def upload_and_chat(
         raise HTTPException(status_code=500, detail=f"图纸智能解读失败: {str(e)}")
 
 
-
 @app.post("/api/v1/blueprint/ai-analyze")
 async def blueprint_ai_analyze(
     file: UploadFile = File(...),
@@ -1236,8 +1232,6 @@ async def blueprint_ai_analyze(
     if suffix not in ['.dwg', '.dxf', '.pdf']:
         raise HTTPException(status_code=400, detail="Unsupported file type")
 
-    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     safe_name = f"ai_{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
     save_path = UPLOAD_DIR / safe_name
     save_path.write_bytes(await file.read())
@@ -1266,8 +1260,6 @@ async def blueprint_ai_extract(
     if suffix not in ['.dwg', '.dxf', '.pdf']:
         raise HTTPException(status_code=400, detail="Unsupported file type")
 
-    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     safe_name = f"ex_{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
     save_path = UPLOAD_DIR / safe_name
     save_path.write_bytes(await file.read())
@@ -1472,8 +1464,6 @@ async def agent_review(
     if suffix not in ['.dwg', '.dxf', '.pdf']:
         raise HTTPException(status_code=400, detail="Unsupported file type")
 
-    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     safe_name = f"review_{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
     save_path = UPLOAD_DIR / safe_name
     content = await file.read()
@@ -1559,8 +1549,6 @@ async def agent_documents(
     if suffix not in ['.dwg', '.dxf', '.pdf']:
         raise HTTPException(status_code=400, detail="Unsupported file type")
 
-    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     safe_name = f"doc_{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
     save_path = UPLOAD_DIR / safe_name
     content = await file.read()
@@ -1668,8 +1656,6 @@ async def agent_pipeline(
     # 支持文件上传或直接传路径
     if file:
         suffix = Path(file.filename).suffix.lower()
-        UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
-        UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
         safe_name = f"pipe_{int(time.time())}_{uuid.uuid4().hex[:8]}_{file.filename}"
         save_path = UPLOAD_DIR / safe_name
         content = await file.read()
@@ -2617,8 +2603,6 @@ async def create_analyze_task(
         raise HTTPException(status_code=400, detail="Unsupported file type")
 
     # 保存文件
-    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     save_path = UPLOAD_DIR / f"{task_id}_{file.filename}"
     content = await file.read()
     save_path.write_bytes(content)
@@ -2808,7 +2792,6 @@ async def analytics_summary(days: int = 7):
     }
 
     return {"stats": stats, "recent_events": events[-20:]}
-
 
 
 # ── 多 Agent 协同审查 ─────────────────────────────────────────
@@ -3241,7 +3224,6 @@ async def system_metrics():
         er = "{:.1f}%".format(s["errors"]/c*100) if c > 0 else "0%"
         eps[ep] = {"count": c, "avg_ms": avg_ms, "error_rate": er}
     return {"requests_total": total, "errors_total": errors, "avg_ms": avg, "max_ms": mx, "p95_ms": round(p95, 1), "endpoints": eps}
-
 
 
 # ═══════════════════════════════════════════════════════════════

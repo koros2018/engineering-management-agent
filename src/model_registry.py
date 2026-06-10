@@ -11,7 +11,6 @@ model_registry.py - EMA 大模型配置与智能路由
 - 用户类型 (free/pro/enterprise) + 网络状况 + 成本评分 → 自动推荐
 """
 
-import json
 import time as _time
 import os
 import threading
@@ -21,6 +20,7 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, asdict
 from enum import Enum
 from collections import defaultdict
+from utils import load_json, save_json
 
 
 # ── 数据目录 ──────────────────────────────────────────────────
@@ -335,17 +335,11 @@ def route_model(
 # ── 模型 CRUD ──────────────────────────────────────────────────
 
 def _load_registry() -> Dict:
-    if REGISTRY_FILE.exists():
-        try:
-            return json.load(open(REGISTRY_FILE))
-        except Exception:
-            pass
-    return {"providers": {}, "models": []}
+    return load_json(REGISTRY_FILE) or {"providers": {}, "models": []}
 
 
 def _save_registry(reg: Dict):
-    REGISTRY_FILE.parent.mkdir(parents=True, exist_ok=True)
-    json.dump(reg, open(REGISTRY_FILE, "w"), ensure_ascii=False, indent=2)
+    save_json(REGISTRY_FILE, reg)
 
 
 def list_models() -> List[ModelConfig]:
