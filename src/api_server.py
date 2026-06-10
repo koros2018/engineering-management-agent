@@ -1022,6 +1022,80 @@ async def upload_and_analyze(
         raise HTTPException(status_code=500, detail=f"解析失败: {str(e)}")
 
 
+@app.post("/api/v1/upload/batch-analyze")
+async def batch_upload_and_analyze(
+    files: List[UploadFile] = File(...),
+    user_id: str = Form("guest"),
+    project_id: Optional[str] = Form(None),
+    max_workers: int = Form(4),
+):
+    """
+    批量上传图纸并并行分析
+    支持格式：DWG, DXF, PDF
+    max_workers: 并行数（默认4，最大8）
+    """
+    import asyncio
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    if not files:
+        raise HTTPException(status_code=400, detail="No files uploaded")
+    if len(files) > 20:
+        raise HTTPException(status_code=400, detail="Max 20 files per batch")
+
+    max_workers = min(max(max_workers, 1), 8)
+    UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+    # ── 保存所有文件 ──
+    saved_files = []
+    for f in files:
+        suffix = Path(f.filename).suffix.lower()
+        if suffix not in ['.dwg', '.dxf', '.pdf']:
+            raise HTTPException(status_code=400, detail=f"Unsupported: {f.filename}")
+        safe_name = f"{int(time.time())}_{uuid.uuid4().hex[:8]}_{f.filename}"
+        save_path = UPLOAD_DIR / safe_name
+        content = await f.read()
+        save_path.write_bytes(content)
+        saved_files.append((f.filename, str(save_path)))
+
+    # ── 并行分析 ──
+    from performance import get_cached_analysis, cache_analysis
+
+    def _analyze_one(file_name: str, file_path: str) -> dict:
+        cached = get_cached_analysis(file_path)
+        if cached:
+            return {"file_name": file_name, "cached": True, "analysis": cached.get("analysis", cached)}
+        try:
+            from blueprint.core import BlueprintParser
+            parser = BlueprintParser()
+            result = parser.parse(file_path)
+            analysis = {
+                "file_type": result.file_type.value if hasattr(result.file_type, 'value') else str(result.file_type),
+                "layer_count": len(result.layers),
+                "entity_count": len(result.entities),
+                "layers": [{"name": l.name, "color": l.color} for l in result.layers[:50]],
+                "metadata": result.metadata,
+            }
+            cache_analysis(file_path, {"analysis": analysis})
+            return {"file_name": file_name, "cached": False, "success": True, "analysis": analysis}
+        except Exception as e:
+            return {"file_name": file_name, "cached": False, "success": False, "error": str(e)}
+
+    loop = asyncio.get_event_loop()
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        futures = [loop.run_in_executor(pool, _analyze_one, fn, fp) for fn, fp in saved_files]
+        results = await asyncio.gather(*futures)
+
+    success_count = sum(1 for r in results if r.get("success", r.get("cached", False)))
+    return {
+        "success": True,
+        "total": len(saved_files),
+        "completed": success_count,
+        "failed": len(saved_files) - success_count,
+        "results": results,
+    }
+
+
 # ── 图纸上传 + LLM 智能解读（SSE 流式）─────────────────────────
 @app.post("/api/v1/upload/chat")
 async def upload_and_chat(
