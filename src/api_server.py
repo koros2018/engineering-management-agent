@@ -3307,6 +3307,35 @@ conversations: dict[str, list] = {}
 MAX_HISTORY_ROUNDS = 10
 
 
+async def _search_knowledge_context(user_message: str, agent_id: str) -> str:
+    """
+    RAG：用用户问题搜索 ChromaDB 知识库，返回相关上下文文本。
+    返回空字符串表示无匹配或知识库未初始化。
+    """
+    try:
+        from memory import get_chroma_store
+        store = get_chroma_store()
+        # 最多取 3 条相关知识，避免 prompt 过长
+        results = store.search_knowledge(user_message, limit=3)
+        if not results:
+            return ""
+        # 组装上下文片段
+        parts = []
+        for i, r in enumerate(results):
+            content = r.get("content", "").strip()
+            if content:
+                parts.append(f"[知识片段 {i+1}] {content}")
+        if not parts:
+            return ""
+        return (
+            "## 相关工程规范参考（来自知识库检索）\n"
+            + "\n\n".join(parts)
+            + "\n\n请基于以上规范内容回答用户问题。"
+        )
+    except Exception:
+        return ""  # 检索失败不影响主对话流程
+
+
 async def _persist_to_chroma(session_id: str, agent_id: str, user_msg: str, agent_msg: str):
     """后台持久化对话到 ChromaDB（fire-and-forget）"""
     try:
@@ -3341,6 +3370,9 @@ async def agent_chat_stream(req: StreamChatRequest):
         system_prompt = build_system_prompt(req.agent_id)
         user_message = req.message
 
+        # ── RAG：知识库检索 ──
+        knowledge_context = _search_knowledge_context(user_message, req.agent_id)
+
         # 会话管理
         history = []
         if req.session_id:
@@ -3351,13 +3383,14 @@ async def agent_chat_stream(req: StreamChatRequest):
         else:
             sid = None
 
-        # 获取流式生成器（传入历史）
+        # 获取流式生成器（传入历史 + 知识上下文）
         stream_gen = stream_agent_llm(
             system_prompt=system_prompt,
             user_message=user_message,
             model_id=req.model or "",
             timeout=60.0,
             history=history,
+            context=knowledge_context,
         )
 
         # 收集完整回复用于保存到历史
