@@ -2441,6 +2441,16 @@ async def read_notification(
     return {"success": ok}
 
 
+@app.post("/api/v1/notifications/check")
+async def trigger_notification_check(
+    user: dict = Depends(get_current_user),
+):
+    """主动触发通知检查（里程碑/订阅/配额/规范更新）"""
+    from notifications import run_daily_checks
+    result = run_daily_checks()
+    return {"success": True, "result": result}
+
+
 def get_full_stats() -> Dict:
     """
     全量统计（一次性返回所有维度）
