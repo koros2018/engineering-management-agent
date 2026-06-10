@@ -3307,6 +3307,17 @@ conversations: dict[str, list] = {}
 MAX_HISTORY_ROUNDS = 10
 
 
+async def _persist_to_chroma(session_id: str, agent_id: str, user_msg: str, agent_msg: str):
+    """后台持久化对话到 ChromaDB（fire-and-forget）"""
+    try:
+        from memory import get_chroma_store
+        store = get_chroma_store()
+        store.add_conversation(session_id=session_id, role="user", content=user_msg, agent_id=agent_id)
+        store.add_conversation(session_id=session_id, role="agent", content=agent_msg, agent_id=agent_id)
+    except Exception:
+        pass  # 持久化失败不影响主流程
+
+
 @app.post("/api/v1/agent/chat/stream")
 async def agent_chat_stream(req: StreamChatRequest):
     """
@@ -3355,38 +3366,21 @@ async def agent_chat_stream(req: StreamChatRequest):
         # 逐 token 转换为 SSE 事件
         for token in stream_gen:
             full_response.append(token)
-            # yield 格式: "data: {\"token\": \"...\"}\n\n"
             yield f"data: {json.dumps({'token': token})}\n\n"
             await asyncio.sleep(0)  # 让出事件循环
 
-        # 保存用户问题和助手回复到会话历史
+        # 保存到会话历史
         if sid and full_response:
             conversations[sid].append({"role": "user", "content": user_message})
             conversations[sid].append({"role": "assistant", "content": "".join(full_response)})
-
-            # 持久化到 ChromaDB
-            try:
-                from memory import get_chroma_store
-                store = get_chroma_store()
-                store.add_conversation(
-                    session_id=sid,
-                    role="user",
-                    content=user_message,
-                    agent_id=req.agent_id,
-                )
-                store.add_conversation(
-                    session_id=sid,
-                    role="agent",
-                    content="".join(full_response),
-                    agent_id=req.agent_id,
-                )
-            except Exception:
-                pass  # ChromaDB 不可用时忽略
-
             # 限制历史轮次
             while len(conversations[sid]) > MAX_HISTORY_ROUNDS * 2:
                 conversations[sid].pop(0)
                 conversations[sid].pop(0)
+
+        # 持久化到 ChromaDB（后台任务，不阻塞SSE流）
+        if sid and full_response:
+            asyncio.create_task(_persist_to_chroma(sid, req.agent_id, user_message, "".join(full_response)))
 
         # 流结束标记（携带完整文本）
         yield f"data: {json.dumps({'done': True, 'text': ''.join(full_response)})}\n\n"
