@@ -273,6 +273,57 @@ def run_standard_update_check() -> list:
     return simulated_updates
 
 
+def run_milestone_checks() -> list:
+    """
+    检查即将到期/已逾期的项目里程碑
+
+    Returns:
+        list: 生成的提醒列表
+    """
+    from projects import list_milestones, _load as _load_proj
+
+    milestones = _load_proj(MILESTONES_FILE)
+    alerts = []
+    now = datetime.now()
+
+    for proj_id, ms in milestones.items():
+        for m in ms if isinstance(ms, list) else []:
+            due_str = m.get("due_date", "")
+            if not due_str:
+                continue
+            try:
+                due = datetime.fromisoformat(due_str)
+            except (ValueError, TypeError):
+                continue
+
+            days_left = (due - now).days
+            title = m.get("title", "里程碑")
+            proj_name = m.get("project_name", proj_id)
+
+            if days_left < 0:
+                alerts.append(create_notification(
+                    tenant_id=m.get("tenant_id", "default"),
+                    notify_type="project_milestone",
+                    title=f"🚨 里程碑已逾期: {title}",
+                    message=f"项目「{proj_name}」的里程碑「{title}」已逾期 {abs(days_left)} 天（截止 {due_str}），请尽快处理。",
+                    severity="critical",
+                    actionable=True,
+                    action_url=f"/projects/{proj_id}",
+                ))
+            elif days_left <= 3:
+                alerts.append(create_notification(
+                    tenant_id=m.get("tenant_id", "default"),
+                    notify_type="project_milestone",
+                    title=f"⏰ 里程碑即将到期: {title}",
+                    message=f"项目「{proj_name}」的里程碑「{title}」将在 {days_left} 天后到期（截止 {due_str}）。",
+                    severity="warning" if days_left > 0 else "critical",
+                    actionable=True,
+                    action_url=f"/projects/{proj_id}",
+                ))
+
+    return alerts
+
+
 def run_daily_checks():
     """
     执行每日主动检查（由 cron/heartbeat 触发）
@@ -281,6 +332,7 @@ def run_daily_checks():
     1. 订阅到期检查
     2. 配额使用检查
     3. 规范更新检查
+    4. 里程碑到期检查
 
     Returns:
         dict: 检查结果统计
@@ -291,6 +343,7 @@ def run_daily_checks():
         "quota_checks": 0,
         "quota_alerts": 0,
         "standard_updates": 0,
+        "milestone_alerts": 0,
         "errors": [],
     }
 
@@ -318,5 +371,12 @@ def run_daily_checks():
         results["standard_updates"] += len(updates)
     except Exception as e:
         results["errors"].append(f"standard_update: {str(e)}")
+
+    # 里程碑检查
+    try:
+        milestone_alerts = run_milestone_checks()
+        results["milestone_alerts"] += len(milestone_alerts)
+    except Exception as e:
+        results["errors"].append(f"milestone_check: {str(e)}")
 
     return results
