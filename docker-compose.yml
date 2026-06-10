@@ -49,6 +49,7 @@ services:
       - SMTP_PASS=${SMTP_PASS:-}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - EMA_SSL_ENABLED=${EMA_SSL_ENABLED:-false}
+      - EMA_API_WORKERS=${EMA_API_WORKERS:-1}
       - EMA_SSL_CERT_PATH=${EMA_SSL_CERT_PATH:-./docker/certs/selfsigned.crt}
       - EMA_SSL_KEY_PATH=${EMA_SSL_KEY_PATH:-./docker/certs/selfsigned.key}
       - EMA_SERVER_NAME=${EMA_SERVER_NAME:-localhost}

@@ -34,4 +34,4 @@ echo "[4/4] 启动API服务 (端口 ${EMA_PORT:-6188})..."
 echo "═══════════════════════════════════════════"
 
 # 用exec替换shell进程，确保信号正确传递
-exec python3 src/api_server.py --host 0.0.0.0 --port "${EMA_PORT:-6188}"
+exec python3 src/api_server.py --host 0.0.0.0 --port "${EMA_PORT:-6188}" --workers "${EMA_API_WORKERS:-1}"

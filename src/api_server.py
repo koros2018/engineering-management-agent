@@ -3306,6 +3306,9 @@ class StreamChatRequest(BaseModel):
 conversations: dict[str, list] = {}
 MAX_HISTORY_ROUNDS = 10
 
+# LLM 并发控制：限制同时进行的 LLM 流式调用数，避免资源耗尽
+_llm_semaphore = asyncio.Semaphore(5)
+
 
 async def _search_knowledge_context(user_message: str, agent_id: str) -> str:
     """
@@ -3383,26 +3386,28 @@ async def agent_chat_stream(req: StreamChatRequest):
         else:
             sid = None
 
-        # 获取流式生成器（传入历史 + 知识上下文）
-        stream_gen = stream_agent_llm(
-            system_prompt=system_prompt,
-            user_message=user_message,
-            model_id=req.model or "",
-            timeout=60.0,
-            history=history,
-            context=knowledge_context,
-        )
+        # ── LLM 并发控制 ──
+        async with _llm_semaphore:
+            # 获取流式生成器（传入历史 + 知识上下文）
+            stream_gen = stream_agent_llm(
+                system_prompt=system_prompt,
+                user_message=user_message,
+                model_id=req.model or "",
+                timeout=60.0,
+                history=history,
+                context=knowledge_context,
+            )
 
-        # 收集完整回复用于保存到历史
-        full_response = []
+            # 收集完整回复用于保存到历史
+            full_response = []
 
-        # 逐 token 转换为 SSE 事件
-        for token in stream_gen:
-            full_response.append(token)
-            yield f"data: {json.dumps({'token': token})}\n\n"
-            await asyncio.sleep(0)  # 让出事件循环
+            # 逐 token 转换为 SSE 事件
+            for token in stream_gen:
+                full_response.append(token)
+                yield f"data: {json.dumps({'token': token})}\n\n"
+                await asyncio.sleep(0)  # 让出事件循环
 
-        # 保存到会话历史
+        # 保存到会话历史（在 semaphore 外，不阻塞其他请求）
         if sid and full_response:
             conversations[sid].append({"role": "user", "content": user_message})
             conversations[sid].append({"role": "assistant", "content": "".join(full_response)})
@@ -3429,7 +3434,7 @@ async def agent_chat_stream(req: StreamChatRequest):
     )
 
 
-def run_server(host: str = "0.0.0.0", port: int = 6188, reload: bool = False):
+def run_server(host: str = "0.0.0.0", port: int = 6188, reload: bool = False, workers: int = 1):
     # 确保EMA的src在路径最前面（uvicorn子进程需要）
     _src_dir = str(Path(__file__).parent)
     _ema_dir = str(Path(__file__).parent.parent)
@@ -3444,7 +3449,11 @@ def run_server(host: str = "0.0.0.0", port: int = 6188, reload: bool = False):
         host=host,
         port=port,
         reload=False,
+        workers=workers,
         log_level="info",
+        timeout_keep_alive=600,
+        limit_concurrency=50,
+        limit_max_requests=10000,
     )
 
 
@@ -3455,6 +3464,7 @@ if __name__ == "__main__":
     parser.add_argument("--host", default="0.0.0.0", help="Host")
     parser.add_argument("--port", type=int, default=6188, help="Port")
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload")
+    parser.add_argument("--workers", type=int, default=1, help="Uvicorn workers")
     args = parser.parse_args()
 
-    run_server(host=args.host, port=args.port, reload=args.reload)
+    run_server(host=args.host, port=args.port, reload=args.reload, workers=args.workers)

@@ -3,8 +3,9 @@
 # 用法:
 #   ./deploy.sh                # 开发模式 (HTTP)
 #   ./deploy.sh --prod         # 生产模式 (HTTPS + Nginx)
-#   ./prod.sh --ssl            # 生产模式 + 自签名证书
+#   ./deploy.sh --ssl            # 生产模式 + 自签名证书
 #   ./deploy.sh --ssl --domain=your.com  # 生产模式 + 指定域名
+#   ./deploy.sh --workers=4     # 生产模式 + 4个API worker
 # ──────────────────────────────────────────────────────────────
 
 set -e
@@ -17,12 +18,14 @@ cd "$PROJECT_DIR"
 MODE="dev"
 SSL=false
 DOMAIN="localhost"
+WORKERS=1
 
 for arg in "$@"; do
     case $arg in
         --prod)   MODE="prod" ;;
         --ssl)    SSL=true ;;
         --domain=*) DOMAIN="${arg#*=}" ;;
+        --workers=*) WORKERS="${arg#*=}" ;;
     esac
 done
 
@@ -31,6 +34,7 @@ echo "  EMA 部署脚本"
 echo "  模式: $MODE"
 echo "  SSL:  $SSL"
 echo "  域名: $DOMAIN"
+echo "  Workers: $WORKERS"
 echo "═══════════════════════════════════════════"
 
 # 检查 .env
@@ -73,7 +77,7 @@ echo "[Docker] 构建并启动服务..."
 if [ "$MODE" = "prod" ]; then
     # 生产模式: API + Nginx
     docker-compose build --no-cache api
-    docker-compose --profile prod up -d
+    EMA_API_WORKERS=$WORKERS docker-compose --profile prod up -d
     echo ""
     echo "═══════════════════════════════════════════"
     echo "  ✅ 生产模式部署完成"
