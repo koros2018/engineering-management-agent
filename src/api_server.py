@@ -1121,12 +1121,10 @@ async def upload_and_chat(
                 yield f"data: {json.dumps({'token': token})}\n\n"
                 await asyncio.sleep(0)
 
-            # 保存对话历史
+            # 保存对话历史到 ChromaDB
             if session_id:
-                if session_id not in conversations:
-                    conversations[session_id] = []
-                conversations[session_id].append({"role": "user", "content": f"[图纸分析] {file.filename}"})
-                conversations[session_id].append({"role": "assistant", "content": "".join(full_response)})
+                _save_session_history(session_id, "user", f"[图纸分析] {file.filename}")
+                _save_session_history(session_id, "assistant", "".join(full_response))
 
                 # 持久化到 ChromaDB
                 try:
@@ -3302,9 +3300,29 @@ class StreamChatRequest(BaseModel):
     session_id: Optional[str] = None
 
 
-# 内存会话存储：session_id -> [{"role": "user"|"assistant", "content": "..."}]
-conversations: dict[str, list] = {}
+# 会话历史从 ChromaDB 读取（多 worker 共享），不再用内存 dict
 MAX_HISTORY_ROUNDS = 10
+
+
+def _get_session_history(session_id: str) -> list:
+    """从 ChromaDB 获取最近 N 轮对话历史（多 worker 安全）"""
+    try:
+        from memory import get_chroma_store
+        store = get_chroma_store()
+        records = store.get_recent_conversations(session_id, limit=MAX_HISTORY_ROUNDS * 2)
+        return [{"role": r["role"], "content": r["content"]} for r in records]
+    except Exception:
+        return []
+
+
+def _save_session_history(session_id: str, role: str, content: str):
+    """保存一条对话记录到 ChromaDB（多 worker 安全）"""
+    try:
+        from memory import get_chroma_store
+        store = get_chroma_store()
+        store.add_conversation(session_id=session_id, role=role, content=content)
+    except Exception:
+        pass  # 保存失败不影响主流程
 
 # LLM 并发控制：限制同时进行的 LLM 流式调用数，避免资源耗尽
 _llm_semaphore = asyncio.Semaphore(5)
@@ -3376,13 +3394,11 @@ async def agent_chat_stream(req: StreamChatRequest):
         # ── RAG：知识库检索 ──
         knowledge_context = _search_knowledge_context(user_message, req.agent_id)
 
-        # 会话管理
+        # 会话管理：从 ChromaDB 读取历史（多 worker 共享）
         history = []
         if req.session_id:
             sid = req.session_id
-            if sid not in conversations:
-                conversations[sid] = []
-            history = list(conversations[sid])  # 复制当前历史（不含最新问题）
+            history = _get_session_history(sid)
         else:
             sid = None
 
@@ -3407,14 +3423,10 @@ async def agent_chat_stream(req: StreamChatRequest):
                 yield f"data: {json.dumps({'token': token})}\n\n"
                 await asyncio.sleep(0)  # 让出事件循环
 
-        # 保存到会话历史（在 semaphore 外，不阻塞其他请求）
+        # 保存到会话历史（ChromaDB，多 worker 共享）
         if sid and full_response:
-            conversations[sid].append({"role": "user", "content": user_message})
-            conversations[sid].append({"role": "assistant", "content": "".join(full_response)})
-            # 限制历史轮次
-            while len(conversations[sid]) > MAX_HISTORY_ROUNDS * 2:
-                conversations[sid].pop(0)
-                conversations[sid].pop(0)
+            _save_session_history(sid, "user", user_message)
+            _save_session_history(sid, "assistant", "".join(full_response))
 
         # 持久化到 ChromaDB（后台任务，不阻塞SSE流）
         if sid and full_response:

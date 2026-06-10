@@ -19,9 +19,9 @@ memory/sensenova_embedding.py - 商汤云 Embedding 适配器
 """
 
 import json
+import math
 import os
 import socket
-import urllib.error
 import urllib.request
 from typing import List, Union
 
@@ -133,7 +133,6 @@ def get_embedding(text: str) -> List[float]:
 
 def cosine_similarity(a: List[float], b: List[float]) -> float:
     """计算两个向量的余弦相似度"""
-    import math
     dot = sum(x * y for x, y in zip(a, b))
     norm_a = math.sqrt(sum(x * x for x in a))
     norm_b = math.sqrt(sum(y * y for y in b))

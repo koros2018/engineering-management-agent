@@ -259,6 +259,41 @@ class ChromaDBStore:
 
     # ── 管理 ───────────────────────────────────────────────
 
+    def get_recent_conversations(
+        self,
+        session_id: str,
+        limit: int = 10,
+    ) -> List[Dict]:
+        """
+        获取指定会话的最近 N 条对话记录（按时间正序）。
+
+        Returns:
+            List[Dict]: [{"role": "user"|"assistant", "content": "...", "timestamp": ...}, ...]
+        """
+        collection = self.get_collection("conversations")
+        try:
+            results = collection.get(
+                where={"session_id": session_id},
+                limit=limit,
+                include=["documents", "metadatas"],
+            )
+        except Exception:
+            return []
+
+        records = []
+        if results and results.get("documents"):
+            for i, doc in enumerate(results["documents"]):
+                meta = results["metadatas"][i] if results.get("metadatas") else {}
+                records.append({
+                    "role": meta.get("role", "unknown"),
+                    "content": doc,
+                    "timestamp": meta.get("timestamp", 0),
+                })
+
+        # 按时间正序排列
+        records.sort(key=lambda x: x["timestamp"])
+        return records
+
     def reset(self):
         """重置所有 collection（危险操作）"""
         for name in list(self._collections.keys()):
