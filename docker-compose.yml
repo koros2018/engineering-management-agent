@@ -48,6 +48,10 @@ services:
       - SMTP_USER=${SMTP_USER:-}
       - SMTP_PASS=${SMTP_PASS:-}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - EMA_SSL_ENABLED=${EMA_SSL_ENABLED:-false}
+      - EMA_SSL_CERT_PATH=${EMA_SSL_CERT_PATH:-./docker/certs/selfsigned.crt}
+      - EMA_SSL_KEY_PATH=${EMA_SSL_KEY_PATH:-./docker/certs/selfsigned.key}
+      - EMA_SERVER_NAME=${EMA_SERVER_NAME:-localhost}
     deploy:
       resources:
         limits:
@@ -81,6 +85,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ui:/usr/share/nginx/html:ro
+      - ema-certs:/etc/nginx/certs:ro
     depends_on:
       api:
         condition: service_healthy
@@ -124,3 +129,5 @@ volumes:
     name: ema-data
   ema-output:
     name: ema-output
+  ema-certs:
+    name: ema-certs
