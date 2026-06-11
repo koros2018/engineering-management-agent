@@ -43,7 +43,9 @@ def ensure_dir(path: Path) -> Path:
 
 
 def safe_get(d: dict, key: str, default: Any = None) -> Any:
-    """安全获取字典值"""
+    """安全获取字典值（兼容 None 输入）"""
+    if d is None:
+        return default
     if isinstance(d, dict):
         return d.get(key, default)
     return default

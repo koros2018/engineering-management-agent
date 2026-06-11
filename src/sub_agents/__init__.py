@@ -16,13 +16,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Literal
 
 from agent.base_agent import BaseAgent, Task, AgentResult
-
-
-def safe_get(d: dict, key: str, default=None):
-    """安全获取字典值（兼容None）"""
-    if d is None:
-        return default
-    return d.get(key, default)
+from utils import safe_get
 
 # ─── TechRdAgent（已实现）─────────────────────────────────────────
 from sub_agents.tech_rd_agent import TechRdAgent
