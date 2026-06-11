@@ -51,11 +51,12 @@ if _ENV_FILE.exists():
 
 import asyncio
 import time
-from src.utils import json_dumps, json_loads
 import uuid
 from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import Optional, List, Dict, Tuple
+
+from utils import json_dumps, json_loads, load_json, save_json
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Form, Depends, Body, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -73,8 +74,6 @@ from sub_agents import TechRdAgent
 from tools.logging_utils import get_logger, log_api_request, set_request_context
 logger = get_logger("api_server")
 
-# 统一 JSON 读写
-from utils import load_json, save_json
 
 # 认证模块
 from auth import (
