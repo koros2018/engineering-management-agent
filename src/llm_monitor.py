@@ -18,6 +18,8 @@ import threading
 import json
 import os
 from pathlib import Path
+
+from utils import load_json, save_json
 from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
 from datetime import datetime
@@ -229,7 +231,7 @@ def _load():
     global _state
     try:
         if MONITOR_FILE.exists():
-            data = json.load(open(MONITOR_FILE))
+            data = load_json(MONITOR_FILE, default={})
             # 恢复模型统计
             for mid, sdata in data.get("models", {}).items():
                 s = ModelStats()
@@ -259,7 +261,7 @@ def _persist():
             "daily": _state["daily"].to_dict() if _state["daily"] else None,
             "alerts": _state["alerts"][-100:],
         }
-        json.dump(data, open(MONITOR_FILE, "w"), ensure_ascii=False, indent=2)
+        save_json(MONITOR_FILE, data)
     except Exception:
         pass
 

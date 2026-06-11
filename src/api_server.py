@@ -72,9 +72,8 @@ from sub_agents import TechRdAgent
 from tools.logging_utils import get_logger, log_api_request, set_request_context
 logger = get_logger("api_server")
 
-# 统一日志
-from tools.logging_utils import get_logger, log_api_request, set_request_context
-logger = get_logger("api_server")
+# 统一 JSON 读写
+from utils import load_json, save_json
 
 # 认证模块
 from auth import (
@@ -1989,11 +1988,9 @@ async def check_rate(client_ip: str = "127.0.0.1"):
 @app.get("/api/v1/admin/users")
 async def admin_list_users(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
     """用户列表（仅超级管理员）"""
-    import json
-    from pathlib import Path
     EMA_DATA_DIR = Path(__file__).parent.parent / "data"
     f = EMA_DATA_DIR / "users.json"
-    users_data = json.load(open(f)) if f.exists() else {}
+    users_data = load_json(f)
     users = []
     for uid, u in users_data.items():
         users.append({
@@ -2010,13 +2007,11 @@ async def admin_list_users(user: dict = Depends(require_role(Role.SUPER_ADMIN)))
 @app.get("/api/v1/admin/tenants")
 async def admin_list_tenants(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
     """租户列表（仅超级管理员）"""
-    import json
-    from pathlib import Path
     EMA_DATA_DIR = Path(__file__).parent.parent / "data"
     t_f = EMA_DATA_DIR / "tenants.json"
     u_f = EMA_DATA_DIR / "tenant_users.json"
-    tenants_data = json.load(open(t_f)) if t_f.exists() else {}
-    tenant_users = json.load(open(u_f)) if u_f.exists() else {}
+    tenants_data = load_json(t_f)
+    tenant_users = load_json(u_f)
     tenants = []
     for tid, t in tenants_data.items():
         user_count = sum(1 for tu in tenant_users.values() if tu.get("tenant_id") == tid)
@@ -2038,11 +2033,10 @@ async def admin_create_tenant(
     user: dict = Depends(require_role(Role.SUPER_ADMIN)),
 ):
     """创建租户（仅超级管理员）"""
-    import json, uuid
-    from pathlib import Path
+    import uuid
     EMA_DATA_DIR = Path(__file__).parent.parent / "data"
     t_f = EMA_DATA_DIR / "tenants.json"
-    tenants_data = json.load(open(t_f)) if t_f.exists() else {}
+    tenants_data = load_json(t_f)
     tid = f"tenant_{uuid.uuid4().hex[:12]}"
     tenants_data[tid] = {
         "tenant_id": tid,
@@ -2052,8 +2046,7 @@ async def admin_create_tenant(
         "created_at": datetime.now().isoformat(),
         "status": "active",
     }
-    with open(t_f, "w") as f:
-        json.dump(tenants_data, f, indent=2, ensure_ascii=False)
+    save_json(t_f, tenants_data)
     return {"success": True, "tenant_id": tid, "message": f"租户 '{name}' 创建成功"}
 
 
@@ -2066,11 +2059,9 @@ async def admin_update_tenant(
     user: dict = Depends(require_role(Role.SUPER_ADMIN)),
 ):
     """编辑租户（仅超级管理员）"""
-    import json
-    from pathlib import Path
     EMA_DATA_DIR = Path(__file__).parent.parent / "data"
     t_f = EMA_DATA_DIR / "tenants.json"
-    tenants_data = json.load(open(t_f)) if t_f.exists() else {}
+    tenants_data = load_json(t_f)
     if tenant_id not in tenants_data:
         raise HTTPException(status_code=404, detail="租户不存在")
     t = tenants_data[tenant_id]
@@ -2081,8 +2072,7 @@ async def admin_update_tenant(
     if status is not None:
         t["status"] = status
     tenants_data[tenant_id] = t
-    with open(t_f, "w") as f:
-        json.dump(tenants_data, f, indent=2, ensure_ascii=False)
+    save_json(t_f, tenants_data)
     return {"success": True, "message": "租户更新成功"}
 
 
@@ -2092,24 +2082,19 @@ async def admin_delete_tenant(
     user: dict = Depends(require_role(Role.SUPER_ADMIN)),
 ):
     """删除租户（仅超级管理员）"""
-    import json
-    from pathlib import Path
     EMA_DATA_DIR = Path(__file__).parent.parent / "data"
     t_f = EMA_DATA_DIR / "tenants.json"
     u_f = EMA_DATA_DIR / "tenant_users.json"
-    tenants_data = json.load(open(t_f)) if t_f.exists() else {}
+    tenants_data = load_json(t_f)
     if tenant_id not in tenants_data:
         raise HTTPException(status_code=404, detail="租户不存在")
     del tenants_data[tenant_id]
-    with open(t_f, "w") as f:
-        json.dump(tenants_data, f, indent=2, ensure_ascii=False)
+    save_json(t_f, tenants_data)
     # 清理租户用户关联
-    if u_f.exists():
-        tenant_users = json.load(open(u_f))
-        for uid in [k for k, v in tenant_users.items() if v.get("tenant_id") == tenant_id]:
-            del tenant_users[uid]
-        with open(u_f, "w") as f:
-            json.dump(tenant_users, f, indent=2, ensure_ascii=False)
+    tenant_users = load_json(u_f)
+    for uid in [k for k, v in tenant_users.items() if v.get("tenant_id") == tenant_id]:
+        del tenant_users[uid]
+    save_json(u_f, tenant_users)
     return {"success": True, "message": "租户已删除"}
 
 
