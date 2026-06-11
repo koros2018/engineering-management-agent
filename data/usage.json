@@ -33,7 +33,7 @@
     "files_uploaded": 0,
     "api_calls": 0,
     "storage_used_mb": 0,
-    "last_updated": "2026-06-05T10:14:20.650371"
+    "last_updated": "2026-06-11T10:39:55.304556"
   },
   "t-pay-001": {
     "tenant_id": "t-pay-001",
@@ -42,7 +42,7 @@
     "files_uploaded": 0,
     "api_calls": 0,
     "storage_used_mb": 0,
-    "last_updated": "2026-06-05T10:14:20.704326"
+    "last_updated": "2026-06-11T10:39:55.350863"
   },
   "t-pay-002": {
     "tenant_id": "t-pay-002",
@@ -51,7 +51,7 @@
     "files_uploaded": 0,
     "api_calls": 0,
     "storage_used_mb": 0,
-    "last_updated": "2026-06-05T10:14:20.726267"
+    "last_updated": "2026-06-11T10:39:55.378746"
   },
   "t-pay-003": {
     "tenant_id": "t-pay-003",
@@ -60,7 +60,7 @@
     "files_uploaded": 0,
     "api_calls": 0,
     "storage_used_mb": 0,
-    "last_updated": "2026-06-05T10:14:20.749925"
+    "last_updated": "2026-06-11T10:39:55.407415"
   },
   "t-check-002": {
     "tenant_id": "t-check-002",
