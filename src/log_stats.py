@@ -26,7 +26,7 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 
 def _parse_log_line(line: str) -> Optional[Dict]:
     try:
-        return json.loads(line)
+        return json_loads(line)
     except Exception:
         return None
 

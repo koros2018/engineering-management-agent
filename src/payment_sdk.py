@@ -17,8 +17,8 @@ Phase 9: 真实支付网关对接（替换 Phase 7 Stub）
 """
 
 import os
-import json
 import time
+from src.utils import json_dumps, json_loads
 import hashlib
 import base64
 import uuid
@@ -124,7 +124,7 @@ def wechat_create_order(
         },
     }
 
-    body_str = json.dumps(body, ensure_ascii=False)
+    body_str = json_dumps(body, ensure_ascii=False)
 
     # 签名
     timestamp = str(int(time.time()))
@@ -211,7 +211,7 @@ def wechat_verify_callback(headers: Dict, body: str) -> Tuple[bool, Optional[Dic
             return False, None
 
         # 解密 resource
-        callback = json.loads(body)
+        callback = json_loads(body)
         resource = callback.get("resource", {})
         ciphertext = resource.get("ciphertext", "")
         associated_data = resource.get("associated_data", "")
@@ -223,13 +223,13 @@ def wechat_verify_callback(headers: Dict, body: str) -> Tuple[bool, Optional[Dic
         key = WECHAT_CONFIG["api_v3_key"].encode()
         aesgcm = AESGCM(key)
         decrypted = aesgcm.decrypt(nonce_str.encode(), ciphertext.encode(), associated_data.encode())
-        order_data = json.loads(decrypted.decode())
+        order_data = json_loads(decrypted.decode())
 
         return True, order_data
 
     except ImportError:
         # cryptography 未安装时降级
-        callback = json.loads(body)
+        callback = json_loads(body)
         return True, callback.get("resource", {})
 
     except Exception:
@@ -276,7 +276,7 @@ def alipay_create_order(
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "version": "1.0",
         "notify_url": ALIPAY_CONFIG["notify_url"],
-        "biz_content": json.dumps(biz_content, ensure_ascii=False),
+        "biz_content": json_dumps(biz_content, ensure_ascii=False),
     }
 
     # 签名（简化版，生产环境用支付宝SDK）

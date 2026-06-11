@@ -207,12 +207,12 @@ def call_llm(prompt: str, fallback: str = "", timeout: float = 10.0) -> str:
     socket_timeout = socket.getdefaulttimeout()
     try:
         socket.setdefaulttimeout(timeout)
-        payload = json.dumps({"model": LLM_MODEL, "prompt": prompt, "stream": False}).encode()
+        payload = json_dumps({"model": LLM_MODEL, "prompt": prompt, "stream": False}).encode()
         req = urllib.request.Request(
             LLM_API_URL, data=payload,
             headers={"Content-Type": "application/json"}, method="POST")
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            result = json.loads(resp.read())
+            result = json_loads(resp.read())
             text = result.get("response", "").strip()
             return text if text else fallback
     except Exception:

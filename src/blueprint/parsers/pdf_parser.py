@@ -90,7 +90,7 @@ class PDFParser:
             )
 
             if proc.returncode == 0 and proc.stdout.strip():
-                ocr_result = json.loads(proc.stdout)
+                ocr_result = json_loads(proc.stdout)
                 return ocr_result['text'], ocr_result['confidence']
 
         except Exception as e:

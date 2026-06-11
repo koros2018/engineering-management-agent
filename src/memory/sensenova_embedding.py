@@ -18,7 +18,7 @@ memory/sensenova_embedding.py - 商汤云 Embedding 适配器
     )
 """
 
-import json
+from src.utils import json_dumps, json_loads
 import math
 import os
 import socket
@@ -43,7 +43,7 @@ def _call_embeddings_api(texts: List[str], model: str = SENSENOVA_EMBEDDING_MODE
     try:
         socket.setdefaulttimeout(60)
         url = f"{SENSENOVA_BASE_URL}/embeddings"
-        payload = json.dumps({
+        payload = json_dumps({
             "model": model,
             "input": texts,
             "encoding_format": "float",
@@ -57,7 +57,7 @@ def _call_embeddings_api(texts: List[str], model: str = SENSENOVA_EMBEDDING_MODE
             method="POST"
         )
         with urllib.request.urlopen(req, timeout=60) as resp:
-            result = json.loads(resp.read())
+            result = json_loads(resp.read())
             # OpenAI 兼容返回格式: {"data": [{"embedding": [...], "index": 0}, ...]}
             data = result.get("data", [])
             # 按 index 排序确保顺序一致

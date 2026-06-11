@@ -7,7 +7,8 @@ auth_extended.py - 认证扩展 v3
 3. 普注用户 → 设置中绑定微信二维码
 """
 
-import os, json, hashlib, secrets, time, re, io, base64, hmac
+import os, hashlib, secrets, time, re, io, base64, hmac
+from src.utils import json_dumps, json_loads
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional, Tuple
@@ -128,7 +129,7 @@ def _wechat_api(endpoint: str, params: dict) -> dict:
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "EMA/3.0"})
         with urllib.request.urlopen(req, timeout=10) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+            return json_loads(resp.read().decode("utf-8"))
     except Exception as e:
         _wechat_log.error(f"微信API调用失败: {endpoint} → {e}")
         return {"errcode": -1, "errmsg": str(e)}
@@ -479,13 +480,13 @@ def create_access_token(user_id: str, username: str, role: str = "", expires_min
         delta = expires_minutes
     else:
         delta = timedelta(minutes=int(expires_minutes))
-    header = _jwt_b64encode(json.dumps({"alg": _JWT_ALGORITHM, "typ": "JWT"}).encode())
+    header = _jwt_b64encode(json_dumps({"alg": _JWT_ALGORITHM, "typ": "JWT"}).encode())
     now = datetime.now(timezone.utc)
     payload_data = {
         "sub": user_id, "username": username, "role": role,
         "iat": int(now.timestamp()), "exp": int((now + delta).timestamp()),
     }
-    payload = _jwt_b64encode(json.dumps(payload_data).encode())
+    payload = _jwt_b64encode(json_dumps(payload_data).encode())
     sig_input = f"{header}.{payload}"
     signature = _jwt_b64encode(hmac.new(_JWT_SECRET.encode(), sig_input.encode(), "sha256").digest())
     return f"{sig_input}.{signature}"
@@ -493,13 +494,13 @@ def create_access_token(user_id: str, username: str, role: str = "", expires_min
 
 def create_refresh_token(user_id: str, expires_days: int = 30) -> str:
     """创建 JWT refresh token"""
-    header = _jwt_b64encode(json.dumps({"alg": _JWT_ALGORITHM, "typ": "JWT"}).encode())
+    header = _jwt_b64encode(json_dumps({"alg": _JWT_ALGORITHM, "typ": "JWT"}).encode())
     now = datetime.now(timezone.utc)
     payload_data = {
         "sub": user_id, "type": "refresh",
         "iat": int(now.timestamp()), "exp": int((now + timedelta(days=expires_days)).timestamp()),
     }
-    payload = _jwt_b64encode(json.dumps(payload_data).encode())
+    payload = _jwt_b64encode(json_dumps(payload_data).encode())
     sig_input = f"{header}.{payload}"
     signature = _jwt_b64encode(hmac.new(_JWT_SECRET.encode(), sig_input.encode(), "sha256").digest())
     return f"{sig_input}.{signature}"
@@ -515,7 +516,7 @@ def decode_token(token: str) -> dict:
         expected_sig = _jwt_b64encode(hmac.new(_JWT_SECRET.encode(), sig_input.encode(), "sha256").digest())
         if not hmac.compare_digest(parts[2], expected_sig):
             return {}
-        payload = json.loads(_jwt_b64decode(parts[1]))
+        payload = json_loads(_jwt_b64decode(parts[1]))
         if payload.get("exp", 0) < datetime.now(timezone.utc).timestamp():
             return {}
         return payload

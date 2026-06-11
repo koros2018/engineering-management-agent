@@ -160,8 +160,8 @@ class ChromaDBStore:
             {"description": "EMA项目特征向量库"}
         )
 
-        import json
-        content = json.dumps(project_data, ensure_ascii=False)
+        from src.utils import json_dumps
+        content = json_dumps(project_data)
 
         collection.add(
             documents=[content],
@@ -188,10 +188,10 @@ class ChromaDBStore:
 
         matches = []
         if results and results.get('documents'):
-            import json
+            from src.utils import json_loads
             for i, doc in enumerate(results['documents'][0]):
                 try:
-                    data = json.loads(doc)
+                    data = json_loads(doc)
                 except Exception:
                     data = {"raw": doc}
                 matches.append({

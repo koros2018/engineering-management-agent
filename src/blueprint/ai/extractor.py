@@ -11,9 +11,9 @@ src/blueprint/ai/extractor.py - 工程信息智能提取器
 双引擎：规则提取（正则）+ LLM增强（语义理解）
 """
 
-import json
 import os
 import re
+from src.utils import json_dumps, json_loads
 import time
 from pathlib import Path
 from typing import Dict, List, Any, Optional
@@ -230,12 +230,12 @@ def llm_extract(
     # 解析 JSON
     text = response.strip()
     try:
-        data = json.loads(text)
+        data = json_loads(text)
         result = _normalize_extraction(data)
         result['extraction_method'] = 'llm'
         result['llm_time'] = round(elapsed, 2)
         return result
-    except json.JSONDecodeError:
+    except Exception:
         pass
 
     # 尝试提取 JSON 块
@@ -243,12 +243,12 @@ def llm_extract(
     end_idx = text.rfind('}') + 1
     if start_idx >= 0 and end_idx > start_idx:
         try:
-            data = json.loads(text[start_idx:end_idx])
+            data = json_loads(text[start_idx:end_idx])
             result = _normalize_extraction(data)
             result['extraction_method'] = 'llm'
             result['llm_time'] = round(elapsed, 2)
             return result
-        except json.JSONDecodeError:
+        except Exception:
             pass
 
     return None

@@ -11,8 +11,8 @@ Phase 8: JWT 强度检查 / API 访问控制审计 / 文件上传安全检查 / 
 """
 
 import re
-import json
 import hashlib
+from src.utils import json_dumps, json_loads
 import secrets
 import time
 from pathlib import Path
@@ -82,7 +82,7 @@ def check_jwt_strength(token: str) -> Dict:
         import base64
         # 解析 header
         header_bytes = base64.urlsafe_b64decode(parts[0] + '==')
-        header = json.loads(header_bytes)
+        header = json_loads(header_bytes)
 
         info["algorithm"] = header.get("alg", "none")
         if info["algorithm"] == "none":
@@ -93,7 +93,7 @@ def check_jwt_strength(token: str) -> Dict:
 
         # 解析 payload
         payload_bytes = base64.urlsafe_b64decode(parts[1] + '==')
-        payload = json.loads(payload_bytes)
+        payload = json_loads(payload_bytes)
 
         exp = payload.get("exp", 0)
         now = int(time.time())

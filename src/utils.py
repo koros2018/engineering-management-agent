@@ -26,6 +26,16 @@ def save_json(path: Path, data: Any) -> bool:
         return False
 
 
+def json_dumps(data: Any) -> str:
+    """JSON 序列化（统一 ensure_ascii=False）"""
+    return json.dumps(data, ensure_ascii=False)
+
+
+def json_loads(text: str) -> Any:
+    """JSON 反序列化"""
+    return json.loads(text)
+
+
 def ensure_dir(path: Path) -> Path:
     """确保目录存在"""
     path.mkdir(parents=True, exist_ok=True)

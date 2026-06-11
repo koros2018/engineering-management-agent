@@ -20,7 +20,6 @@ agent/agent_llm.py - Agent通用LLM调用模块
 """
 
 import asyncio
-import json
 import os
 import socket
 import time
@@ -168,9 +167,10 @@ def build_system_prompt(agent_id: str, custom_suffix: str = "") -> str:
 def _call_ollama(prompt: str, model: str = LLM_MODEL, timeout: float = 30.0) -> str:
     """调用Ollama本地模型"""
     socket_timeout = socket.getdefaulttimeout()
+    from src.utils import json_dumps, json_loads
     try:
         socket.setdefaulttimeout(timeout)
-        payload = json.dumps({
+        payload = json_dumps({
             "model": model,
             "prompt": prompt,
             "stream": False,
@@ -186,7 +186,7 @@ def _call_ollama(prompt: str, model: str = LLM_MODEL, timeout: float = 30.0) -> 
             method="POST"
         )
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            result = json.loads(resp.read())
+            result = json_loads(resp.read())
             text = result.get("response", "").strip()
             return text
     except Exception:
@@ -204,7 +204,7 @@ def _call_cloud_openai(base_url: str, api_key: str, model: str,
     try:
         socket.setdefaulttimeout(timeout)
         url = f"{base_url}/chat/completions"
-        payload = json.dumps({
+        payload = json_dumps({
             "model": model,
             "messages": messages,
             "temperature": 0.7,
@@ -219,7 +219,7 @@ def _call_cloud_openai(base_url: str, api_key: str, model: str,
             method="POST"
         )
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            result = json.loads(resp.read())
+            result = json_loads(resp.read())
             text = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
             return text
     except Exception:
@@ -350,9 +350,9 @@ def _stream_ollama(prompt: str, model: str = LLM_MODEL, timeout: float = 60.0):
     用法: for token in _stream_ollama(prompt): ...
     """
     import urllib.request
-    import json
+    from src.utils import json_dumps
 
-    payload = json.dumps({
+    payload = json_dumps({
         "model": model,
         "prompt": prompt,
         "stream": True,
@@ -381,14 +381,14 @@ def _stream_ollama(prompt: str, model: str = LLM_MODEL, timeout: float = 60.0):
                     line, buffer = buffer.split(b"\n", 1)
                     if line.strip():
                         try:
-                            data = json.loads(line.decode())
+                            data = json_loads(line.decode())
                             token = data.get("response", "")
                             done = data.get("done", False)
                             if token:
                                 yield token
                             if done:
                                 return
-                        except json.JSONDecodeError:
+                        except Exception:
                             continue
     except Exception as e:
         yield f"\n[Ollama 流式错误: {e}]"
@@ -400,10 +400,10 @@ def _stream_cloud_openai(base_url: str, api_key: str, model: str,
     云端 OpenAI 兼容 API 流式生成器（逐块 yield token）
     """
     import urllib.request
-    import json
+    from src.utils import json_dumps
 
     url = f"{base_url}/chat/completions"
-    payload = json.dumps({
+    payload = json_dumps({
         "model": model,
         "messages": messages,
         "temperature": 0.7,
@@ -438,13 +438,13 @@ def _stream_cloud_openai(base_url: str, api_key: str, model: str,
                         if data_str == "[DONE]":
                             return
                         try:
-                            data = json.loads(data_str)
+                            data = json_loads(data_str)
                             choice = data.get("choices", [{}])[0]
                             delta = choice.get("delta", {})
                             token = delta.get("content", "")
                             if token:
                                 yield token
-                        except json.JSONDecodeError:
+                        except Exception:
                             continue
     except Exception as e:
         yield f"\n[云端流式错误: {e}]"

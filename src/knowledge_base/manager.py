@@ -215,7 +215,8 @@ class KnowledgeBase:
             ],
             'generated_at': datetime.now().isoformat(),
         }
-        Path(path).write_text(json.dumps(data, ensure_ascii=False, indent=2))
+        from src.utils import save_json
+        save_json(Path(path), data)
 
 
 # 单例

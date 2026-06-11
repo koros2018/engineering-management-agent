@@ -8,9 +8,9 @@ src/blueprint/ai/classifier.py - AI增强型图纸分类器
 策略：规则优先 → LLM增强 → 置信度融合
 """
 
-import json
 import os
 import time
+from src.utils import json_dumps, json_loads
 from typing import Dict, List, Any, Optional
 
 from .inference import (
@@ -78,10 +78,10 @@ def _parse_llm_response(text: str) -> Optional[Dict[str, Any]]:
 
     # 尝试直接解析
     try:
-        data = json.loads(text)
+        data = json_loads(text)
         if "primary" in data:
             return _normalize_result(data)
-    except json.JSONDecodeError:
+    except Exception:
         pass
 
     # 尝试提取 JSON 块
@@ -89,10 +89,10 @@ def _parse_llm_response(text: str) -> Optional[Dict[str, Any]]:
     end = text.rfind('}') + 1
     if start >= 0 and end > start:
         try:
-            data = json.loads(text[start:end])
+            data = json_loads(text[start:end])
             if "primary" in data:
                 return _normalize_result(data)
-        except json.JSONDecodeError:
+        except Exception:
             pass
 
     return None

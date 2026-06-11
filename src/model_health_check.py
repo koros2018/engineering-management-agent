@@ -10,9 +10,9 @@ model_health_check.py - EMA 大模型全面健康检测
 输出报告，标记不可用/慢/不稳定的模型。
 """
 
-import json
 import time
 import sys
+from src.utils import json_dumps, json_loads
 import os
 from pathlib import Path
 
@@ -135,7 +135,7 @@ def _test_ollama(cfg: ModelConfig) -> tuple:
     """测试 Ollama 模型"""
     import urllib.request
     url = f"{cfg.base_url}/api/generate"
-    payload = json.dumps({
+    payload = json_dumps({
         "model": cfg.model_name,
         "prompt": TEST_PROMPT,
         "stream": False,
@@ -145,7 +145,7 @@ def _test_ollama(cfg: ModelConfig) -> tuple:
     req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
     try:
         resp = urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS)
-        data = json.loads(resp.read().decode())
+        data = json_loads(resp.read().decode())
         text = data.get("response", "")
         return bool(text), text
     except Exception as e:
@@ -156,7 +156,7 @@ def _test_nvidia(cfg: ModelConfig) -> tuple:
     """测试 NVIDIA API"""
     import urllib.request
     url = f"{cfg.base_url}/chat/completions"
-    payload = json.dumps({
+    payload = json_dumps({
         "model": cfg.model_name,
         "messages": [{"role": "user", "content": TEST_PROMPT}],
         "max_tokens": 200,
@@ -170,7 +170,7 @@ def _test_nvidia(cfg: ModelConfig) -> tuple:
     req = urllib.request.Request(url, data=payload, headers=headers)
     try:
         resp = urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS)
-        data = json.loads(resp.read().decode())
+        data = json_loads(resp.read().decode())
         choices = data.get("choices", [])
         if choices:
             text = choices[0].get("message", {}).get("content", "")
@@ -189,7 +189,7 @@ def _test_openai_compat(cfg: ModelConfig) -> tuple:
     """测试 OpenAI 兼容接口"""
     import urllib.request
     url = f"{cfg.base_url}/chat/completions"
-    payload = json.dumps({
+    payload = json_dumps({
         "model": cfg.model_name,
         "messages": [{"role": "user", "content": TEST_PROMPT}],
         "max_tokens": 200,
@@ -203,7 +203,7 @@ def _test_openai_compat(cfg: ModelConfig) -> tuple:
     req = urllib.request.Request(url, data=payload, headers=headers)
     try:
         resp = urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS)
-        data = json.loads(resp.read().decode())
+        data = json_loads(resp.read().decode())
         choices = data.get("choices", [])
         if choices:
             text = choices[0].get("message", {}).get("content", "")
@@ -219,10 +219,10 @@ def _check_quality(text: str) -> str:
         return "poor"
     # 检查是否是有效JSON
     try:
-        data = json.loads(text)
+        data = json_loads(text)
         if data and isinstance(data, dict):
             return "good"
-    except json.JSONDecodeError:
+    except Exception:
         pass
     # 纯文本但有内容
     if len(text.strip()) > 20:

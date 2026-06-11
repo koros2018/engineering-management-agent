@@ -51,7 +51,7 @@ if _ENV_FILE.exists():
 
 import asyncio
 import time
-import json
+from src.utils import json_dumps, json_loads
 import uuid
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -410,7 +410,7 @@ async def wechat_callback(code: str = "", state: str = ""):
         from fastapi.responses import RedirectResponse
         import urllib.parse
         token = result["access_token"]
-        user_json = urllib.parse.quote(json.dumps(result.get("user", {}), ensure_ascii=False))
+        user_json = urllib.parse.quote(json_dumps(result.get("user", {}), ensure_ascii=False))
         return RedirectResponse(url=f"/login.html?token={token}&user={user_json}&mode=wechat")
     elif result.get("status") == "need_register":
         # 未绑定 → 重定向到注册页
@@ -1152,22 +1152,22 @@ async def upload_and_chat(
 **实体数**: {parse_info.get('entity_count', 0)}
 
 ### 图层分析
-{json.dumps(layer_analysis, ensure_ascii=False, indent=2)[:1000]}
+{json_dumps(layer_analysis, ensure_ascii=False, indent=2)[:1000]}
 
 ### 工程信息
-{json.dumps(project_info, ensure_ascii=False, indent=2)[:1000]}
+{json_dumps(project_info, ensure_ascii=False, indent=2)[:1000]}
 
 ### 设计原则
-{json.dumps(design_principles, ensure_ascii=False, indent=2)[:800]}
+{json_dumps(design_principles, ensure_ascii=False, indent=2)[:800]}
 
 ### 施工要求
-{json.dumps(construction_reqs, ensure_ascii=False, indent=2)[:800]}
+{json_dumps(construction_reqs, ensure_ascii=False, indent=2)[:800]}
 
 ### 材料规格
-{json.dumps(material_specs, ensure_ascii=False, indent=2)[:500]}
+{json_dumps(material_specs, ensure_ascii=False, indent=2)[:500]}
 
 ### 设计参数
-{json.dumps(design_params, ensure_ascii=False, indent=2)[:500]}
+{json_dumps(design_params, ensure_ascii=False, indent=2)[:500]}
 """
 
         user_message = f"请分析这份图纸：{file.filename}。以下是自动解析结果，请给出专业解读和建议。"
@@ -1187,7 +1187,7 @@ async def upload_and_chat(
             )
             for token in stream_gen:
                 full_response.append(token)
-                yield f"data: {json.dumps({'token': token})}\n\n"
+                yield f"data: {json_dumps({'token': token})}\n\n"
                 await asyncio.sleep(0)
 
             # 保存对话历史到 ChromaDB
@@ -1204,7 +1204,7 @@ async def upload_and_chat(
                 except Exception:
                     pass
 
-            yield f"data: {json.dumps({'done': True, 'text': ''.join(full_response)})}\n\n"
+            yield f"data: {json_dumps({'done': True, 'text': ''.join(full_response)})}\n\n"
 
         return StreamingResponse(event_generator(), media_type="text/event-stream")
 
@@ -2662,7 +2662,7 @@ async def submit_feedback(request: Request):
     date_str = time.strftime("%Y-%m-%d")
     fb_file = feedback_dir / f"feedback_{date_str}.jsonl"
     with open(fb_file, "a", encoding="utf-8") as f:
-        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        f.write(json_dumps(entry, ensure_ascii=False) + "\n")
 
     logger.info(f"[Feedback] {entry['type']} score={entry['score']} from {entry['user_id']}")
     return {"success": True, "id": entry["id"]}
@@ -2684,8 +2684,8 @@ async def list_feedback(date: str = None):
             line = line.strip()
             if line:
                 try:
-                    feedbacks.append(json.loads(line))
-                except json.JSONDecodeError:
+                    feedbacks.append(json_loads(line))
+                except Exception:
                     continue
     return {"feedbacks": feedbacks, "count": len(feedbacks)}
 
@@ -2717,7 +2717,7 @@ async def track_event(request: Request):
     date_str = time.strftime("%Y-%m-%d")
     track_file = analytics_dir / f"events_{date_str}.jsonl"
     with open(track_file, "a", encoding="utf-8") as f:
-        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        f.write(json_dumps(entry, ensure_ascii=False) + "\n")
 
     return {"success": True}
 
@@ -2740,8 +2740,8 @@ async def analytics_summary(days: int = 7):
                     line = line.strip()
                     if line:
                         try:
-                            events.append(json.loads(line))
-                        except json.JSONDecodeError:
+                            events.append(json_loads(line))
+                        except Exception:
                             continue
 
     # 统计
@@ -3462,7 +3462,7 @@ async def agent_chat_stream(req: StreamChatRequest):
             # 逐 token 转换为 SSE 事件
             for token in stream_gen:
                 full_response.append(token)
-                yield f"data: {json.dumps({'token': token})}\n\n"
+                yield f"data: {json_dumps({'token': token})}\n\n"
                 await asyncio.sleep(0)  # 让出事件循环
 
         # 保存到会话历史（ChromaDB，多 worker 共享）
@@ -3475,7 +3475,7 @@ async def agent_chat_stream(req: StreamChatRequest):
             asyncio.create_task(_persist_to_chroma(sid, req.agent_id, user_message, "".join(full_response)))
 
         # 流结束标记（携带完整文本）
-        yield f"data: {json.dumps({'done': True, 'text': ''.join(full_response)})}\n\n"
+        yield f"data: {json_dumps({'done': True, 'text': ''.join(full_response)})}\n\n"
 
     return StreamingResponse(
         event_generator(),
