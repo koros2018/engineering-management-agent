@@ -7,12 +7,16 @@ auth_extended.py - 认证扩展 v3
 3. 普注用户 → 设置中绑定微信二维码
 """
 
-import os, json, hashlib, secrets, time, re, io, base64
+import os, json, hashlib, secrets, time, re, io, base64, hmac
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional, Tuple
 
 from utils import load_json, save_json
+
+# ── JWT 配置 ──
+_JWT_SECRET = os.environ.get("EMA_JWT_SECRET", "ema-dev-secret-key-2025")
+_JWT_ALGORITHM = "HS256"
 
 EMA_DATA_DIR = Path(__file__).parent.parent / "data"
 ADMIN_PASSWORDS_FILE = EMA_DATA_DIR / "admin_passwords.json"
@@ -119,12 +123,12 @@ _WECHAT_MINIAPP_SESSION_URL = f"{_WECHAT_API_BASE}/sns/jscode2session"
 
 def _wechat_api(endpoint: str, params: dict) -> dict:
     """调用真实微信 API"""
-    import urllib.request, urllib.parse, json as _json
+    import urllib.request, urllib.parse
     url = f"{_WECHAT_API_BASE}{endpoint}?{urllib.parse.urlencode(params)}"
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "EMA/3.0"})
         with urllib.request.urlopen(req, timeout=10) as resp:
-            return _json.loads(resp.read().decode("utf-8"))
+            return json.loads(resp.read().decode("utf-8"))
     except Exception as e:
         _wechat_log.error(f"微信API调用失败: {endpoint} → {e}")
         return {"errcode": -1, "errmsg": str(e)}
@@ -457,13 +461,6 @@ def validate_username(u: str) -> Optional[str]:
     return None
 
 # ── JWT Token 功能（标准库实现，无额外依赖） ──────────────────
-import base64
-import hmac
-import json as _json
-from datetime import datetime as _dt, timedelta as _td
-
-_JWT_SECRET = os.environ.get("EMA_JWT_SECRET", "ema-dev-secret-key-2025")
-_JWT_ALGORITHM = "HS256"
 
 
 def _jwt_b64encode(data: bytes) -> str:
@@ -481,14 +478,14 @@ def create_access_token(user_id: str, username: str, role: str = "", expires_min
     if hasattr(expires_minutes, "total_seconds"):
         delta = expires_minutes
     else:
-        delta = _td(minutes=int(expires_minutes))
-    header = _jwt_b64encode(_json.dumps({"alg": _JWT_ALGORITHM, "typ": "JWT"}).encode())
-    now = _dt.now(timezone.utc)
+        delta = timedelta(minutes=int(expires_minutes))
+    header = _jwt_b64encode(json.dumps({"alg": _JWT_ALGORITHM, "typ": "JWT"}).encode())
+    now = datetime.now(timezone.utc)
     payload_data = {
         "sub": user_id, "username": username, "role": role,
         "iat": int(now.timestamp()), "exp": int((now + delta).timestamp()),
     }
-    payload = _jwt_b64encode(_json.dumps(payload_data).encode())
+    payload = _jwt_b64encode(json.dumps(payload_data).encode())
     sig_input = f"{header}.{payload}"
     signature = _jwt_b64encode(hmac.new(_JWT_SECRET.encode(), sig_input.encode(), "sha256").digest())
     return f"{sig_input}.{signature}"
@@ -496,13 +493,13 @@ def create_access_token(user_id: str, username: str, role: str = "", expires_min
 
 def create_refresh_token(user_id: str, expires_days: int = 30) -> str:
     """创建 JWT refresh token"""
-    header = _jwt_b64encode(_json.dumps({"alg": _JWT_ALGORITHM, "typ": "JWT"}).encode())
-    now = _dt.now(timezone.utc)
+    header = _jwt_b64encode(json.dumps({"alg": _JWT_ALGORITHM, "typ": "JWT"}).encode())
+    now = datetime.now(timezone.utc)
     payload_data = {
         "sub": user_id, "type": "refresh",
-        "iat": int(now.timestamp()), "exp": int((now + _td(days=expires_days)).timestamp()),
+        "iat": int(now.timestamp()), "exp": int((now + timedelta(days=expires_days)).timestamp()),
     }
-    payload = _jwt_b64encode(_json.dumps(payload_data).encode())
+    payload = _jwt_b64encode(json.dumps(payload_data).encode())
     sig_input = f"{header}.{payload}"
     signature = _jwt_b64encode(hmac.new(_JWT_SECRET.encode(), sig_input.encode(), "sha256").digest())
     return f"{sig_input}.{signature}"
@@ -518,8 +515,8 @@ def decode_token(token: str) -> dict:
         expected_sig = _jwt_b64encode(hmac.new(_JWT_SECRET.encode(), sig_input.encode(), "sha256").digest())
         if not hmac.compare_digest(parts[2], expected_sig):
             return {}
-        payload = _json.loads(_jwt_b64decode(parts[1]))
-        if payload.get("exp", 0) < _dt.now(timezone.utc).timestamp():
+        payload = json.loads(_jwt_b64decode(parts[1]))
+        if payload.get("exp", 0) < datetime.now(timezone.utc).timestamp():
             return {}
         return payload
     except Exception:

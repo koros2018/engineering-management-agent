@@ -25,6 +25,7 @@ _tasks = {}  # task_id -> {"status": "running|done|error", "result": ..., "progr
 # ── 路径常量 ──────────────────────────────────────────
 UPLOAD_DIR = Path(__file__).parent.parent / "data" / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+EMA_DATA_DIR = Path(__file__).parent.parent / "data"
 
 def _run_async(task_id: str, fn, *args, **kwargs):
     def wrapper():
@@ -403,7 +404,6 @@ async def wechat_callback(code: str = "", state: str = ""):
     微信用户扫码确认后，微信服务器重定向到此接口
     """
     from auth_extended import wechat_callback
-    import json
     result = wechat_callback(code, state)
     if result.get("success") and result.get("access_token"):
         # 登录成功 → 重定向到前端带 token
@@ -761,10 +761,9 @@ async def system_performance():
         perf["logs"] = {"status": "unavailable"}
 
     # 数据目录大小
-    data_dir = Path(__file__).parent.parent / "data"
-    if data_dir.exists():
-        total_size = sum(f.stat().st_size for f in data_dir.rglob("*") if f.is_file())
-        file_count = sum(1 for _ in data_dir.rglob("*") if _.is_file())
+    if EMA_DATA_DIR.exists():
+        total_size = sum(f.stat().st_size for f in EMA_DATA_DIR.rglob("*") if f.is_file())
+        file_count = sum(1 for _ in EMA_DATA_DIR.rglob("*") if _.is_file())
         perf["data"] = {"size_mb": round(total_size/1024/1024, 1), "files": file_count}
     else:
         perf["data"] = {"size_mb": 0, "files": 0}
@@ -1541,9 +1540,6 @@ async def agent_documents(
     use_llm: bool = Form(False),
 ):
     """上传图纸并生成工程文档"""
-    import json as _json
-    from pathlib import Path
-
     suffix = Path(file.filename).suffix.lower()
     if suffix not in ['.dwg', '.dxf', '.pdf']:
         raise HTTPException(status_code=400, detail="Unsupported file type")
@@ -1988,7 +1984,6 @@ async def check_rate(client_ip: str = "127.0.0.1"):
 @app.get("/api/v1/admin/users")
 async def admin_list_users(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
     """用户列表（仅超级管理员）"""
-    EMA_DATA_DIR = Path(__file__).parent.parent / "data"
     f = EMA_DATA_DIR / "users.json"
     users_data = load_json(f)
     users = []
@@ -2007,7 +2002,6 @@ async def admin_list_users(user: dict = Depends(require_role(Role.SUPER_ADMIN)))
 @app.get("/api/v1/admin/tenants")
 async def admin_list_tenants(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
     """租户列表（仅超级管理员）"""
-    EMA_DATA_DIR = Path(__file__).parent.parent / "data"
     t_f = EMA_DATA_DIR / "tenants.json"
     u_f = EMA_DATA_DIR / "tenant_users.json"
     tenants_data = load_json(t_f)
@@ -2034,7 +2028,6 @@ async def admin_create_tenant(
 ):
     """创建租户（仅超级管理员）"""
     import uuid
-    EMA_DATA_DIR = Path(__file__).parent.parent / "data"
     t_f = EMA_DATA_DIR / "tenants.json"
     tenants_data = load_json(t_f)
     tid = f"tenant_{uuid.uuid4().hex[:12]}"
@@ -2059,7 +2052,6 @@ async def admin_update_tenant(
     user: dict = Depends(require_role(Role.SUPER_ADMIN)),
 ):
     """编辑租户（仅超级管理员）"""
-    EMA_DATA_DIR = Path(__file__).parent.parent / "data"
     t_f = EMA_DATA_DIR / "tenants.json"
     tenants_data = load_json(t_f)
     if tenant_id not in tenants_data:
@@ -2082,7 +2074,6 @@ async def admin_delete_tenant(
     user: dict = Depends(require_role(Role.SUPER_ADMIN)),
 ):
     """删除租户（仅超级管理员）"""
-    EMA_DATA_DIR = Path(__file__).parent.parent / "data"
     t_f = EMA_DATA_DIR / "tenants.json"
     u_f = EMA_DATA_DIR / "tenant_users.json"
     tenants_data = load_json(t_f)
