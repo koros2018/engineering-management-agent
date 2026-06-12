@@ -1013,9 +1013,9 @@ const app = Vue.createApp({setup(){
     toast.value = {show:true, msg, type, timer:setTimeout(()=>{toast.value.show=false},duration)};
   }
 
-  // Admin gate
-  const adminVerified = Vue.ref(false);
-  const showAdminGate = Vue.ref(true);
+  // Admin gate — 默认不显示，后端 require_admin_pw=true 时才显示
+  const adminVerified = Vue.ref(true);
+  const showAdminGate = Vue.ref(false);
   const adminPwInput = Vue.ref('');
   const adminPwError = Vue.ref('');
   const showAdminPw = Vue.ref(false);
