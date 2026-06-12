@@ -198,7 +198,16 @@ if ('serviceWorker' in navigator) {
 </script>
 </head>
 <body>
+<script>
+// 错误捕获 — 不干扰正常渲染
+window.addEventListener('error', function(e) {
+  console.error('[CATCH]', e.message, e.filename, e.lineno);
+});
+</script>
 <div id="app">
+
+
+
 <div class="layout">
   <!-- 侧边栏 -->
   <div class="sidebar">
@@ -336,6 +345,7 @@ if ('serviceWorker' in navigator) {
           <div v-if="!cockpit.metrics?.agents?.heatmap?.length" style="color:var(--dim);font-size:12px;padding:8px 0">暂无记录</div>
         </div>
       </div>
+    </template>
     </template>
 
     <!-- ════ 租户管理 ════ -->
