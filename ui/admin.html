@@ -178,6 +178,14 @@ th input[type="checkbox"],td input[type="checkbox"]{accent-color:var(--accent);c
 .stat-card{position:relative;overflow:hidden}
 .stat-card::after{content:'';position:absolute;top:-20px;right:-20px;width:60px;height:60px;border-radius:50%;background:var(--accent);opacity:.06}
 .stat-icon{position:absolute;top:12px;right:14px;font-size:28px;opacity:.25}
+
+/* Skeleton loading */
+.skeleton{background:linear-gradient(90deg,var(--border) 25%,var(--card) 50%,var(--border) 75%);background-size:200% 100%;animation:skel 1.5s infinite;border-radius:4px}
+@keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-card{height:100px;border-radius:8px;margin-bottom:12px}
+.skel-row{height:16px;margin-bottom:8px;border-radius:4px}
+.skel-row:last-child{width:60%}
+.skel-circle{width:48px;height:48px;border-radius:50%;margin:0 auto 8px}
 </style>
 
 <script>
@@ -228,6 +236,17 @@ if ('serviceWorker' in navigator) {
 
     <!-- ════ 驾驶舱 ════ -->
     <template v-if="tab==='cockpit'">
+      <div v-if="cockpitLoading" class="card" style="padding:24px">
+        <div class="skeleton skel-circle" style="margin:0 auto 16px"></div>
+        <div class="skeleton skel-row" style="width:40%;margin:0 auto 8px"></div>
+        <div class="skeleton skel-row" style="width:60%;margin:0 auto 8px"></div>
+        <div class="skeleton skel-row" style="width:30%;margin:0 auto"></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px">
+          <div class="skeleton skel-card"></div><div class="skeleton skel-card"></div>
+          <div class="skeleton skel-card"></div><div class="skeleton skel-card"></div>
+        </div>
+      </div>
+      <template v-else>
       <div class="grid">
         <div class="card stat-card">
           <div class="stat-icon">🏥</div>
@@ -321,6 +340,15 @@ if ('serviceWorker' in navigator) {
 
     <!-- ════ 租户管理 ════ -->
     <template v-if="tab==='tenants'">
+      <div v-if="tenantsLoading" class="card" style="padding:24px;margin-bottom:16px">
+        <div class="skeleton skel-row" style="width:30%;margin-bottom:16px"></div>
+        <div class="skeleton skel-row" style="width:100%;margin-bottom:8px"></div>
+        <div class="skeleton skel-row" style="width:100%;margin-bottom:8px"></div>
+        <div class="skeleton skel-row" style="width:100%;margin-bottom:8px"></div>
+        <div class="skeleton skel-row" style="width:100%;margin-bottom:8px"></div>
+        <div class="skeleton skel-row" style="width:70%"></div>
+      </div>
+      <div v-else>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <div style="font-size:14px;color:var(--dim)">共 {{ tenantsFiltered.length }} 个租户<span v-if="tenantsFiltered.length !== tenants.length" style="color:var(--accent)"> (筛选自 {{ tenants.length }})</span></div>
         <button class="btn btn-primary btn-sm" @click="showTenantModal()">+ 新建租户</button>
@@ -424,7 +452,12 @@ if ('serviceWorker' in navigator) {
 
     <!-- ════ 预警中心 ════ -->
     <template v-if="tab==='alerts'">
-      <div v-if="alertsLoading" class="loading"><span class="spinner"></span> 加载中...</div>
+      <div v-if="alertsLoading" class="card" style="padding:24px">
+        <div class="skeleton skel-row" style="width:40%;margin-bottom:12px"></div>
+        <div class="skeleton skel-row" style="width:100%;margin-bottom:8px"></div>
+        <div class="skeleton skel-row" style="width:80%;margin-bottom:8px"></div>
+        <div class="skeleton skel-row" style="width:60%"></div>
+      </div>
       <template v-else>
         <div class="card" style="grid-column:span 2">
           <div class="card-header">
@@ -697,6 +730,15 @@ if ('serviceWorker' in navigator) {
 
     <!-- ════ 用户管理 ════ -->
     <template v-if="tab==='users'">
+      <div v-if="usersLoading" class="card" style="padding:24px;margin-bottom:16px">
+        <div class="skeleton skel-row" style="width:30%;margin-bottom:16px"></div>
+        <div class="skeleton skel-row" style="width:100%;margin-bottom:8px"></div>
+        <div class="skeleton skel-row" style="width:100%;margin-bottom:8px"></div>
+        <div class="skeleton skel-row" style="width:100%;margin-bottom:8px"></div>
+        <div class="skeleton skel-row" style="width:100%;margin-bottom:8px"></div>
+        <div class="skeleton skel-row" style="width:70%"></div>
+      </div>
+      <div v-else>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <h2 style="font-size:16px;margin:0">👤 用户管理 <span style="font-size:12px;color:var(--dim);font-weight:400">共 {{ usersFiltered.length }} 位<span v-if="usersFiltered.length !== users.length" style="color:var(--accent)"> (筛选自 {{ users.length }})</span></span></h2>
         <button class="btn btn-primary btn-sm" @click="showUserModal()">+ 新建用户</button>
@@ -984,6 +1026,7 @@ const app = Vue.createApp({setup(){
 
   const tab = Vue.ref('cockpit');
   const cockpit = Vue.ref({health_score:0,health_grade:'B',alerts:[],metrics:{revenue:{},projects:{},agents:{}}});
+  const cockpitLoading = Vue.ref(true);
   const alerts = Vue.ref([]); const alertsLoading = Vue.ref(false);
   const tenants = Vue.ref([]); const tenantsLoading = Vue.ref(false);
   const tenantModal = Vue.ref({show:false,edit:false,id:'',name:'',plan:'free',status:'active'});
@@ -1304,12 +1347,15 @@ const app = Vue.createApp({setup(){
   }
 
   async function loadCockpit(){
+    cockpitLoading.value = true;
     try{
       const r=await fetch(API+'/api/v1/agent/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({message:'查看驾驶舱',task_type:'manager',file_path:''})});
       const d=await r.json();
       const o=d.output||d;
       cockpit.value=o?.cockpit||o||cockpit.value;
+      cockpitLoading.value = false;
     }catch(e){
+      cockpitLoading.value = false;
       cockpit.value={
         health_score:92,health_grade:'A',alerts:[],
         metrics:{revenue:{total_revenue:126800,revenue_this_month:21800,active_subscribers:7,plan_distribution:{free:15,pro:4,enterprise:2,private:1},monthly_revenue:{'2026-04':8200,'2026-05':12680,'2026-06':21800}},projects:{tenants:22,new_this_month:3},agents:{heatmap:[{agent_id:'tech_rd',count:48},{agent_id:'safety_compliance',count:31},{agent_id:'manager',count:27},{agent_id:'engineering_delivery',count:19},{agent_id:'market_sales',count:12},{agent_id:'cost_benefit',count:8},{agent_id:'customer_service',count:5}],},security:{score:94,grade:'A'}}
@@ -1539,7 +1585,7 @@ const app = Vue.createApp({setup(){
   function logout(){try{localStorage.removeItem('ema_token');}catch(e){}window.location.href='/login.html';}
 
   return{
-    tab,cockpit,tenants,alerts,report,suggestions,insights,logStats,userActivity,netStatus,netLoading,
+    tab,cockpit,cockpitLoading,tenants,alerts,report,suggestions,insights,logStats,userActivity,netStatus,netLoading,
     modelList,routeResult,showModelForm,editingModel,modelForm,modelFormLoading,modelFormError,modelToggling,routeLoading,showApiKey,
     showAdminGate,adminVerified,adminPwInput,adminPwError,showAdminPw,verifyAdmin,logout,
     pageTitle,gradeLabel,formatNum,refreshAll,genReport,
