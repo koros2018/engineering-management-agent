@@ -1,7 +1,7 @@
 // EMA Service Worker v1
 // 提供离线缓存 + 增量更新
 
-const CACHE_NAME = "ema-v3-20260601";
+const CACHE_NAME = "ema-v4-20260612";
 const STATIC_ASSETS = [
   "/index.html",
   "/admin.html",
@@ -25,6 +25,8 @@ self.addEventListener("activate", (event) => {
     )
   );
   self.clients.claim();
+  // 注销旧SW
+  self.registration.unregister();
 });
 
 // Fetch: 网络优先 + 缓存回退
@@ -36,10 +38,11 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // 缓存成功的HTML/JS/CSS响应
+        // 只缓存静态资源，不缓存 admin.html（避免旧缓存导致JS错误）
         if (
           response.ok &&
-          (event.request.url.includes("/ui/") || event.request.url.includes(".js"))
+          event.request.url.includes(".js") &&
+          !event.request.url.includes("vue")
         ) {
           const cloned = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));

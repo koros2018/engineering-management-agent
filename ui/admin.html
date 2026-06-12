@@ -36,6 +36,10 @@ a{color:var(--accent);text-decoration:none}
 .topbar h1{font-size:20px;font-weight:700;color:var(--text-bright);letter-spacing:.3px}
 .topbar-right{display:flex;gap:10px;align-items:center}
 .badge{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700}
+.bg-green{background:var(--green);color:#000}
+.bg-red{background:var(--red);color:#fff}
+.bg-blue{background:var(--accent);color:#fff}
+.bg-gray{background:var(--border);color:var(--dim)}
 .badge.boss{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff}
 .badge.live{background:var(--green);color:#000}
 .badge.offline{background:var(--red);color:#fff}
@@ -142,7 +146,48 @@ tr:hover td{background:rgba(59,130,246,.05)}
 .modal-close:hover{background:var(--bg);color:var(--text)}
 .modal-body{padding:20px}
 .modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:16px 20px;border-top:1px solid var(--border)}
+/* ── 搜索筛选栏 ── */
+.search-bar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.search-bar .form-input{flex:1;min-width:160px}
+.search-bar select.form-input{flex:0 0 140px;min-width:100px}
+.search-bar .btn{white-space:nowrap}
+/* ── 分页组件 ── */
+.pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;padding:10px 0}
+.pagination button{min-width:32px;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:6px;background:var(--card2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.pagination button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.pagination button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.pagination button:disabled{opacity:.4;cursor:not-allowed}
+.pagination .page-info{font-size:11px;color:var(--dim);margin:0 8px}
+/* ── 批量操作栏 ── */
+.batch-bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;animation:slideDown .2s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.batch-bar .batch-info{font-size:12px;color:var(--dim);font-weight:600}
+.batch-bar .batch-info span{color:var(--accent);font-weight:800}
+.batch-bar .btn{margin-left:2px}
+/* ── 饼图 ── */
+.pie-chart-wrap{display:flex;align-items:center;gap:16px;padding:8px 0}
+.pie-svg{width:120px;height:120px;flex-shrink:0}
+.pie-legend{display:flex;flex-direction:column;gap:6px;flex:1}
+.pie-legend-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.pie-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.pie-legend-label{flex:1;color:var(--text)}
+.pie-legend-value{font-weight:700;color:var(--text-bright)}
+/* ── 表格全选 checkbox ── */
+th input[type="checkbox"],td input[type="checkbox"]{accent-color:var(--accent);cursor:pointer;width:14px;height:14px}
+/* ── 统计卡片增强 ── */
+.stat-card{position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:-20px;right:-20px;width:60px;height:60px;border-radius:50%;background:var(--accent);opacity:.06}
+.stat-icon{position:absolute;top:12px;right:14px;font-size:28px;opacity:.25}
 </style>
+
+<script>
+// 注销旧版 Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(r => { r.unregister(); console.log('SW unregistered'); });
+  });
+}
+</script>
 </head>
 <body>
 <div id="app">
@@ -156,6 +201,7 @@ tr:hover td{background:rgba(59,130,246,.05)}
     <div class="sb-nav">
       <div @click="tab='cockpit'" :class="['sb-item',{active:tab==='cockpit'}]">📊 驾驶舱</div>
       <div @click="tab='tenants'" :class="['sb-item',{active:tab==='tenants'}]">👥 租户管理</div>
+      <div @click="tab='users'" :class="['sb-item',{active:tab==='users'}]">👤 用户管理</div>
       <div @click="tab='alerts'" :class="['sb-item',{active:tab==='alerts'}]">🚨 预警中心</div>
       <div @click="tab='reports'" :class="['sb-item',{active:tab==='reports'}]">📝 自动报告</div>
       <div @click="tab='advice'" :class="['sb-item',{active:tab==='advice'}]">💡 决策建议</div>
@@ -183,22 +229,32 @@ tr:hover td{background:rgba(59,130,246,.05)}
     <!-- ════ 驾驶舱 ════ -->
     <template v-if="tab==='cockpit'">
       <div class="grid">
-        <div class="card">
+        <div class="card stat-card">
+          <div class="stat-icon">🏥</div>
           <div class="card-header"><span class="card-title">平台健康度</span></div>
           <div :class="['health-ring', cockpit.health_grade||'B']">{{ cockpit.health_score||0 }}</div>
           <div style="text-align:center;font-size:10px;color:var(--dim);margin-top:8px;font-weight:700">{{ gradeLabel }}</div>
         </div>
-        <div class="card">
+        <div class="card stat-card">
+          <div class="stat-icon">💰</div>
           <div class="card-header"><span class="card-title">本月收入</span></div>
           <div class="card-value">¥{{ formatNum(cockpit.metrics?.revenue?.revenue_this_month||0) }}</div>
           <div class="card-change">📈 总收入 ¥{{ formatNum(cockpit.metrics?.revenue?.total_revenue||0) }}</div>
         </div>
-        <div class="card">
+        <div class="card stat-card">
+          <div class="stat-icon">👥</div>
           <div class="card-header"><span class="card-title">租户总数</span></div>
           <div class="card-value">{{ cockpit.metrics?.projects?.tenants||0 }}</div>
           <div class="card-change">🟢 活跃 {{ cockpit.metrics?.revenue?.active_subscribers||0 }}</div>
         </div>
-        <div class="card">
+        <div class="card stat-card">
+          <div class="stat-icon">🆕</div>
+          <div class="card-header"><span class="card-title">本月新增</span></div>
+          <div class="card-value">{{ cockpit.metrics?.projects?.new_this_month||0 }}</div>
+          <div class="card-change">📈 租户增长</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-icon">🛡️</div>
           <div class="card-header"><span class="card-title">安全评分</span></div>
           <div class="card-value">{{ cockpit.metrics?.security?.score||85 }}</div>
           <div class="card-change">{{ cockpit.metrics?.security?.grade||'B' }} 级</div>
@@ -223,10 +279,32 @@ tr:hover td{background:rgba(59,130,246,.05)}
           </div>
         </div>
         <div class="card">
+          <div class="card-header"><span class="card-title">📈 租户增长趋势</span></div>
+          <div style="padding:8px 0">
+            <div v-for="(m,i) in (cockpit.metrics?.revenue?.monthly_revenue||{})" :key="i" style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px">
+              <span style="width:50px;color:var(--dim)">{{ m.month }}</span>
+              <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+                <div :style="{width: m.pct+'%',height:'100%',background:'var(--accent)',borderRadius:'3px'}"></div>
+              </div>
+              <span style="font-weight:700;min-width:50px;text-align:right">¥{{ formatNum(m.value) }}</span>
+            </div>
+            <div v-if="!Object.keys(cockpit.metrics?.revenue?.monthly_revenue||{}).length" style="color:var(--dim);font-size:12px;padding:8px 0">暂无数据</div>
+          </div>
+        </div>
+        <div class="card">
           <div class="card-header"><span class="card-title">套餐分布</span></div>
-          <div v-for="(v,k) in (cockpit.metrics?.revenue?.plan_distribution||{})" :key="k" style="padding:5px 0;font-size:12px;display:flex;justify-content:space-between;border-bottom:1px solid var(--border)">
-            <span>{{ {'free':'🆓 免费','pro':'💎 专业','enterprise':'🏢 企业','private':'🏰 私有'}[k]||k }}</span>
-            <span style="color:var(--accent);font-weight:800">{{ v }}</span>
+          <div class="pie-chart-wrap">
+            <svg class="pie-svg" viewBox="0 0 42 42" v-if="planPieData.length">
+              <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="var(--border)" stroke-width="6" />
+              <circle v-for="(d,i) in planPieData" :key="i" cx="21" cy="21" r="15.9" fill="transparent" :stroke="d.color" stroke-width="6" :stroke-dasharray="d.pct+' '+(100-d.pct)" :stroke-dashoffset="-d.offset" transform="rotate(-90 21 21)" />
+            </svg>
+            <div class="pie-legend">
+              <div v-for="(v,k) in (cockpit.metrics?.revenue?.plan_distribution||{})" :key="k" class="pie-legend-item">
+                <span class="pie-legend-dot" :style="{background:planColor(k)}"></span>
+                <span class="pie-legend-label">{{ {'free':'🆓 免费','pro':'💎 专业','enterprise':'🏢 企业','private':'🏰 私有'}[k]||k }}</span>
+                <span class="pie-legend-value">{{ v }}</span>
+              </div>
+            </div>
           </div>
           <div v-if="!Object.keys(cockpit.metrics?.revenue?.plan_distribution||{}).length" style="color:var(--dim);font-size:12px;padding:8px 0">暂无数据</div>
         </div>
@@ -244,16 +322,42 @@ tr:hover td{background:rgba(59,130,246,.05)}
     <!-- ════ 租户管理 ════ -->
     <template v-if="tab==='tenants'">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <div style="font-size:14px;color:var(--dim)">共 {{ tenants.length }} 个租户</div>
+        <div style="font-size:14px;color:var(--dim)">共 {{ tenantsFiltered.length }} 个租户<span v-if="tenantsFiltered.length !== tenants.length" style="color:var(--accent)"> (筛选自 {{ tenants.length }})</span></div>
         <button class="btn btn-primary btn-sm" @click="showTenantModal()">+ 新建租户</button>
       </div>
+      <!-- 搜索筛选栏 -->
+      <div class="search-bar">
+        <input v-model="tenantSearch" class="form-input" placeholder="🔍 搜索租户名称..." @input="tenantPage=1">
+        <select v-model="tenantFilterPlan" class="form-input" @change="tenantPage=1">
+          <option value="">全部套餐</option>
+          <option value="free">🆓 免费版</option>
+          <option value="pro">💎 专业版</option>
+          <option value="enterprise">🏢 企业版</option>
+          <option value="private">🔒 私有化</option>
+        </select>
+        <select v-model="tenantFilterStatus" class="form-input" @change="tenantPage=1">
+          <option value="">全部状态</option>
+          <option value="active">✅ 正常</option>
+          <option value="suspended">⛔ 停用</option>
+        </select>
+        <button class="btn btn-outline btn-sm" @click="tenantSearch='';tenantFilterPlan='';tenantFilterStatus='';tenantPage=1">重置</button>
+      </div>
       <div v-if="tenantsLoading" class="loading"><span class="spinner"></span> 加载中...</div>
-      <template v-else-if="tenants.length">
+      <template v-else-if="tenantsFiltered.length">
+        <!-- 批量操作栏 -->
+        <div class="batch-bar" v-if="tenantSelected.length">
+          <span class="batch-info">已选 <span>{{ tenantSelected.length }}</span> 项</span>
+          <button class="btn btn-danger btn-sm" @click="batchDeleteTenants">🗑️ 批量删除</button>
+          <button class="btn btn-outline btn-sm" @click="batchSetTenantStatus('active')">✅ 批量启用</button>
+          <button class="btn btn-outline btn-sm" @click="batchSetTenantStatus('suspended')">⛔ 批量停用</button>
+          <button class="btn btn-outline btn-sm" style="margin-left:auto" @click="tenantSelected=[]">取消选择</button>
+        </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>租户名称</th><th>套餐</th><th>用户数</th><th>创建时间</th><th>状态</th><th>操作</th></tr></thead>
+            <thead><tr><th style="width:36px"><input type="checkbox" :checked="tenantAllSelected" @change="toggleAllTenants"></th><th>租户名称</th><th>套餐</th><th>用户数</th><th>创建时间</th><th>状态</th><th>操作</th></tr></thead>
             <tbody>
-              <tr v-for="t in tenants" :key="t.id">
+              <tr v-for="t in tenantsPaged" :key="t.id">
+                <td><input type="checkbox" :checked="tenantSelected.includes(t.id)" @change="toggleTenantCheck(t.id)"></td>
                 <td style="font-weight:700;color:var(--text-bright)">{{ t.name }}</td>
                 <td><span :class="['tag', t.plan||'free']">{{ planName(t.plan) }}</span></td>
                 <td style="font-weight:700">{{ t.user_count||0 }}</td>
@@ -267,11 +371,18 @@ tr:hover td{background:rgba(59,130,246,.05)}
             </tbody>
           </table>
         </div>
+        <!-- 分页 -->
+        <div class="pagination" v-if="tenantTotalPages>1">
+          <button :disabled="tenantPage<=1" @click="tenantPage--">‹</button>
+          <button v-for="p in tenantPageNums" :key="p" :class="{active:p===tenantPage}" @click="tenantPage=p">{{ p }}</button>
+          <button :disabled="tenantPage>=tenantTotalPages" @click="tenantPage++">›</button>
+          <span class="page-info">{{ tenantPage }} / {{ tenantTotalPages }}</span>
+        </div>
       </template>
       <div v-else class="empty-state">
         <span class="icon">🏢</span>
-        <div>暂无租户数据</div>
-        <button class="btn btn-primary" @click="showTenantModal()">创建第一个租户</button>
+        <div>{{ tenantSearch||tenantFilterPlan||tenantFilterStatus ? '无匹配租户，试试调整筛选条件' : '暂无租户数据' }}</div>
+        <button v-if="!tenantSearch&&!tenantFilterPlan&&!tenantFilterStatus" class="btn btn-primary" @click="showTenantModal()">创建第一个租户</button>
       </div>
 
       <!-- 租户编辑弹窗 -->
@@ -584,6 +695,129 @@ tr:hover td{background:rgba(59,130,246,.05)}
       </div>
     </template>
 
+    <!-- ════ 用户管理 ════ -->
+    <template v-if="tab==='users'">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <h2 style="font-size:16px;margin:0">👤 用户管理 <span style="font-size:12px;color:var(--dim);font-weight:400">共 {{ usersFiltered.length }} 位<span v-if="usersFiltered.length !== users.length" style="color:var(--accent)"> (筛选自 {{ users.length }})</span></span></h2>
+        <button class="btn btn-primary btn-sm" @click="showUserModal()">+ 新建用户</button>
+      </div>
+      <!-- 搜索筛选栏 -->
+      <div class="search-bar">
+        <input v-model="userSearch" class="form-input" placeholder="🔍 搜索用户名/邮箱..." @input="userPage=1">
+        <select v-model="userFilterRole" class="form-input" @change="userPage=1">
+          <option value="">全部角色</option>
+          <option value="super_admin">超级管理员</option>
+          <option value="tenant_admin">租户管理员</option>
+          <option value="user">普通用户</option>
+        </select>
+        <select v-model="userFilterTenant" class="form-input" @change="userPage=1">
+          <option value="">全部租户</option>
+          <option v-for="t in tenants" :key="t.id" :value="t.id">{{ t.name }}</option>
+        </select>
+        <select v-model="userFilterStatus" class="form-input" @change="userPage=1" style="flex:0 0 100px">
+          <option value="">全部状态</option>
+          <option value="active">启用</option>
+          <option value="disabled">禁用</option>
+        </select>
+        <button class="btn btn-outline btn-sm" @click="userSearch='';userFilterRole='';userFilterTenant='';userFilterStatus='';userPage=1">重置</button>
+      </div>
+      <div v-if="usersLoading" class="loading"><span class="spinner"></span> 加载中...</div>
+      <template v-else-if="usersFiltered.length">
+        <!-- 批量操作栏 -->
+        <div class="batch-bar" v-if="userSelected.length">
+          <span class="batch-info">已选 <span>{{ userSelected.length }}</span> 项</span>
+          <button class="btn btn-danger btn-sm" @click="batchDeleteUsers">🗑️ 批量删除</button>
+          <button class="btn btn-outline btn-sm" @click="batchSetUserStatus('active')">✅ 批量启用</button>
+          <button class="btn btn-outline btn-sm" @click="batchSetUserStatus('disabled')">⛔ 批量禁用</button>
+          <button class="btn btn-outline btn-sm" style="margin-left:auto" @click="userSelected=[]">取消选择</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th style="width:36px"><input type="checkbox" :checked="userAllSelected" @change="toggleAllUsers"></th><th>用户名</th><th>邮箱</th><th>角色</th><th>租户</th><th>注册时间</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr v-for="u in usersPaged" :key="u.user_id">
+                <td><input type="checkbox" :checked="userSelected.includes(u.user_id)" @change="toggleUserCheck(u.user_id)"></td>
+                <td style="font-weight:700">{{ u.username }}</td>
+                <td>{{ u.email || '-' }}</td>
+                <td>
+                  <span :class="['badge',u.role==='super_admin'?'bg-red':u.role==='tenant_admin'?'bg-blue':'bg-gray']">{{ roleLabel(u.role) }}</span>
+                </td>
+                <td>{{ u.tenant_name || '-' }}</td>
+                <td>{{ formatDate(u.created_at) }}</td>
+                <td>
+                  <span :class="['badge',u.status==='active'?'bg-green':'bg-gray']">{{ u.status==='active'?'启用':'禁用' }}</span>
+                </td>
+                <td style="white-space:nowrap">
+                  <button class="btn btn-sm btn-outline" @click="showUserModal(u)">编辑</button>
+                  <button class="btn btn-sm btn-outline" style="margin-left:4px" @click="resetUserPassword(u)">🔑 重置密码</button>
+                  <button class="btn btn-sm btn-outline" style="margin-left:4px;color:var(--red)" @click="deleteUser(u)">删除</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- 分页 -->
+        <div class="pagination" v-if="userTotalPages>1">
+          <button :disabled="userPage<=1" @click="userPage--">‹</button>
+          <button v-for="p in userPageNums" :key="p" :class="{active:p===userPage}" @click="userPage=p">{{ p }}</button>
+          <button :disabled="userPage>=userTotalPages" @click="userPage++">›</button>
+          <span class="page-info">{{ userPage }} / {{ userTotalPages }}</span>
+        </div>
+      </template>
+      <div v-else style="text-align:center;padding:40px;color:var(--dim)">{{ userSearch||userFilterRole||userFilterTenant||userFilterStatus ? '无匹配用户' : '暂无用户数据' }}</div>
+      <!-- 用户编辑弹窗 -->
+      <div v-if="userModal.show" class="modal-overlay" @click.self="userModal.show=false">
+        <div class="modal">
+          <span class="modal-title">{{ userModal.edit ? '编辑用户' : '新建用户' }}</span>
+          <button class="modal-close" @click="userModal.show=false">✕</button>
+          <div class="form-row">
+            <div style="flex:1">
+              <label class="form-label">用户名</label>
+              <input v-model="userModal.username" class="form-input" placeholder="输入用户名" :disabled="userModal.edit">
+            </div>
+            <div style="flex:1">
+              <label class="form-label">邮箱</label>
+              <input v-model="userModal.email" class="form-input" placeholder="输入邮箱" type="email">
+            </div>
+          </div>
+          <div class="form-row">
+            <div style="flex:1">
+              <label class="form-label">{{ userModal.edit ? '新密码（留空不修改）' : '密码' }}</label>
+              <input v-model="userModal.password" class="form-input" placeholder="输入密码" type="password">
+            </div>
+            <div style="flex:1">
+              <label class="form-label">角色</label>
+              <select v-model="userModal.role" class="form-input">
+                <option value="user">普通用户</option>
+                <option value="tenant_admin">租户管理员</option>
+                <option value="super_admin">超级管理员</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div style="flex:1">
+              <label class="form-label">分配租户</label>
+              <select v-model="userModal.tenant_id" class="form-input">
+                <option value="">无</option>
+                <option v-for="t in tenants" :key="t.id" :value="t.id">{{ t.name }}</option>
+              </select>
+            </div>
+            <div style="flex:1" v-if="userModal.edit">
+              <label class="form-label">状态</label>
+              <select v-model="userModal.status" class="form-input">
+                <option value="active">启用</option>
+                <option value="disabled">禁用</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+            <button class="btn btn-outline" @click="userModal.show=false">取消</button>
+            <button class="btn btn-primary" :disabled="!userModal.username" @click="saveUser">保存</button>
+          </div>
+        </div>
+      </div>
+    </template>
+
     <!-- ════ 行为分析 ════ -->
     <template v-if="tab==='analytics'">
       <div class="grid">
@@ -767,6 +1001,168 @@ const app = Vue.createApp({setup(){
   const modelToggling = Vue.ref(null); const routeLoading = Vue.ref(false);
   const showApiKey = Vue.ref(false);
 
+  // ── 租户管理: 搜索/筛选/分页/批量 ──
+  const tenantSearch = Vue.ref('');
+  const tenantFilterPlan = Vue.ref('');
+  const tenantFilterStatus = Vue.ref('');
+  const tenantPage = Vue.ref(1);
+  const tenantPageSize = Vue.ref(10);
+  const tenantSelected = Vue.ref([]);
+
+  const tenantsFiltered = Vue.computed(() => {
+    let list = tenants.value;
+    if (tenantSearch.value) {
+      const q = tenantSearch.value.toLowerCase();
+      list = list.filter(t => (t.name || '').toLowerCase().includes(q));
+    }
+    if (tenantFilterPlan.value) list = list.filter(t => t.plan === tenantFilterPlan.value);
+    if (tenantFilterStatus.value) list = list.filter(t => t.status === tenantFilterStatus.value);
+    return list;
+  });
+  const tenantTotalPages = Vue.computed(() => Math.max(1, Math.ceil(tenantsFiltered.value.length / tenantPageSize.value)));
+  const tenantsPaged = Vue.computed(() => {
+    const start = (tenantPage.value - 1) * tenantPageSize.value;
+    return tenantsFiltered.value.slice(start, start + tenantPageSize.value);
+  });
+  const tenantAllSelected = Vue.computed(() => tenantsPaged.value.length > 0 && tenantSelected.value.length === tenantsPaged.value.length);
+  const tenantPageNums = Vue.computed(() => {
+    const pages = [];
+    const total = tenantTotalPages.value;
+    const cur = tenantPage.value;
+    const start = Math.max(1, cur - 2);
+    const end = Math.min(total, cur + 2);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  });
+  function toggleAllTenants(e) {
+    if (e.target.checked) tenantSelected.value = tenantsPaged.value.map(t => t.id);
+    else tenantSelected.value = [];
+  }
+  function toggleTenantCheck(id) {
+    const idx = tenantSelected.value.indexOf(id);
+    if (idx >= 0) tenantSelected.value.splice(idx, 1);
+    else tenantSelected.value.push(id);
+  }
+  async function batchDeleteTenants() {
+    if (!confirm('确认删除选中的 ' + tenantSelected.value.length + ' 个租户？此操作不可恢复。')) return;
+    try {
+      const ids = tenantSelected.value.join(',');
+      const r = await fetch(API + '/api/v1/admin/tenants/batch-delete?ids=' + encodeURIComponent(ids), { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, timeout: 15000 });
+      const d = await r.json();
+      if (d.success || r.ok) { showToast('批量删除成功', 'success'); tenantSelected.value = []; await loadTenants(); }
+      else { showToast(d.detail || '批量删除失败', 'error'); }
+    } catch(e) { showToast('批量删除失败: ' + e.message, 'error'); }
+  }
+  async function batchSetTenantStatus(status) {
+    const label = status === 'active' ? '启用' : '停用';
+    if (!confirm('确认' + label + '选中的 ' + tenantSelected.value.length + ' 个租户？')) return;
+    try {
+      const ids = tenantSelected.value.join(',');
+      const r = await fetch(API + '/api/v1/admin/tenants/batch-status?ids=' + encodeURIComponent(ids) + '&status=' + status, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, timeout: 15000 });
+      const d = await r.json();
+      if (d.success || r.ok) { showToast('批量' + label + '成功', 'success'); tenantSelected.value = []; await loadTenants(); }
+      else { showToast(d.detail || '操作失败', 'error'); }
+    } catch(e) { showToast('操作失败: ' + e.message, 'error'); }
+  }
+
+  // ── 用户管理: 搜索/筛选/分页/批量 ──
+  const userSearch = Vue.ref('');
+  const userFilterRole = Vue.ref('');
+  const userFilterTenant = Vue.ref('');
+  const userFilterStatus = Vue.ref('');
+  const userPage = Vue.ref(1);
+  const userPageSize = Vue.ref(10);
+  const userSelected = Vue.ref([]);
+
+  const usersFiltered = Vue.computed(() => {
+    let list = users.value;
+    if (userSearch.value) {
+      const q = userSearch.value.toLowerCase();
+      list = list.filter(u => (u.username || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q));
+    }
+    if (userFilterRole.value) list = list.filter(u => u.role === userFilterRole.value);
+    if (userFilterTenant.value) list = list.filter(u => u.tenant_id === userFilterTenant.value);
+    if (userFilterStatus.value) list = list.filter(u => u.status === userFilterStatus.value);
+    return list;
+  });
+  const userTotalPages = Vue.computed(() => Math.max(1, Math.ceil(usersFiltered.value.length / userPageSize.value)));
+  const usersPaged = Vue.computed(() => {
+    const start = (userPage.value - 1) * userPageSize.value;
+    return usersFiltered.value.slice(start, start + userPageSize.value);
+  });
+  const userAllSelected = Vue.computed(() => usersPaged.value.length > 0 && userSelected.value.length === usersPaged.value.length);
+  const userPageNums = Vue.computed(() => {
+    const pages = [];
+    const total = userTotalPages.value;
+    const cur = userPage.value;
+    const start = Math.max(1, cur - 2);
+    const end = Math.min(total, cur + 2);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  });
+  function toggleAllUsers(e) {
+    if (e.target.checked) userSelected.value = usersPaged.value.map(u => u.user_id);
+    else userSelected.value = [];
+  }
+  function toggleUserCheck(id) {
+    const idx = userSelected.value.indexOf(id);
+    if (idx >= 0) userSelected.value.splice(idx, 1);
+    else userSelected.value.push(id);
+  }
+  async function batchDeleteUsers() {
+    if (!confirm('确认删除选中的 ' + userSelected.value.length + ' 个用户？此操作不可恢复。')) return;
+    try {
+      const ids = userSelected.value.join(',');
+      const r = await fetch(API + '/api/v1/admin/users/batch-delete?ids=' + encodeURIComponent(ids), { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, timeout: 15000 });
+      const d = await r.json();
+      if (d.success || r.ok) { showToast('批量删除成功', 'success'); userSelected.value = []; await loadUsers(); }
+      else { showToast(d.detail || '批量删除失败', 'error'); }
+    } catch(e) { showToast('批量删除失败: ' + e.message, 'error'); }
+  }
+  async function batchSetUserStatus(status) {
+    const label = status === 'active' ? '启用' : '禁用';
+    if (!confirm('确认' + label + '选中的 ' + userSelected.value.length + ' 个用户？')) return;
+    try {
+      const ids = userSelected.value.join(',');
+      const r = await fetch(API + '/api/v1/admin/users/batch-status?ids=' + encodeURIComponent(ids) + '&status=' + status, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, timeout: 15000 });
+      const d = await r.json();
+      if (d.success || r.ok) { showToast('批量' + label + '成功', 'success'); userSelected.value = []; await loadUsers(); }
+      else { showToast(d.detail || '操作失败', 'error'); }
+    } catch(e) { showToast('操作失败: ' + e.message, 'error'); }
+  }
+  async function resetUserPassword(u) {
+    const newPw = prompt('为「' + u.username + '」输入新密码（至少6位）：');
+    if (!newPw || newPw.length < 6) { showToast('密码至少6位', 'error'); return; }
+    try {
+      const r = await fetch(API + '/api/v1/admin/users/' + encodeURIComponent(u.user_id) + '/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Bearer ' + token },
+        body: 'new_password=' + encodeURIComponent(newPw),
+        timeout: 10000
+      });
+      const d = await r.json();
+      if (d.success || r.ok) { showToast('密码重置成功', 'success'); }
+      else { showToast(d.detail || '密码重置失败', 'error'); }
+    } catch(e) { showToast('密码重置失败: ' + e.message, 'error'); }
+  }
+
+  // ── 饼图辅助 ──
+  function planColor(k) {
+    return { free: '#3b82f6', pro: '#a78bfa', enterprise: '#f59e0b', private: '#10b981' }[k] || '#5a6b7d';
+  }
+  const planPieData = Vue.computed(() => {
+    const dist = cockpit.value.metrics?.revenue?.plan_distribution || {};
+    const total = Object.values(dist).reduce((s, v) => s + (Number(v) || 0), 0);
+    if (!total) return [];
+    let offset = 0;
+    return Object.entries(dist).map(([k, v]) => {
+      const pct = Math.round((Number(v) / total) * 100);
+      const d = { pct, offset, color: planColor(k) };
+      offset += pct;
+      return d;
+    });
+  });
+
   // Phase 25: 性能监控 & 行为分析
   const monitorMetrics = Vue.ref(null);
   const monitorAlerts = Vue.ref(null);
@@ -916,7 +1312,7 @@ const app = Vue.createApp({setup(){
     }catch(e){
       cockpit.value={
         health_score:92,health_grade:'A',alerts:[],
-        metrics:{revenue:{total_revenue:126800,revenue_this_month:21800,active_subscribers:7,plan_distribution:{free:15,pro:4,enterprise:2,private:1}},projects:{tenants:22},agents:{heatmap:[{agent_id:'tech_rd',count:48},{agent_id:'safety_compliance',count:31},{agent_id:'manager',count:27},{agent_id:'engineering_delivery',count:19},{agent_id:'market_sales',count:12},{agent_id:'cost_benefit',count:8},{agent_id:'customer_service',count:5}],},security:{score:94,grade:'A'}}
+        metrics:{revenue:{total_revenue:126800,revenue_this_month:21800,active_subscribers:7,plan_distribution:{free:15,pro:4,enterprise:2,private:1},monthly_revenue:{'2026-04':8200,'2026-05':12680,'2026-06':21800}},projects:{tenants:22,new_this_month:3},agents:{heatmap:[{agent_id:'tech_rd',count:48},{agent_id:'safety_compliance',count:31},{agent_id:'manager',count:27},{agent_id:'engineering_delivery',count:19},{agent_id:'market_sales',count:12},{agent_id:'cost_benefit',count:8},{agent_id:'customer_service',count:5}],},security:{score:94,grade:'A'}}
       };
     }
   }
@@ -945,6 +1341,71 @@ const app = Vue.createApp({setup(){
       ];
     }
     tenantsLoading.value = false;
+  }
+
+  // ── 用户管理 ──
+  const users = Vue.ref([]); const usersLoading = Vue.ref(false);
+  const userModal = Vue.ref({show:false,edit:false,user_id:'',username:'',email:'',password:'',role:'user',tenant_id:'',status:'active'});
+
+  function roleLabel(r){return{super_admin:'超级管理员',tenant_admin:'租户管理员',user:'普通用户'}[r]||r||'未知'}
+
+  async function loadUsers(){
+    usersLoading.value = true;
+    try{
+      const r=await fetch(API+'/api/v1/admin/users',{headers:{'Authorization':'Bearer '+token},timeout:10000});
+      if(r.ok){const d=await r.json();users.value=d?.users||d||[];}
+      else{users.value=[];}
+    }catch(e){users.value=[];}
+    usersLoading.value = false;
+  }
+
+  function showUserModal(u){
+    if(u){
+      userModal.value={show:true,edit:true,user_id:u.user_id,username:u.username||'',email:u.email||'',password:'',role:u.role||'user',tenant_id:u.tenant_id||'',status:u.status||'active'};
+    }else{
+      userModal.value={show:false,edit:false,user_id:'',username:'',email:'',password:'',role:'user',tenant_id:'',status:'active'};
+      userModal.value.show=true;userModal.value.edit=false;
+    }
+  }
+
+  async function saveUser(){
+    const m=userModal.value;
+    if(!m.username){showToast('请填写用户名','error');return;}
+    if(!m.edit&&!m.password){showToast('请填写密码','error');return;}
+    try{
+      const body=new URLSearchParams();
+      body.set('username',m.username);
+      if(m.password)body.set('password',m.password);
+      body.set('email',m.email);
+      body.set('role',m.role);
+      if(m.tenant_id)body.set('tenant_id',m.tenant_id);
+      let url,method;
+      if(m.edit){
+        url=API+'/api/v1/admin/users/'+encodeURIComponent(m.user_id);
+        method='PUT';
+        body.set('status',m.status);
+      }else{
+        url=API+'/api/v1/admin/users';
+        method='POST';
+      }
+      const r=await fetch(url,{method,headers:{'Content-Type':'application/x-www-form-urlencoded','Authorization':'Bearer '+token},body:body.toString(),timeout:15000});
+      const d=await r.json();
+      if(d.success||r.ok){
+        showToast(m.edit?'用户已更新':'用户创建成功！','success');
+        userModal.value.show=false;
+        await loadUsers();
+      }else{showToast(d.detail||JSON.stringify(d),'error');}
+    }catch(e){showToast('操作失败: '+e.message,'error');}
+  }
+
+  async function deleteUser(u){
+    if(!confirm('确定删除用户「'+u.username+'」？此操作不可恢复。'))return;
+    try{
+      const r=await fetch(API+'/api/v1/admin/users/'+encodeURIComponent(u.user_id),{method:'DELETE',headers:{'Authorization':'Bearer '+token},timeout:10000});
+      const d=await r.json();
+      if(d.success||r.ok){showToast('用户已删除','success');await loadUsers();}
+      else{showToast(d.detail||JSON.stringify(d),'error');}
+    }catch(e){showToast('删除失败: '+e.message,'error');}
   }
 
   function planName(p){return{free:'🆓 免费版',pro:'💎 专业版',enterprise:'🏢 企业版',private:'🔒 私有化'}[p]||p||'未知'}
@@ -1055,6 +1516,7 @@ const app = Vue.createApp({setup(){
     showToast('正在刷新全部数据...','info',1500);
     await loadCockpit();
     if(tab.value==='tenants')await loadTenants();
+    if(tab.value==='users')await loadUsers();
     if(tab.value==='alerts')await loadAlerts();
     if(tab.value==='reports')await genReport();
     if(tab.value==='advice')await loadAdvice();
@@ -1069,6 +1531,7 @@ const app = Vue.createApp({setup(){
 
   // Tab切换自动加载
   Vue.watch(tab, (newTab) => {
+    if (newTab === 'users' && !users.value.length) loadUsers();
     if (newTab === 'monitor' && !monitorMetrics.value) loadMonitor();
     if (newTab === 'analytics' && !analyticsSummary.value) loadAnalytics();
   });
@@ -1084,10 +1547,21 @@ const app = Vue.createApp({setup(){
     tenantModal,showTenantModal,saveTenant,deleteTenant,
     loadTenants,loadAlerts,loadAdvice,loadLogs,loadModels,loadRoute,checkNetwork,
     loadMonitor,loadAnalytics,
+    users,usersLoading,userModal,showUserModal,saveUser,deleteUser,loadUsers,
     openAddModel,openEditModel,closeModelForm,saveModel,deleteModel,toggleModel,
     toast,
     planName,formatDate,
     monitorMetrics,monitorAlerts,analyticsSummary,
+    // 租户管理: 搜索/筛选/分页/批量
+    tenantSearch,tenantFilterPlan,tenantFilterStatus,tenantPage,tenantPageSize,tenantSelected,
+    tenantsFiltered,tenantTotalPages,tenantsPaged,tenantAllSelected,tenantPageNums,
+    toggleAllTenants,toggleTenantCheck,batchDeleteTenants,batchSetTenantStatus,
+    // 用户管理: 搜索/筛选/分页/批量
+    userSearch,userFilterRole,userFilterTenant,userFilterStatus,userPage,userPageSize,userSelected,
+    usersFiltered,userTotalPages,usersPaged,userAllSelected,userPageNums,
+    toggleAllUsers,toggleUserCheck,batchDeleteUsers,batchSetUserStatus,resetUserPassword,
+    // 饼图
+    planPieData,planColor,
   };
 }
 }

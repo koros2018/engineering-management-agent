@@ -1981,42 +1981,92 @@ async def check_rate(client_ip: str = "127.0.0.1"):
 # ── 管理员用户管理 API ─────────────────────────────────────
 
 @app.get("/api/v1/admin/users")
-async def admin_list_users(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
-    """用户列表（仅超级管理员）"""
+async def admin_list_users(
+    q: str = Query(None, description="搜索关键词（用户名/邮箱）"),
+    role_filter: str = Query(None, description="角色筛选"),
+    status_filter: str = Query(None, description="状态筛选"),
+    tenant_id: str = Query(None, description="租户ID筛选"),
+    user: dict = Depends(require_role(Role.SUPER_ADMIN)),
+):
+    """用户列表（仅超级管理员，支持搜索筛选）"""
     f = EMA_DATA_DIR / "users.json"
     users_data = load_json(f)
     users = []
     for uid, u in users_data.items():
+        # 搜索过滤
+        if q:
+            q_lower = q.lower()
+            if q_lower not in u.get("username", "").lower() and q_lower not in u.get("email", "").lower():
+                continue
+        # 角色过滤
+        if role_filter and u.get("role") != role_filter:
+            continue
+        # 状态过滤
+        if status_filter and u.get("status") != status_filter:
+            continue
+        # 租户过滤
+        if tenant_id and u.get("tenant_id") != tenant_id:
+            continue
         users.append({
             "user_id": u.get("user_id"),
             "username": u.get("username"),
             "email": u.get("email", ""),
             "status": u.get("status", "active"),
             "role": u.get("role", "user"),
+            "tenant_id": u.get("tenant_id", ""),
             "created_at": u.get("created_at", ""),
         })
     return {"success": True, "users": users, "total": len(users)}
 
 
 @app.get("/api/v1/admin/tenants")
-async def admin_list_tenants(user: dict = Depends(require_role(Role.SUPER_ADMIN))):
-    """租户列表（仅超级管理员）"""
+async def admin_list_tenants(
+    q: str = Query(None, description="搜索关键词（租户名称）"),
+    plan_filter: str = Query(None, description="套餐筛选"),
+    status_filter: str = Query(None, description="状态筛选"),
+    page: int = Query(1, ge=1, description="页码"),
+    page_size: int = Query(10, ge=1, le=100, description="每页条数"),
+    user: dict = Depends(require_role(Role.SUPER_ADMIN)),
+):
+    """租户列表（仅超级管理员，支持搜索筛选+分页）"""
     t_f = EMA_DATA_DIR / "tenants.json"
     u_f = EMA_DATA_DIR / "tenant_users.json"
     tenants_data = load_json(t_f)
     tenant_users = load_json(u_f)
     tenants = []
     for tid, t in tenants_data.items():
+        # 搜索过滤
+        if q and q.lower() not in t.get("name", "").lower():
+            continue
+        # 套餐过滤
+        if plan_filter and t.get("plan") != plan_filter:
+            continue
+        # 状态过滤
+        if status_filter and t.get("status") != status_filter:
+            continue
         user_count = sum(1 for tu in tenant_users.values() if tu.get("tenant_id") == tid)
         tenants.append({
             "id": tid,
             "name": t.get("name", ""),
-            "plan": t.get("plan_id", "free"),
+            "plan": t.get("plan", "free"),
             "user_count": user_count,
             "status": t.get("status", "active"),
             "created_at": t.get("created_at", ""),
         })
-    return {"success": True, "tenants": tenants, "total": len(tenants)}
+    # 分页
+    total = len(tenants)
+    total_pages = max(1, (total + page_size - 1) // page_size)
+    start = (page - 1) * page_size
+    end = start + page_size
+    tenants_page = tenants[start:end]
+    return {
+        "success": True,
+        "tenants": tenants_page,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+    }
 
 
 @app.post("/api/v1/admin/tenants")
@@ -2088,7 +2138,220 @@ async def admin_delete_tenant(
     return {"success": True, "message": "租户已删除"}
 
 
+# ── 批量操作 API（超级管理员）──────────────────────────
+
+@app.post("/api/v1/admin/tenants/batch-delete")
+async def admin_batch_delete_tenants(
+    tenant_ids: list[str] = Body(..., description="租户ID列表"),
+    user: dict = Depends(require_role(Role.SUPER_ADMIN)),
+):
+    """批量删除租户（仅超级管理员）"""
+    t_f = EMA_DATA_DIR / "tenants.json"
+    u_f = EMA_DATA_DIR / "tenant_users.json"
+    tenants_data = load_json(t_f)
+    tenant_users = load_json(u_f)
+    deleted = []
+    for tid in tenant_ids:
+        if tid in tenants_data:
+            del tenants_data[tid]
+            deleted.append(tid)
+    save_json(t_f, tenants_data)
+    # 清理关联用户
+    for uid in [k for k, v in tenant_users.items() if v.get("tenant_id") in deleted]:
+        del tenant_users[uid]
+    save_json(u_f, tenant_users)
+    return {"success": True, "deleted": deleted, "deleted_count": len(deleted)}
+
+
+@app.post("/api/v1/admin/tenants/batch-status")
+async def admin_batch_update_tenant_status(
+    tenant_ids: list[str] = Body(..., description="租户ID列表"),
+    status: str = Body(..., description="目标状态: active/suspended"),
+    user: dict = Depends(require_role(Role.SUPER_ADMIN)),
+):
+    """批量更新租户状态（仅超级管理员）"""
+    t_f = EMA_DATA_DIR / "tenants.json"
+    tenants_data = load_json(t_f)
+    updated = []
+    for tid in tenant_ids:
+        if tid in tenants_data:
+            tenants_data[tid]["status"] = status
+            updated.append(tid)
+    save_json(t_f, tenants_data)
+    return {"success": True, "updated": updated, "updated_count": len(updated), "status": status}
+
+
+# ── 用户管理 API（超级管理员）──────────────────────────
+
+@app.post("/api/v1/admin/users")
+async def admin_create_user(
+    username: str = Form(...),
+    password: str = Form(...),
+    email: str = Form(""),
+    role: str = Form("user"),
+    tenant_id: str = Form(None),
+    user: dict = Depends(require_role(Role.SUPER_ADMIN)),
+):
+    """创建用户（仅超级管理员）"""
+    import hashlib
+    u_f = EMA_DATA_DIR / "users.json"
+    tu_f = EMA_DATA_DIR / "tenant_users.json"
+    users_data = load_json(u_f)
+    # 检查用户名是否已存在
+    for u in users_data.values():
+        if u.get("username") == username:
+            raise HTTPException(status_code=409, detail="用户名已存在")
+    uid = f"user_{uuid.uuid4().hex[:12]}"
+    salt = uuid.uuid4().hex[:16]
+    pw_hash = hashlib.sha256(f"{password}{salt}".encode()).hexdigest()
+    users_data[uid] = {
+        "user_id": uid,
+        "username": username,
+        "email": email,
+        "password_hash": pw_hash,
+        "salt": salt,
+        "role": role,
+        "status": "active",
+        "created_at": datetime.now().isoformat(),
+    }
+    save_json(u_f, users_data)
+    # 如果指定了租户，建立关联
+    if tenant_id:
+        tenant_users = load_json(tu_f)
+        tenant_users[uid] = {
+            "user_id": uid,
+            "tenant_id": tenant_id,
+            "role": role,
+            "joined_at": datetime.now().isoformat(),
+        }
+        save_json(tu_f, tenant_users)
+    return {"success": True, "user_id": uid, "message": f"用户 '{username}' 创建成功"}
+
+
+@app.put("/api/v1/admin/users/{user_id}")
+async def admin_update_user(
+    user_id: str,
+    email: Optional[str] = Form(None),
+    role: Optional[str] = Form(None),
+    status: Optional[str] = Form(None),
+    tenant_id: Optional[str] = Form(None),
+    password: Optional[str] = Form(None),
+    user: dict = Depends(require_role(Role.SUPER_ADMIN)),
+):
+    """编辑用户（仅超级管理员）"""
+    import hashlib
+    u_f = EMA_DATA_DIR / "users.json"
+    tu_f = EMA_DATA_DIR / "tenant_users.json"
+    users_data = load_json(u_f)
+    if user_id not in users_data:
+        raise HTTPException(status_code=404, detail="用户不存在")
+    u = users_data[user_id]
+    if email is not None:
+        u["email"] = email
+    if role is not None:
+        u["role"] = role
+    if status is not None:
+        u["status"] = status
+    if password:
+        salt = uuid.uuid4().hex[:16]
+        u["password_hash"] = hashlib.sha256(f"{password}{salt}".encode()).hexdigest()
+        u["salt"] = salt
+    users_data[user_id] = u
+    save_json(u_f, users_data)
+    # 更新租户关联
+    if tenant_id is not None:
+        tenant_users = load_json(tu_f)
+        if tenant_id == "":
+            # 解除租户关联
+            if user_id in tenant_users:
+                del tenant_users[user_id]
+        else:
+            tenant_users[user_id] = {
+                "user_id": user_id,
+                "tenant_id": tenant_id,
+                "role": u.get("role", "user"),
+                "joined_at": tenant_users.get(user_id, {}).get("joined_at", datetime.now().isoformat()),
+            }
+        save_json(tu_f, tenant_users)
+    return {"success": True, "message": "用户更新成功"}
+
+
+@app.delete("/api/v1/admin/users/{user_id}")
+async def admin_delete_user(
+    user_id: str,
+    user: dict = Depends(require_role(Role.SUPER_ADMIN)),
+):
+    """删除用户（仅超级管理员）"""
+    u_f = EMA_DATA_DIR / "users.json"
+    tu_f = EMA_DATA_DIR / "tenant_users.json"
+    users_data = load_json(u_f)
+    if user_id not in users_data:
+        raise HTTPException(status_code=404, detail="用户不存在")
+    del users_data[user_id]
+    save_json(u_f, users_data)
+    # 清理租户关联
+    tenant_users = load_json(tu_f)
+    if user_id in tenant_users:
+        del tenant_users[user_id]
+    save_json(tu_f, tenant_users)
+    return {"success": True, "message": "用户已删除"}
+
+
 # ── 项目管理 API ──────────────────────────────────────────
+
+
+# ── 用户批量操作 API ──────────────────────────────────
+
+@app.post("/api/v1/admin/users/batch-delete")
+async def admin_batch_delete_users(
+    request: Request,
+    user: dict = Depends(require_role(Role.SUPER_ADMIN)),
+):
+    """批量删除用户（仅超级管理员）"""
+    ids_str = request.query_params.get("ids", "")
+    if not ids_str:
+        raise HTTPException(status_code=400, detail="缺少 ids 参数")
+    user_ids = [x.strip() for x in ids_str.split(",") if x.strip()]
+    if not user_ids:
+        raise HTTPException(status_code=400, detail="ids 参数为空")
+
+    u_f = EMA_DATA_DIR / "tenant_users.json"
+    users_data = load_json(u_f)
+    deleted = []
+    for uid in user_ids:
+        if uid in users_data:
+            del users_data[uid]
+            deleted.append(uid)
+    save_json(u_f, users_data)
+    return {"success": True, "deleted": deleted, "deleted_count": len(deleted)}
+
+
+@app.post("/api/v1/admin/users/batch-status")
+async def admin_batch_update_user_status(
+    request: Request,
+    status: str = None,
+    user: dict = Depends(require_role(Role.SUPER_ADMIN)),
+):
+    """批量更新用户状态（仅超级管理员）"""
+    ids_str = request.query_params.get("ids", "")
+    status = status or request.query_params.get("status", "")
+    if not ids_str:
+        raise HTTPException(status_code=400, detail="缺少 ids 参数")
+    if status not in ("active", "disabled"):
+        raise HTTPException(status_code=400, detail="status 必须为 active 或 disabled")
+    user_ids = [x.strip() for x in ids_str.split(",") if x.strip()]
+    if not user_ids:
+        raise HTTPException(status_code=400, detail="ids 参数为空")
+
+    u_f = EMA_DATA_DIR / "tenant_users.json"
+    users_data = load_json(u_f)
+    updated = []
+    for uid in user_ids:
+        if uid in users_data:
+            users_data[uid]["status"] = status
+            updated.append(uid)
+    save_json(u_f, users_data)
+    return {"success": True, "updated": updated, "updated_count": len(updated), "status": status}
 
 @app.get("/api/v1/projects", operation_id="list_projects_tenant")
 async def list_projects(

@@ -8,7 +8,7 @@ auth_extended.py - 认证扩展 v3
 """
 
 import os, hashlib, secrets, time, re, io, base64, hmac
-from src.utils import json_dumps, json_loads
+from utils import json_dumps, json_loads
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional, Tuple
@@ -45,7 +45,7 @@ def init_boss_account():
     users = al(USERS_FILE)
     for uid, u in users.items():
         if u.get("username") == "boss_ke":
-            set_admin_password(uid, "kzg@2023@SHMTU")
+            set_admin_password(uid, "koros0001")
             return
     user_id = "user_boss_ke"
     pw_hash, salt = hash_password("koros0001")
@@ -57,7 +57,7 @@ def init_boss_account():
     tusers = al(TENANT_USERS_FILE)
     tusers[user_id] = {"user_id":user_id,"tenant_id":"tenant_boss","role":Role.SUPER_ADMIN,"joined_at":datetime.now().isoformat()}
     a_s(TENANT_USERS_FILE, tusers)
-    set_admin_password(user_id, "kzg@2023@SHMTU")
+    set_admin_password(user_id, "koros0001")
     print("✅ Boss: boss_ke (super_admin)")
 
 def set_admin_password(uid: str, pw: str):
@@ -68,8 +68,13 @@ def set_admin_password(uid: str, pw: str):
 
 def verify_admin_password(uid: str, pw: str) -> bool:
     r = load_json(ADMIN_PASSWORDS_FILE).get(uid)
-    if not r: return False
-    return hashlib.pbkdf2_hmac("sha256", pw.encode(), r["salt"].encode(), 100000).hex() == r["hash"]
+    if not r:
+        print(f"[DEBUG] admin_pw: no record for uid={uid}")
+        return False
+    computed = hashlib.pbkdf2_hmac("sha256", pw.encode(), r["salt"].encode(), 100000).hex()
+    match = computed == r["hash"]
+    print(f"[DEBUG] admin_pw: uid={uid} match={match} stored_hash={r['hash'][:20]}... computed={computed[:20]}... salt={r['salt'][:10]}...")
+    return match
 
 def boss_login_without_admin_pw(username: str, password: str) -> Dict:
     from auth import login_user

@@ -12,8 +12,8 @@
     "user_id": "user_boss_ke",
     "username": "boss_ke",
     "email": "boss@ema.local",
-    "password_hash": "8ba5c7144d775b3d991fa81a6dc1fa4ae5b68c91b2b4d3665eab4c674a42d192",
-    "salt": "58c0df86a0a0bf056784730d1f2c01dd",
+    "password_hash": "bf2ceaa659e666129a7393813f12ab60652620148ae0fcc624f4323635d75e0a",
+    "salt": "fb8c246d70e2e0e5751e5285be974aee",
     "created_at": "2026-05-19T15:17:33.362778",
     "status": "active",
     "role": "super_admin"
