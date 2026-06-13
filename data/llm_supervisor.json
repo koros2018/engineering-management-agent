@@ -1,0 +1,35 @@
+{
+  "models": {
+    "nvidia/api-check": {
+      "total": 2,
+      "success": 0,
+      "timeout": 2,
+      "error": 0,
+      "consecutive_failures": 2,
+      "error_rate": 1.0,
+      "avg_time_ms": 0.0,
+      "last_call": 1780025421.6405816,
+      "disabled_until": 0.0,
+      "status": "healthy"
+    },
+    "unknown": {
+      "total": 517,
+      "success": 484,
+      "timeout": 0,
+      "error": 33,
+      "consecutive_failures": 0,
+      "error_rate": 0.064,
+      "avg_time_ms": 0.7,
+      "last_call": 1780625661.3562245,
+      "disabled_until": 0.0,
+      "status": "healthy"
+    }
+  },
+  "daily": {
+    "date": "2026-06-05",
+    "total": 7,
+    "timeout": 0,
+    "fallback": 0
+  },
+  "alerts": []
+}

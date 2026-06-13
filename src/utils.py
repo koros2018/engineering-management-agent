@@ -26,9 +26,9 @@ def save_json(path: Path, data: Any) -> bool:
         return False
 
 
-def json_dumps(data: Any) -> str:
+def json_dumps(data: Any, **kwargs) -> str:
     """JSON 序列化（统一 ensure_ascii=False）"""
-    return json.dumps(data, ensure_ascii=False)
+    return json.dumps(data, ensure_ascii=False, **kwargs)
 
 
 def json_loads(text: str) -> Any:

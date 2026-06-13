@@ -2,7 +2,7 @@
 """Check admin.html for Vue.ref issues"""
 import re
 
-with open('/mnt/d/OpenClawData/workspace/Projects/EMA/ui/admin.html') as f:
+with open('/mnt/d/OpenClawDataworkspace/Projects/EMA/ui/admin.html') as f:
     content = f.read()
     lines = content.split('\n')
 

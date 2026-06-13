@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>EMA 管家后台</title>
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="/ui/vendor/vue.global.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -416,13 +416,14 @@ window.addEventListener('error', function(e) {
           <button :disabled="tenantPage>=tenantTotalPages" @click="tenantPage++">›</button>
           <span class="page-info">{{ tenantPage }} / {{ tenantTotalPages }}</span>
         </div>
+      </div>
       </template>
-      <div v-else class="empty-state">
+      <!-- 无租户时的空状态 -->
+      <div v-if="!tenantsLoading && !tenantsFiltered.length" class="empty-state">
         <span class="icon">🏢</span>
         <div>{{ tenantSearch||tenantFilterPlan||tenantFilterStatus ? '无匹配租户，试试调整筛选条件' : '暂无租户数据' }}</div>
         <button v-if="!tenantSearch&&!tenantFilterPlan&&!tenantFilterStatus" class="btn btn-primary" @click="showTenantModal()">创建第一个租户</button>
       </div>
-
       <!-- 租户编辑弹窗 -->
       <div v-if="tenantModal.show" class="modal-overlay" @click.self="tenantModal.show=false">
         <div class="modal">
@@ -815,8 +816,7 @@ window.addEventListener('error', function(e) {
           <button :disabled="userPage>=userTotalPages" @click="userPage++">›</button>
           <span class="page-info">{{ userPage }} / {{ userTotalPages }}</span>
         </div>
-      </template>
-      <div v-else style="text-align:center;padding:40px;color:var(--dim)">{{ userSearch||userFilterRole||userFilterTenant||userFilterStatus ? '无匹配用户' : '暂无用户数据' }}</div>
+      </div>
       <!-- 用户编辑弹窗 -->
       <div v-if="userModal.show" class="modal-overlay" @click.self="userModal.show=false">
         <div class="modal">
@@ -868,8 +868,63 @@ window.addEventListener('error', function(e) {
           </div>
         </div>
       </div>
+      </template>
+      <!-- 无用户时的空状态 -->
+      <div v-if="!usersLoading && !usersFiltered.length" style="text-align:center;padding:40px;color:var(--dim)">
+        {{ userSearch||userFilterRole||userFilterTenant||userFilterStatus ? '无匹配用户' : '暂无用户数据' }}
+      </div>
+      <!-- 用户编辑弹窗 -->
+      <div v-if="userModal.show" class="modal-overlay" @click.self="userModal.show=false">
+        <div class="modal">
+          <span class="modal-title">{{ userModal.edit ? '编辑用户' : '新建用户' }}</span>
+          <button class="modal-close" @click="userModal.show=false">✕</button>
+          <div class="form-row">
+            <div style="flex:1">
+              <label class="form-label">用户名</label>
+              <input v-model="userModal.username" class="form-input" placeholder="输入用户名" :disabled="userModal.edit">
+            </div>
+            <div style="flex:1">
+              <label class="form-label">邮箱</label>
+              <input v-model="userModal.email" class="form-input" placeholder="输入邮箱" type="email">
+            </div>
+          </div>
+          <div class="form-row">
+            <div style="flex:1">
+              <label class="form-label">{{ userModal.edit ? '新密码（留空不修改）' : '密码' }}</label>
+              <input v-model="userModal.password" class="form-input" placeholder="输入密码" type="password">
+            </div>
+            <div style="flex:1">
+              <label class="form-label">角色</label>
+              <select v-model="userModal.role" class="form-input">
+                <option value="user">普通用户</option>
+                <option value="tenant_admin">租户管理员</option>
+                <option value="super_admin">超级管理员</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div style="flex:1">
+              <label class="form-label">租户</label>
+              <select v-model="userModal.tenant_id" class="form-input">
+                <option value="">无租户</option>
+                <option v-for="t in tenants" :key="t.id" :value="t.id">{{ t.name }}</option>
+              </select>
+            </div>
+            <div style="flex:1" v-if="userModal.edit">
+              <label class="form-label">状态</label>
+              <select v-model="userModal.status" class="form-input">
+                <option value="active">✅ 正常</option>
+                <option value="disabled">⛔ 停用</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" @click="userModal.show=false">取消</button>
+            <button class="btn btn-primary" :disabled="!userModal.username" @click="saveUser">保存</button>
+          </div>
+        </div>
+      </div>
     </template>
-
     <!-- ════ 行为分析 ════ -->
     <template v-if="tab==='analytics'">
       <div class="grid">

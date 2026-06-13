@@ -16,7 +16,7 @@ Usage:
 """
 
 import logging
-import json
+from utils import json_dumps
 import sys
 import time
 import os
@@ -71,7 +71,7 @@ class JSONFormatter(logging.Formatter):
                 "message": str(record.exc_info[1]),
             }
 
-        return json.dumps(entry, ensure_ascii=False, default=str)
+        return json_dumps(entry, ensure_ascii=False, default=str)
 
 
 class ColoredConsoleFormatter(logging.Formatter):

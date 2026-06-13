@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "created_at": "2026-05-26T14:21:59.627410",
+  "models": {
+    "opencode/deepseek-v4-flash-free": {
+      "total_calls": 3,
+      "success_calls": 3,
+      "failed_calls": 0,
+      "rate_limited": 0,
+      "last_call_at": "2026-05-26T14:22:03.800686",
+      "last_error": null,
+      "consecutive_failures": 0,
+      "is_disabled": false,
+      "disabled_until": null
+    },
+    "longcat/LongCat-2.0-Preview": {
+      "total_calls": 1,
+      "success_calls": 1,
+      "failed_calls": 0,
+      "rate_limited": 0,
+      "last_call_at": "2026-05-26T14:22:03.813138",
+      "last_error": null,
+      "consecutive_failures": 0,
+      "is_disabled": false,
+      "disabled_until": null
+    }
+  },
+  "daily": {
+    "date": "2026-05-26",
+    "total_probes": 1,
+    "detected_rate_limits": 0,
+    "fallbacks": 0
+  },
+  "active_fallback": null,
+  "last_recovery_at": null
+}
