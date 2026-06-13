@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head><body>
+<div id="app">{{message}} | {{tab}}</div>
+<script src="/ui/vendor/vue.global.js"></script>
+<script>
+const {createApp, ref, computed} = Vue;
+const app = createApp({
+  setup() {
+    const message = ref('hello');
+    const tab = ref('cockpit');
+    const pageTitle = computed(() => 'title-' + tab.value);
+    return { message, tab, pageTitle };
+  }
+});
+app.mount('#app');
+</script>
+</body></html>
