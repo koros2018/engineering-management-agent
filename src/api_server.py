@@ -1762,14 +1762,21 @@ async def subscription_status(
 
 @app.post("/api/v1/subscription/subscribe")
 async def subscribe(
-    plan_id: str = Form(...),
-    duration_months: int = Form(1),
+    request: Request,
     user: dict = Depends(get_current_user),
 ):
-    """订阅/升级套餐"""
+    """订阅/升级套餐 - 兼容 JSON 和 form data"""
     try:
-        from subscription import subscribe
-        result = subscribe(user["tenant_id"], plan_id, duration_months)
+        body = await request.json()
+    except Exception:
+        body = dict(await request.form())
+    plan_id = body.get("plan_id")
+    duration_months = body.get("duration_months", 1)
+    if not plan_id:
+        raise HTTPException(status_code=422, detail="plan_id is required")
+    try:
+        from subscription import subscribe as do_subscribe
+        result = do_subscribe(user["tenant_id"], str(plan_id), int(duration_months))
         return {"success": True, "subscription": result}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

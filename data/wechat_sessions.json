@@ -240,5 +240,16 @@
     "access_token": null,
     "openid": null,
     "wx_code": null
+  },
+  "f6ee982e5ba3a881dcbc3c1aaf573f3f": {
+    "state": "f6ee982e5ba3a881dcbc3c1aaf573f3f",
+    "mode": "login",
+    "status": "pending",
+    "created_at": 1781325590.349758,
+    "expires_at": 1781325890.3497581,
+    "user_id": null,
+    "access_token": null,
+    "openid": null,
+    "wx_code": null
   }
 }

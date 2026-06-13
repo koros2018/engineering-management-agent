@@ -1,94 +1,23 @@
 {
-  "user_e9926c3eac6dad3f": {
-    "user_id": "user_e9926c3eac6dad3f",
-    "username": "testuser1",
-    "email": "test@example.com",
-    "password_hash": "00da9fb2ac617a089e1e9075af2041c716912d6467efa296cd6f43bbe5828fb0",
-    "salt": "8c6345300ff97d8e0f86acf153845f3c",
-    "created_at": "2026-05-18T18:12:20.888738",
-    "status": "active"
-  },
   "user_boss_ke": {
     "user_id": "user_boss_ke",
     "username": "boss_ke",
     "email": "boss@ema.local",
-    "password_hash": "bf2ceaa659e666129a7393813f12ab60652620148ae0fcc624f4323635d75e0a",
-    "salt": "fb8c246d70e2e0e5751e5285be974aee",
+    "password_hash": "2d8bc2a6c599534e2266af6605dfb19c9b543f12700e78e270c02bc4390f2b69",
+    "salt": "1c659f6442757e6502eae1a4719fc528",
     "created_at": "2026-05-19T15:17:33.362778",
     "status": "active",
     "role": "super_admin"
-  },
-  "user_8374b751aea1a176": {
-    "user_id": "user_8374b751aea1a176",
-    "username": "wx_d5000b89",
-    "email": "wx_openid_7080d5000b89@wechat.local",
-    "password_hash": "c0566637420aff376faf9ba4a8fc6411fbc28ce36f8405e502ef74492a7f9be5",
-    "salt": "91c4973619e0b4547e57933b9519ee31",
-    "created_at": "2026-05-19T15:40:17.297871",
-    "status": "active"
-  },
-  "user_7cd9fdbf74fd9260": {
-    "user_id": "user_7cd9fdbf74fd9260",
-    "username": "wx_f45b4800",
-    "email": "wx_openid_7ca3f45b4800@wechat.local",
-    "password_hash": "b6384c95738f3b50bfe542bbde884af5fabfdd81c15430858c5206a17da6bbb8",
-    "salt": "558006eefa0acbb135f5e7587ff665be",
-    "created_at": "2026-05-19T15:40:19.006874",
-    "status": "active"
-  },
-  "user_03d22fecd7ae26fb": {
-    "user_id": "user_03d22fecd7ae26fb",
-    "username": "wx_e69f0d41",
-    "email": "f1ef9f1e@wechat.local",
-    "password_hash": "2309a88a2cca3c5bb7ffdc7ce963eca9fe8f2e24e4c7521df3e6236ffda11834",
-    "salt": "8dd4af41dbb0316bc8baa7d0aa603606",
-    "created_at": "2026-05-19T15:52:01.021094",
-    "status": "active"
-  },
-  "user_0d56f303f2317469": {
-    "user_id": "user_0d56f303f2317469",
-    "username": "wx_5be6abf3",
-    "email": "f6b4cf2c@wechat.local",
-    "password_hash": "854e08657a98cd64cc563bc8b5c2a81f193fe556f6e81ccdc48deb83c34205f4",
-    "salt": "fd6e00f8e480122331423f6412595338",
-    "created_at": "2026-05-19T15:54:47.238191",
-    "status": "active"
-  },
-  "user_2d4775ae82909104": {
-    "user_id": "user_2d4775ae82909104",
-    "username": "wx_4c9c9bf3",
-    "email": "586e2f3b@wechat.local",
-    "password_hash": "e391bc7c24be2d548a063cf8607a7d84558c9403c904ff043f958af42c10fc13",
-    "salt": "04e3d68527fb3b094fadde0bf97860a2",
-    "created_at": "2026-05-19T15:55:04.363636",
-    "status": "active"
-  },
-  "user_3e739981cccfa90b": {
-    "user_id": "user_3e739981cccfa90b",
-    "username": "testwx_user",
-    "email": "test@wx.local",
-    "password_hash": "6666dfa08b6a641de5e453879411fbdbe96f3b8e6c02069004a6875d16f4f735",
-    "salt": "9cf578c472436231ebb7ce8cc9a890ad",
-    "created_at": "2026-05-19T16:07:11.146445",
-    "status": "active"
   },
   "user_65daa73c4f84993f": {
     "user_id": "user_65daa73c4f84993f",
     "username": "test01",
     "email": "2698835828@qq.com",
-    "password_hash": "ccfd90d20edf4401d16da73b37fba6c467fbd512b26d5918212d1c8e480c47ab",
-    "salt": "24784d8f783bea19417d40eb8a848356",
+    "password_hash": "d5b78b00d99599f739be28e8051a749dd9734f7d4ec75c83705209cfbcd2e562",
+    "salt": "cfb8ebb837b743b5",
     "created_at": "2026-05-20T08:17:34.290051",
-    "status": "active"
-  },
-  "user_73b2496731e053b6": {
-    "user_id": "user_73b2496731e053b6",
-    "username": "test_tester",
-    "email": "test@ema.test",
-    "password_hash": "ddd2e5bdb2394a2d05644dcb14a7cfb57eb6b1a1320fe5b1cc11b73719997d2d",
-    "salt": "b8a776b7a6ad6bfdb142ae6b4150ab42",
-    "created_at": "2026-05-20T13:44:44.717682",
-    "status": "active"
+    "status": "active",
+    "role": "user"
   },
   "user_17766a6cc05c6193": {
     "user_id": "user_17766a6cc05c6193",
@@ -100,50 +29,5 @@
     "status": "active",
     "role": "super_admin",
     "tenant_id": "root"
-  },
-  "user_90ef370b179559c7": {
-    "user_id": "user_90ef370b179559c7",
-    "username": "testboss",
-    "email": "test@test.com",
-    "password_hash": "dcc9eecec09bb2835a589e1c738884cfc777da4c41233540961c9aa2fbc48f80",
-    "salt": "fc0f4672ead9357fa5be3681476fcd1a",
-    "created_at": "2026-05-27T15:10:27.109820",
-    "status": "active"
-  },
-  "user_88b8c81bbd90c555": {
-    "user_id": "user_88b8c81bbd90c555",
-    "username": "test_phase22",
-    "email": "test22@ema.local",
-    "password_hash": "690dd22e0065a9bd7f2d75119d422e7d8c09f56fbb93f2f97437bb074e76207f",
-    "salt": "0cada1c6be814fb6719e5775f6db17a4",
-    "created_at": "2026-06-01T12:39:31.765290",
-    "status": "active"
-  },
-  "user_cde73ea6d5d16210": {
-    "user_id": "user_cde73ea6d5d16210",
-    "username": "wx_testuser",
-    "email": "wx@test.com",
-    "password_hash": "a68f139d7c1455b313dad87a5e7ab1e04228d9018d2f43cad24a6a1fcab1e092",
-    "salt": "0e85583e73ba6a85bba9e8264f12dd57",
-    "created_at": "2026-06-01T22:41:34.033209",
-    "status": "active"
-  },
-  "user_b6ab5ae1a5bce881": {
-    "user_id": "user_b6ab5ae1a5bce881",
-    "username": "wx_demo",
-    "email": "wxdemo@test.com",
-    "password_hash": "94f1d0b2d9f203d2231642c81775c3dac53f75d7244461e86912dce889045184",
-    "salt": "a5d67fc3244f1df835144aa41787ffbe",
-    "created_at": "2026-06-01T22:45:46.874627",
-    "status": "active"
-  },
-  "user_a1275a4a2e2e09b0": {
-    "user_id": "user_a1275a4a2e2e09b0",
-    "username": "wx_demo2",
-    "email": "demo2@wechat.cn",
-    "password_hash": "7b819f05d0663375cb7a6f09748feae0bf65d4ad942dc79748909be9038d728e",
-    "salt": "95eaad42f3957d73892428d153792017",
-    "created_at": "2026-06-01T23:01:58.475970",
-    "status": "active"
   }
 }
